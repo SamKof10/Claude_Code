@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ghost Line FPV — Freestyle &amp; Race Edits</title>
+<meta name="description" content="FPV-Freestyle- und Race-Edits aus der Egoperspektive. Flight Log, Rig-Specs und Kontakt.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%23F2863C' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%23F2863C'/%3E%3Cline x1='16' y1='1' x2='16' y2='7' stroke='%23F2863C' stroke-width='2'/%3E%3Cline x1='16' y1='25' x2='16' y2='31' stroke='%23F2863C' stroke-width='2'/%3E%3Cline x1='1' y1='16' x2='7' y2='16' stroke='%23F2863C' stroke-width='2'/%3E%3Cline x1='25' y1='16' x2='31' y2='16' stroke='%23F2863C' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Condensed:wght@500;700;900&family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+
+<div class="boot-screen" id="bootScreen" aria-hidden="true">
+  <p class="boot-line">ACQUIRING SIGNAL<span class="boot-dots">...</span></p>
+  <div class="boot-bar"><span></span></div>
+</div>
+
+<a class="skip-link" href="#main">Zum Inhalt springen</a>
+
+<header class="site-nav" id="siteNav">
+  <a class="brand" href="#top" aria-label="Ghost Line FPV — Start">
+    <svg class="brand-mark" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true">
+      <circle cx="16" cy="16" r="12" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="16" cy="16" r="2.2" fill="currentColor"/>
+      <line x1="16" y1="2" x2="16" y2="7" stroke="currentColor" stroke-width="1.6"/>
+      <line x1="16" y1="25" x2="16" y2="30" stroke="currentColor" stroke-width="1.6"/>
+      <line x1="2" y1="16" x2="7" y2="16" stroke="currentColor" stroke-width="1.6"/>
+      <line x1="25" y1="16" x2="30" y2="16" stroke="currentColor" stroke-width="1.6"/>
+    </svg>
+    <span>GHOST LINE<em>FPV</em></span>
+  </a>
+
+  <nav class="primary-nav" id="primaryNav">
+    <a href="#reel">Reel</a>
+    <a href="#log">Flight Log</a>
+    <a href="#rig">Rig</a>
+    <a href="#pilot">Pilot</a>
+    <a href="#contact">Kontakt</a>
+  </nav>
+
+  <div class="nav-telemetry" aria-hidden="true">
+    <span class="rec-dot"></span>
+    <span class="nav-telemetry-label">REC</span>
+    <span class="nav-telemetry-value" id="navTimer">00:00</span>
+  </div>
+
+  <button class="nav-toggle" id="navToggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="primaryNav">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<main id="main">
+
+  <section class="hero" id="top">
+    <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
+    <div class="hero-vignette" aria-hidden="true"></div>
+
+    <div class="hero-osd hero-osd--tl" aria-hidden="true">
+      <span class="osd-label">BAT</span><span class="osd-value" id="osdBat">16.8V</span>
+    </div>
+    <div class="hero-osd hero-osd--tr" aria-hidden="true">
+      <span class="osd-label">RSSI</span><span class="osd-value" id="osdRssi">99%</span>
+    </div>
+    <div class="hero-osd hero-osd--bl" aria-hidden="true">
+      <span class="osd-label">ALT</span><span class="osd-value" id="osdAlt">4.2M</span>
+    </div>
+    <div class="hero-osd hero-osd--br" aria-hidden="true">
+      <span class="osd-label">SPD</span><span class="osd-value" id="osdSpd">148KM/H</span>
+    </div>
+
+    <div class="hero-content">
+      <p class="eyebrow">CH·5.8GHZ — FPV FREESTYLE &amp; RACE EDITS</p>
+      <h1 class="hero-title">FLOWN,<br>NICHT&nbsp;GEFILMT.</h1>
+      <p class="hero-sub">Freestyle-Lines und Race-Runs aus der Egoperspektive — bei 150&nbsp;km/h, einen Meter über dem Boden. Kein Gimbal. Keine zweite Chance.</p>
+      <div class="hero-actions">
+        <a href="#reel" class="btn btn-primary">Reel ansehen</a>
+        <a href="#log" class="btn btn-ghost">Flight Log</a>
+      </div>
+    </div>
+
+    <a href="#reel" class="scroll-cue" aria-label="Nach unten scrollen">
+      <span></span>
+    </a>
+  </section>
+
+  <section class="reel" id="reel">
+    <div class="section-head">
+      <p class="channel-label">CH01 — FEATURED REEL</p>
+      <h2>Season Reel 2026</h2>
+      <p class="section-sub">Die dichteste Line aus einem Jahr Fliegen — sechs Locations, eine Egoperspektive.</p>
+    </div>
+
+    <div class="reel-frame">
+      <canvas class="reel-canvas" id="reelCanvas" aria-hidden="true"></canvas>
+      <div class="reel-osd" aria-hidden="true">
+        <span>00:00 / 02:58</span>
+        <span>4K60 · DIGITAL HD</span>
+      </div>
+      <button class="reel-play" type="button" aria-label="Reel abspielen">
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5z" fill="currentColor"/></svg>
+      </button>
+      <!-- Video-Datei oder Embed hier einsetzen, z. B.:
+      <video class="reel-video" controls preload="none" poster="assets/reel-poster.jpg">
+        <source src="assets/reel-2026.mp4" type="video/mp4">
+      </video>
+      -->
+    </div>
+  </section>
+
+  <section class="flight-log" id="log">
+    <div class="section-head">
+      <p class="channel-label">CH02 — FLIGHT LOG</p>
+      <h2>Ausgewählte Flüge</h2>
+      <p class="section-sub">Jede Line ein eigener Flug — hier die Aufzeichnungen der letzten Saison.</p>
+    </div>
+
+    <div class="log-grid">
+
+      <article class="log-card" data-seed="17" tabindex="0">
+        <div class="log-thumb"><canvas></canvas><span class="log-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M8 5.5v13l11-6.5-11-6.5z" fill="currentColor"/></svg></span></div>
+        <div class="log-info">
+          <h3>Donaukanal Dive</h3>
+          <p class="log-desc">Nachtflug durch die beleuchteten Unterführungen am Kanal.</p>
+          <dl class="log-specs">
+            <div><dt>ORT</dt><dd>Wien, Donaukanal</dd></div>
+            <div><dt>DATUM</dt><dd>03/2026</dd></div>
+            <div><dt>DAUER</dt><dd>2:41</dd></div>
+            <div><dt>SETUP</dt><dd>5&Prime; Freestyle · 4S</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <article class="log-card" data-seed="42" tabindex="0">
+        <div class="log-thumb"><canvas></canvas><span class="log-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M8 5.5v13l11-6.5-11-6.5z" fill="currentColor"/></svg></span></div>
+        <div class="log-info">
+          <h3>Steinbruch Line</h3>
+          <p class="log-desc">Enge Gaps zwischen den Felswänden im letzten Licht.</p>
+          <dl class="log-specs">
+            <div><dt>ORT</dt><dd>Steinbruch, NÖ</dd></div>
+            <div><dt>DATUM</dt><dd>01/2026</dd></div>
+            <div><dt>DAUER</dt><dd>3:05</dd></div>
+            <div><dt>SETUP</dt><dd>5&Prime; Freestyle · 6S</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <article class="log-card" data-seed="8" tabindex="0">
+        <div class="log-thumb"><canvas></canvas><span class="log-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M8 5.5v13l11-6.5-11-6.5z" fill="currentColor"/></svg></span></div>
+        <div class="log-info">
+          <h3>Alpine Descent</h3>
+          <p class="log-desc">Bombrun vom Grat bis ins Tal — 800 Höhenmeter am Stück.</p>
+          <dl class="log-specs">
+            <div><dt>ORT</dt><dd>Zillertal, Tirol</dd></div>
+            <div><dt>DATUM</dt><dd>11/2025</dd></div>
+            <div><dt>DAUER</dt><dd>4:12</dd></div>
+            <div><dt>SETUP</dt><dd>7&Prime; Long-Range · 6S</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <article class="log-card" data-seed="63" tabindex="0">
+        <div class="log-thumb"><canvas></canvas><span class="log-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M8 5.5v13l11-6.5-11-6.5z" fill="currentColor"/></svg></span></div>
+        <div class="log-info">
+          <h3>Gate Rush</h3>
+          <p class="log-desc">Schnellste Runde der Session: 21,4 Sekunden.</p>
+          <dl class="log-specs">
+            <div><dt>ORT</dt><dd>Rennstrecke, Graz</dd></div>
+            <div><dt>DATUM</dt><dd>10/2025</dd></div>
+            <div><dt>DAUER</dt><dd>1:58</dd></div>
+            <div><dt>SETUP</dt><dd>5&Prime; Race · 4S</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <article class="log-card" data-seed="29" tabindex="0">
+        <div class="log-thumb"><canvas></canvas><span class="log-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M8 5.5v13l11-6.5-11-6.5z" fill="currentColor"/></svg></span></div>
+        <div class="log-info">
+          <h3>Industriebrache</h3>
+          <p class="log-desc">Power-Loops zwischen den Stahlträgern der alten Halle.</p>
+          <dl class="log-specs">
+            <div><dt>ORT</dt><dd>Werksgelände, Linz</dd></div>
+            <div><dt>DATUM</dt><dd>08/2025</dd></div>
+            <div><dt>DAUER</dt><dd>2:27</dd></div>
+            <div><dt>SETUP</dt><dd>5&Prime; Freestyle · 6S</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <article class="log-card" data-seed="55" tabindex="0">
+        <div class="log-thumb"><canvas></canvas><span class="log-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M8 5.5v13l11-6.5-11-6.5z" fill="currentColor"/></svg></span></div>
+        <div class="log-info">
+          <h3>Skatepark Sesh</h3>
+          <p class="log-desc">Technische Lines durch die Bowls, tief und schnell.</p>
+          <dl class="log-specs">
+            <div><dt>ORT</dt><dd>Skatepark, Salzburg</dd></div>
+            <div><dt>DATUM</dt><dd>06/2025</dd></div>
+            <div><dt>DAUER</dt><dd>1:44</dd></div>
+            <div><dt>SETUP</dt><dd>3.5&Prime; Freestyle · 4S</dd></div>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="rig" id="rig">
+    <div class="section-head">
+      <p class="channel-label">CH03 — THE RIG</p>
+      <h2>Setup-Specs</h2>
+      <p class="section-sub">Das aktuelle Freestyle-Setup, Stand dieser Saison.</p>
+    </div>
+
+    <div class="rig-grid">
+      <div class="rig-block">
+        <h3>Aircraft</h3>
+        <dl class="rig-specs">
+          <div><dt>Frame</dt><dd>5&Prime; Freestyle</dd></div>
+          <div><dt>Motoren</dt><dd>2306 · 1750KV</dd></div>
+          <div><dt>FC / ESC</dt><dd>F7-Stack · 60A 4-in-1</dd></div>
+          <div><dt>Firmware</dt><dd>Betaflight 4.5</dd></div>
+          <div><dt>Akku</dt><dd>4S / 6S</dd></div>
+        </dl>
+      </div>
+      <div class="rig-block">
+        <h3>Goggles</h3>
+        <dl class="rig-specs">
+          <div><dt>System</dt><dd>Digital HD, 4:3</dd></div>
+          <div><dt>Latenz</dt><dd>~28ms</dd></div>
+          <div><dt>Empfang</dt><dd>Diversity-Antenne</dd></div>
+        </dl>
+      </div>
+      <div class="rig-block">
+        <h3>Kamera</h3>
+        <dl class="rig-specs">
+          <div><dt>Body</dt><dd>Action-Cam, 4K60</dd></div>
+          <div><dt>Halterung</dt><dd>Naked-Build, 38g</dd></div>
+        </dl>
+      </div>
+      <div class="rig-block">
+        <h3>Funke</h3>
+        <dl class="rig-specs">
+          <div><dt>Sender</dt><dd>ELRS 2.4GHz</dd></div>
+          <div><dt>Reichweite</dt><dd>&gt;5km LOS</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="pilot" id="pilot">
+    <div class="pilot-grid">
+      <div class="pilot-mark" aria-hidden="true">
+        <canvas id="pilotCanvas"></canvas>
+      </div>
+      <div class="pilot-content">
+        <p class="channel-label">CH04 — PILOT</p>
+        <h2>Seit 2019 in der Luft.</h2>
+        <p>Was mit einem Tiny Whoop im Wohnzimmer begann, ist heute die Egoperspektive auf jede neue Line — vom Rohbau bis zum Alpenkamm. Kein Gimbal, keine zweite Chance: Was die Linse sieht, ist geflogen, nicht animiert.</p>
+        <div class="pilot-stats">
+          <div><span class="stat-value">620+</span><span class="stat-label">Flugstunden</span></div>
+          <div><span class="stat-value">48</span><span class="stat-label">Veröffentlichte Edits</span></div>
+          <div><span class="stat-value">2019</span><span class="stat-label">Seit</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <p class="channel-label">CH05 — KONTAKT</p>
+    <h2>Nächste Line gemeinsam fliegen?</h2>
+    <p class="contact-sub">Für Projekte, Kooperationen und Locations — kurz schreiben, Rest klärt sich beim Fliegen.</p>
+    <a class="contact-email" href="mailto:hello@ghostline.fpv">hello@ghostline.fpv</a>
+
+    <div class="contact-social">
+      <a href="#" aria-label="YouTube">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="2" y="5.5" width="20" height="13" rx="3.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 9.2v5.6l5-2.8-5-2.8z" fill="currentColor"/></svg>
+        <span>YouTube</span>
+      </a>
+      <a href="#" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor"/></svg>
+        <span>Instagram</span>
+      </a>
+      <a href="#" aria-label="TikTok">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M13 3v10.8a3 3 0 1 1-2.2-2.9V8.7A5.2 5.2 0 1 0 15 13.8V9.6a6.4 6.4 0 0 0 4 1.4V8.3A4 4 0 0 1 15.3 4 4 4 0 0 1 15 3z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        <span>TikTok</span>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>© 2026 Ghost Line FPV</p>
+  <p class="footer-coords">48.2082°N 16.3738°E — LAST KNOWN POSITION</p>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
