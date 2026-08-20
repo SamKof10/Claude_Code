@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useSlidingIndicator } from "@/hooks";
 import { cn } from "./cn";
 
 export function Switch({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
@@ -37,16 +38,29 @@ export function SegmentedControl<T extends string>({
   onChange: (v: T) => void;
   className?: string;
 }) {
+  const { containerRef, register, rect } = useSlidingIndicator<HTMLDivElement>(value);
+
   return (
-    <div className={cn("inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-surface-2 p-1", className)}>
+    <div
+      ref={containerRef}
+      className={cn("relative inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-surface-2 p-1", className)}
+    >
+      {rect ? (
+        <span
+          aria-hidden
+          className="absolute rounded-full bg-signal transition-[transform,width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          style={{ width: rect.width, height: rect.height, transform: `translate(${rect.left}px, ${rect.top}px)` }}
+        />
+      ) : null}
       {options.map((opt) => (
         <button
           key={opt.value}
+          ref={register(opt.value)}
           type="button"
           onClick={() => onChange(opt.value)}
           className={cn(
-            "rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors duration-200",
-            value === opt.value ? "bg-signal text-white" : "text-ink-2 hover:text-ink-1",
+            "relative rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors duration-200",
+            value === opt.value ? "text-white" : "text-ink-2 hover:text-ink-1",
           )}
         >
           {opt.label}
@@ -67,20 +81,32 @@ export function Tabs<T extends string>({
   onChange: (v: T) => void;
   className?: string;
 }) {
+  const { containerRef, register, rect } = useSlidingIndicator<HTMLDivElement>(value);
+
   return (
-    <div className={cn("no-scrollbar flex items-center gap-1 overflow-x-auto border-b border-[var(--line)]", className)}>
+    <div
+      ref={containerRef}
+      className={cn("no-scrollbar relative flex items-center gap-1 overflow-x-auto border-b border-[var(--line)]", className)}
+    >
+      {rect ? (
+        <span
+          aria-hidden
+          className="absolute bottom-0 h-[2px] rounded-full bg-signal transition-[transform,width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          style={{ width: rect.width - 32, transform: `translate(${rect.left + 16}px, 0)` }}
+        />
+      ) : null}
       {tabs.map((tab) => (
         <button
           key={tab.value}
+          ref={register(tab.value)}
           type="button"
           onClick={() => onChange(tab.value)}
           className={cn(
-            "relative shrink-0 px-4 py-3 text-[14px] font-medium transition-colors duration-200",
+            "shrink-0 px-4 py-3 text-[14px] font-medium transition-colors duration-200",
             value === tab.value ? "text-ink-1" : "text-ink-3 hover:text-ink-2",
           )}
         >
           {tab.label}
-          {value === tab.value ? <span className="absolute inset-x-4 -bottom-px h-[2px] rounded-full bg-signal" /> : null}
         </button>
       ))}
     </div>

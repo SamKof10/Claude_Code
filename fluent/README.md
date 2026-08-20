@@ -86,9 +86,12 @@ Stil wie der Rest des Designsystems:
   und beim Antippen eines freigeschalteten Achievements.
 - **`Tooltip`** (Unlumen UI) — ein Pop-in-Hinweis auf Icon-Buttons in der
   Topbar (Menü, Theme, Einstellungen).
-- **Sliding Nav Pill** (Smooth UI) — eine per `getBoundingClientRect`
-  gemessene, weich mitgleitende Markierung hinter dem aktiven
-  Sidebar-Eintrag statt eines harten Klassenwechsels.
+- **Sliding Indicator** (Smooth UI, `useSlidingIndicator`) — eine per
+  `getBoundingClientRect` gemessene, weich mitgleitende Markierung statt
+  eines harten Klassenwechsels. Ein gemeinsamer Hook treibt drei Stellen:
+  den aktiven Sidebar-Eintrag, den Tab-Unterstrich (`Tabs`, u. a.
+  Vocabulary/Listening/C1-C2-Lab) und den Segmented-Control-Hintergrund
+  (`SegmentedControl`, Settings).
 - **`retro-panel` / `retro-badge`** (Retro UI, dosiert) — dicke Kontur +
   harter Versatz-Schatten statt Blur, bewusst nur auf den ohnehin schon
   „technischen"/spielerischen Flächen: System-Status-Panel, Streak-Kachel,

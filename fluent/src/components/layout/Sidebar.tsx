@@ -1,11 +1,11 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_GROUPS } from "./nav";
 import { cn } from "@/components/ui/cn";
 import { Mono, StatusDot } from "@/components/ui/Primitives";
+import { useSlidingIndicator } from "@/hooks";
 import { useStore } from "@/lib/store";
 
 function isActive(pathname: string, href: string) {
@@ -13,35 +13,11 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-interface PillRect {
-  top: number;
-  height: number;
-}
-
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { state } = useStore();
-  const navRef = useRef<HTMLElement>(null);
-  const itemRefs = useRef(new Map<string, HTMLAnchorElement>());
-  const [pill, setPill] = useState<PillRect | null>(null);
   const activeHref = NAV_GROUPS.flatMap((g) => g.items).find((item) => isActive(pathname, item.href))?.href;
-
-  useLayoutEffect(() => {
-    const recalc = () => {
-      const nav = navRef.current;
-      const el = activeHref ? itemRefs.current.get(activeHref) : undefined;
-      if (!nav || !el) {
-        setPill(null);
-        return;
-      }
-      const navRect = nav.getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      setPill({ top: elRect.top - navRect.top + nav.scrollTop, height: elRect.height });
-    };
-    recalc();
-    window.addEventListener("resize", recalc);
-    return () => window.removeEventListener("resize", recalc);
-  }, [activeHref]);
+  const { containerRef: navRef, register, rect: pill } = useSlidingIndicator<HTMLElement>(activeHref);
 
   return (
     <div className="flex h-full flex-col">
@@ -76,10 +52,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                 return (
                   <li key={item.href}>
                     <Link
-                      ref={(el) => {
-                        if (el) itemRefs.current.set(item.href, el);
-                        else itemRefs.current.delete(item.href);
-                      }}
+                      ref={register(item.href)}
                       href={item.href}
                       onClick={onNavigate}
                       className={cn(

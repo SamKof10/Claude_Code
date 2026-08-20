@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 
 /** Matches a media query, SSR-safe (false on the server, live after mount). */
 export function useMediaQuery(query: string): boolean {
@@ -174,6 +174,59 @@ export function useRandomOnMount<T>(pick: () => T, initial: T): T {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return value;
+}
+
+interface IndicatorRect {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Measures the active item among a set of registered elements and
+ * returns a rect to position a sliding indicator behind it — the
+ * Smooth UI idiom used for the sidebar's active-nav pill, tab
+ * underlines and segmented-control backgrounds. Pure layout
+ * measurement; the caller animates the returned rect with a CSS
+ * `transition` on `transform`, no animation library involved.
+ */
+export function useSlidingIndicator<C extends HTMLElement = HTMLDivElement>(activeKey: string | undefined) {
+  const containerRef = useRef<C>(null);
+  const itemRefs = useRef(new Map<string, HTMLElement>());
+  const [rect, setRect] = useState<IndicatorRect | null>(null);
+
+  const register = useCallback(
+    (key: string) => (el: HTMLElement | null) => {
+      if (el) itemRefs.current.set(key, el);
+      else itemRefs.current.delete(key);
+    },
+    [],
+  );
+
+  useLayoutEffect(() => {
+    const recalc = () => {
+      const container = containerRef.current;
+      const el = activeKey ? itemRefs.current.get(activeKey) : undefined;
+      if (!container || !el) {
+        setRect(null);
+        return;
+      }
+      const containerRect = container.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      setRect({
+        top: elRect.top - containerRect.top + container.scrollTop,
+        left: elRect.left - containerRect.left + container.scrollLeft,
+        width: elRect.width,
+        height: elRect.height,
+      });
+    };
+    recalc();
+    window.addEventListener("resize", recalc);
+    return () => window.removeEventListener("resize", recalc);
+  }, [activeKey]);
+
+  return { containerRef, register, rect };
 }
 
 const CONFETTI_COLORS = ["var(--color-signal)", "var(--color-mint)", "var(--color-amber)", "var(--color-coral)", "var(--color-signal-soft)"];
