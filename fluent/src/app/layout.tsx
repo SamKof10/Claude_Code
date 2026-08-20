@@ -49,7 +49,7 @@ export const viewport: Viewport = {
 
 const THEME_INIT = `
 try {
-  var t = localStorage.getItem('fluent.theme');
+  var t = localStorage.getItem('fluent.theme.v2');
   document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
 } catch (e) {}
 `;

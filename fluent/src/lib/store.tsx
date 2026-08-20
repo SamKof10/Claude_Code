@@ -83,7 +83,10 @@ export interface FluentState {
   monthlyTests: MonthlyTestRecord[];
 }
 
-const STORAGE_KEY = "fluent.state.v1";
+// v2: bumped when the seed data changed from a fake in-progress demo to a
+// true zero baseline — old v1 entries are simply orphaned, not migrated, so
+// every browser starts clean on the new baseline without manual action.
+const STORAGE_KEY = "fluent.state.v2";
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
 function initialState(): FluentState {
@@ -282,7 +285,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     root.setAttribute("data-theme", state.theme);
     try {
-      window.localStorage.setItem("fluent.theme", state.theme);
+      window.localStorage.setItem("fluent.theme.v2", state.theme);
     } catch {
       /* ignore */
     }
