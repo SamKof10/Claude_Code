@@ -1,0 +1,30 @@
+import {
+  Plane,
+  BedDouble,
+  UtensilsCrossed,
+  Briefcase,
+  GraduationCap,
+  Presentation,
+  Users,
+  HeartHandshake,
+  MessageCircle,
+  Stethoscope,
+  Headset,
+  KeyRound,
+  type LucideIcon,
+} from "lucide-react";
+
+export const SCENARIO_ICONS: Record<string, LucideIcon> = {
+  Plane,
+  BedDouble,
+  UtensilsCrossed,
+  Briefcase,
+  GraduationCap,
+  Presentation,
+  Users,
+  HeartHandshake,
+  MessageCircle,
+  Stethoscope,
+  Headset,
+  KeyRound,
+};

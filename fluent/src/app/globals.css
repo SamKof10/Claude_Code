@@ -1,0 +1,370 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════
+   FLUENT — Design System
+   A personal English operating system, not a school app. Dark-first,
+   glass surfaces, one signal colour (violet) for focus/CTA, mint for
+   progress/mastery, amber for streak/energy, coral for corrections.
+   Theme (dark/light) is user-switchable — semantic tokens live as plain
+   CSS variables so Tailwind utilities stay reactive across the toggle.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@theme {
+  --color-surface-0: var(--t-surface-0);
+  --color-surface-1: var(--t-surface-1);
+  --color-surface-2: var(--t-surface-2);
+  --color-surface-3: var(--t-surface-3);
+  --color-ink-1: var(--t-ink-1);
+  --color-ink-2: var(--t-ink-2);
+  --color-ink-3: var(--t-ink-3);
+
+  --color-signal: #7c6cff;
+  --color-signal-deep: #5a46e8;
+  --color-signal-soft: #b7acff;
+  --color-mint: #22d3a6;
+  --color-mint-deep: #0ea37d;
+  --color-amber: #f5a623;
+  --color-amber-deep: #c97f0a;
+  --color-coral: #ff5c72;
+  --color-coral-deep: #d93a52;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+:root {
+  color-scheme: dark;
+  --t-surface-0: #08080b;
+  --t-surface-1: #0e0e14;
+  --t-surface-2: #17171f;
+  --t-surface-3: #202029;
+  --t-ink-1: #f5f4f8;
+  --t-ink-2: #a8a5ba;
+  --t-ink-3: #6f6c81;
+  --line: color-mix(in srgb, var(--t-ink-1) 11%, transparent);
+  --line-strong: color-mix(in srgb, var(--t-ink-1) 20%, transparent);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --t-surface-0: #f7f6fa;
+  --t-surface-1: #ffffff;
+  --t-surface-2: #eeecf4;
+  --t-surface-3: #e2e0ec;
+  --t-ink-1: #131218;
+  --t-ink-2: #5b5870;
+  --t-ink-3: #928fa3;
+  --line: color-mix(in srgb, var(--t-ink-1) 10%, transparent);
+  --line-strong: color-mix(in srgb, var(--t-ink-1) 17%, transparent);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  background: var(--t-surface-0);
+}
+
+body {
+  background: var(--t-surface-0);
+  color: var(--t-ink-1);
+  font-family: var(--font-sans);
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-signal) 38%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* — typography scale — */
+.display {
+  font-weight: 560;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+.h-section {
+  font-weight: 540;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+.lede {
+  font-size: clamp(0.98rem, 0.93rem + 0.4vw, 1.15rem);
+  line-height: 1.58;
+  color: var(--t-ink-2);
+  text-wrap: pretty;
+}
+.mono {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* — grain: one fixed layer, GPU-cheap, never repainted — */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* — hairline rules — */
+.rule {
+  border-color: var(--line);
+}
+.rule-strong {
+  border-color: var(--line-strong);
+}
+
+/* — glass surfaces — */
+.glass {
+  background: color-mix(in srgb, var(--t-surface-1) 78%, transparent);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+}
+.glass-solid {
+  background: color-mix(in srgb, var(--t-surface-0) 92%, transparent);
+  backdrop-filter: blur(22px) saturate(1.5);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+}
+
+/* — shimmer sweep, used on the primary CTA — */
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+.shimmer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in srgb, white 45%, transparent) 48%,
+    transparent 74%
+  );
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+.shimmer:hover::before {
+  animation: shimmer-sweep 900ms var(--ease-out-soft);
+}
+
+/* — animated conic border, used sparingly (active daily-session card) — */
+@property --ab-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes ab-spin {
+  to {
+    --ab-angle: 360deg;
+  }
+}
+.anim-border {
+  position: relative;
+  isolation: isolate;
+}
+.anim-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--ab-angle),
+    transparent 0%,
+    var(--color-signal) 14%,
+    transparent 28%,
+    transparent 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: ab-spin 5s linear infinite;
+  pointer-events: none;
+}
+
+/* — CRT scanline whisper, only on the system-status readout — */
+@keyframes crt-drift {
+  to {
+    background-position: 0 -14px;
+  }
+}
+.crt {
+  position: relative;
+}
+.crt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-signal) 7%, transparent) 0 1px,
+    transparent 1px 3px
+  );
+  background-size: 100% 14px;
+  animation: crt-drift 1.4s linear infinite;
+  opacity: 0.5;
+}
+
+/* — status dot — */
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+}
+.status-dot {
+  animation: status-pulse 2.3s var(--ease-in-out-soft) infinite;
+}
+
+/* — waveform bars, listening player — */
+@keyframes wave-bounce {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+.wave-bar {
+  animation: wave-bounce 1s var(--ease-in-out-soft) infinite;
+  transform-origin: center;
+}
+
+/* — recording pulse ring, speaking mic — */
+@keyframes mic-ring {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+.mic-ring {
+  animation: mic-ring 1.6s var(--ease-out-soft) infinite;
+}
+
+/* — glow, used on the level ring and primary CTA — */
+.glow-signal {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-signal) 40%, transparent),
+    0 8px 30px -8px color-mix(in srgb, var(--color-signal) 55%, transparent);
+}
+
+/* — reduced motion — */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .anim-border::before,
+  .crt::after,
+  .status-dot,
+  .wave-bar,
+  .mic-ring {
+    animation: none !important;
+  }
+  .shimmer::before {
+    display: none;
+  }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* — utilities — */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+textarea,
+input {
+  font-family: inherit;
+}
+
+.range {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: grab;
+}
+.range:active {
+  cursor: grabbing;
+}
+.range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--t-surface-3);
+}
+.range::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--t-surface-3);
+}
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: var(--color-signal);
+  border: 2px solid var(--t-surface-0);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-signal) 55%, transparent);
+  transition: transform 180ms var(--ease-out-soft);
+}
+.range:hover::-webkit-slider-thumb {
+  transform: scale(1.1);
+}

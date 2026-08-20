@@ -1,0 +1,189 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+
+/** Matches a media query, SSR-safe (false on the server, live after mount). */
+export function useMediaQuery(query: string): boolean {
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const mql = window.matchMedia(query);
+      mql.addEventListener("change", onChange);
+      return () => mql.removeEventListener("change", onChange);
+    },
+    [query],
+  );
+  const getSnapshot = useCallback(() => window.matchMedia(query).matches, [query]);
+  return useSyncExternalStore(subscribe, getSnapshot, () => false);
+}
+
+/** True only where hover + a fine pointer exist — gates magnetic effects. */
+export function useHasPointer(): boolean {
+  return useMediaQuery("(hover: hover) and (pointer: fine)");
+}
+
+/** Fires once the window has scrolled past `threshold` px. */
+export function useScrolledPast(threshold = 24): boolean {
+  const [past, setPast] = useState(false);
+
+  useEffect(() => {
+    let frame: number | null = null;
+    const check = () => {
+      frame = null;
+      setPast(window.scrollY > threshold);
+    };
+    const onScroll = () => {
+      if (frame === null) frame = requestAnimationFrame(check);
+    };
+    check();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame !== null) cancelAnimationFrame(frame);
+    };
+  }, [threshold]);
+
+  return past;
+}
+
+/** Escape-key handler for overlays. */
+export function useEscape(active: boolean, onEscape: () => void) {
+  const handler = useRef(onEscape);
+  useEffect(() => {
+    handler.current = onEscape;
+  }, [onEscape]);
+  useEffect(() => {
+    if (!active) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handler.current();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [active]);
+}
+
+/** Locks body scroll while `locked`, preserving the scroll position. */
+export function useScrollLock(locked: boolean) {
+  useEffect(() => {
+    if (!locked) return;
+    const { body } = document;
+    const scrollY = window.scrollY;
+    const prev = {
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+      overflowY: body.style.overflowY,
+    };
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.width = "100%";
+    body.style.overflowY = "scroll";
+    return () => {
+      body.style.position = prev.position;
+      body.style.top = prev.top;
+      body.style.width = prev.width;
+      body.style.overflowY = prev.overflowY;
+      window.scrollTo(0, scrollY);
+    };
+  }, [locked]);
+}
+
+/** Magnetic pull towards the cursor. Returns a transform-ready offset. */
+export function useMagnetic<T extends HTMLElement>(strength = 0.22, enabled = true) {
+  const ref = useRef<T>(null);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const frame = useRef<number | null>(null);
+  const reset = useCallback(() => setOffset({ x: 0, y: 0 }), []);
+
+  useEffect(() => {
+    if (!enabled) return;
+    const el = ref.current;
+    if (!el) return;
+    const onMove = (e: PointerEvent) => {
+      if (frame.current !== null) return;
+      frame.current = requestAnimationFrame(() => {
+        frame.current = null;
+        const rect = el.getBoundingClientRect();
+        setOffset({
+          x: (e.clientX - (rect.left + rect.width / 2)) * strength,
+          y: (e.clientY - (rect.top + rect.height / 2)) * strength,
+        });
+      });
+    };
+    el.addEventListener("pointermove", onMove, { passive: true });
+    el.addEventListener("pointerleave", reset);
+    return () => {
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerleave", reset);
+      if (frame.current !== null) cancelAnimationFrame(frame.current);
+    };
+  }, [strength, enabled, reset]);
+
+  return { ref, offset };
+}
+
+/** Ticks a callback every `ms`, pausable via `active`. */
+export function useInterval(callback: () => void, ms: number | null, active: boolean) {
+  const saved = useRef(callback);
+  useEffect(() => {
+    saved.current = callback;
+  }, [callback]);
+  useEffect(() => {
+    if (ms === null || !active) return;
+    const id = setInterval(() => saved.current(), ms);
+    return () => clearInterval(id);
+  }, [ms, active]);
+}
+
+/** True once the element has intersected the viewport; stays true after (a
+ * lightweight, dependency-free replacement for Motion's `useInView(once)`). */
+export function useInViewOnce<T extends HTMLElement>(margin = "-10% 0px -10% 0px") {
+  const ref = useRef<T>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || inView) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: margin, threshold: 0.01 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [margin]);
+
+  return { ref, inView };
+}
+
+/**
+ * Avoids SSR/CSR hydration mismatches from `Math.random()`-based content
+ * selection: renders `initial` on both the server and the client's first
+ * pass (identical output, safe to hydrate), then swaps to a fresh pick once
+ * mounted — a normal post-hydration update, not a mismatch.
+ */
+export function useRandomOnMount<T>(pick: () => T, initial: T): T {
+  const [value, setValue] = useState(initial);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only reroll after the SSR-safe initial render
+    setValue(pick());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return value;
+}
+
+/** Simple count-up/count-down timer in seconds. `running` starts/stops it. */
+export function useTimer(running: boolean, direction: "up" | "down" = "up", start = 0) {
+  const [seconds, setSeconds] = useState(start);
+  useInterval(
+    () => setSeconds((s) => (direction === "up" ? s + 1 : Math.max(0, s - 1))),
+    1000,
+    running,
+  );
+  const reset = useCallback(() => setSeconds(start), [start]);
+  return { seconds, reset };
+}
