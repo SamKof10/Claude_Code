@@ -1,0 +1,63 @@
+name: Deploy FLUENT to GitHub Pages
+
+on:
+  push:
+    branches:
+      - claude/premium-english-learning-app-9f0e8p
+      - master
+    paths:
+      - "fluent/**"
+      - ".github/workflows/deploy-fluent.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one Pages deployment can run at a time; let a newer push win instead
+# of queuing behind an older one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: fluent
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: fluent/package-lock.json
+
+      - run: npm ci
+
+      - name: Build static export
+        env:
+          # FLUENT is served under a subpath (github.io/<repo>/fluent), not
+          # domain root — next/link and the App Router prefix every internal
+          # link and asset with this automatically.
+          NEXT_BASE_PATH: /${{ github.event.repository.name }}/fluent
+        run: npm run export
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: fluent/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
