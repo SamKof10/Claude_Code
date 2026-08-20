@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1c1a19">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="./icon-512.png" type="image/png" sizes="512x512">
+  <link rel="apple-touch-icon" href="./icon-180.png" sizes="180x180">
+  <link rel="stylesheet" href="_ds/classical-e0760cc7-2df3-4801-a740-b13723a4f371/styles.css">
+  <script src="_ds/classical-e0760cc7-2df3-4801-a740-b13723a4f371/_ds_bundle.js"></script>
+  <style>
+    body{margin:0}
+    input.input::placeholder{color:color-mix(in srgb, var(--color-text) 40%, transparent)}
+  </style>
+</helmet>
+<div style="--color-bg:#1c1a19;--color-surface:#2a2827;--color-text:#f2efe9;--color-divider:color-mix(in srgb, #f2efe9 14%, transparent);background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);min-height:100vh;box-sizing:border-box">
+  <div style="max-width:520px;margin:0 auto;padding-bottom:56px">
+
+    <div style="padding:var(--space-6) var(--space-4) var(--space-4);border-bottom:1px solid var(--color-divider)">
+      <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-accent);margin-bottom:4px">Trainingsplan</div>
+      <h1 style="margin:0 0 var(--space-4);font-size:28px">Mein 5-Tage Split</h1>
+
+      <div style="display:flex;gap:var(--space-3)">
+        <div style="flex:1;display:flex;align-items:center;gap:8px;border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:8px 12px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1 3-2 4-2 7a3 3 0 0 0 6 0c0-1-.5-2-1-2 1 4-1 6-3 6-3 0-5-2-5-5 0-4 3-5 3-9 1 1 2 2 2 3z"></path></svg>
+          <div><div style="font-size:15px;font-family:var(--font-heading);font-weight:600;line-height:1.1">{{ dayStreak }}</div><div style="font-size:10.5px;color:color-mix(in srgb, var(--color-text) 55%, transparent)">Tage Streak</div></div>
+        </div>
+        <div style="flex:1;display:flex;align-items:center;gap:8px;border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:8px 12px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M3 9h18M8 3v3M16 3v3"></path><path d="m8.5 14.5 2 2 4-4"></path></svg>
+          <div><div style="font-size:15px;font-family:var(--font-heading);font-weight:600;line-height:1.1">{{ weekStreak }}</div><div style="font-size:10.5px;color:color-mix(in srgb, var(--color-text) 55%, transparent)">Wochen Streak</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:var(--space-4) var(--space-4) 0">
+      <div class="seg" style="width:100%">
+        <label class="seg-opt" style="flex:1;justify-content:center">
+          <input type="radio" name="viewMode" checked="{{ isToday }}" onChange="{{ setViewToday }}">
+          Heute
+        </label>
+        <label class="seg-opt" style="flex:1;justify-content:center">
+          <input type="radio" name="viewMode" checked="{{ isHistory }}" onChange="{{ setViewHistory }}">
+          Verlauf
+        </label>
+      </div>
+    </div>
+
+    <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:var(--space-4)">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3)">
+        <button type="button" onClick="{{ prevWeek }}" style="background:transparent;border:none;color:var(--color-text);cursor:pointer;padding:4px;display:flex">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+        </button>
+        <span style="font-size:12px;color:color-mix(in srgb, var(--color-text) 60%, transparent)">{{ weekLabelText }}</span>
+        <button type="button" onClick="{{ nextWeek }}" disabled="{{ nextWeekDisabled }}" style="background:transparent;border:none;color:var(--color-text);cursor:pointer;padding:4px;display:flex">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+        </button>
+      </div>
+
+      <div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-4)">
+        <sc-for list="{{ weekDates }}" as="wd" hint-placeholder-count="5">
+          <button type="button" onClick="{{ wd.select }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 4px;border-radius:var(--radius-md);border:1px solid {{ wd.borderColor }};background:{{ wd.bg }};cursor:pointer;color:var(--color-text)">
+            <span style="font-size:10.5px;letter-spacing:0.04em;text-transform:uppercase;color:{{ wd.labelColor }}">{{ wd.shortLabel }}</span>
+            <span style="font-size:15px;font-family:var(--font-heading);font-weight:600">{{ wd.dateNum }}</span>
+            <span style="width:6px;height:6px;border-radius:50%;background:{{ wd.dotColor }}"></span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-3);margin-bottom:var(--space-2)">
+        <div>
+          <h2 style="margin:0 0 2px;font-size:22px">{{ selDay.name }}</h2>
+          <div style="font-size:13px;color:color-mix(in srgb, var(--color-text) 60%, transparent)">{{ selDay.focus }}</div>
+        </div>
+        <span style="flex:none;font-size:11px;padding:4px 10px;border:1px solid {{ selDay.statusBorder }};border-radius:calc(var(--radius-md) * 0.75);color:{{ selDay.statusColor }};white-space:nowrap">{{ selDay.statusLabel }}</span>
+      </div>
+
+      <sc-if value="{{ selDay.hasNote }}">
+        <p style="font-size:12px;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin:0 0 var(--space-4)">{{ selDay.note }}</p>
+      </sc-if>
+
+      <sc-for list="{{ exercises }}" as="ex" hint-placeholder-count="5">
+        <div style="border:1px solid {{ ex.borderColor }};border-radius:var(--radius-md);padding:var(--space-4);display:flex;flex-direction:column;gap:6px;margin-bottom:var(--space-3);opacity:{{ ex.opacity }}">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-2)">
+            <h3 style="margin:0;font-size:17px">{{ ex.name }}</h3>
+            <span style="font-size:11px;color:{{ ex.countColor }};flex:none">{{ ex.doneCount }}/{{ ex.sets }}</span>
+          </div>
+          <div style="display:flex;gap:8px;font-size:12px;color:color-mix(in srgb, var(--color-text) 55%, transparent)">
+            <span>{{ ex.metaLabel }}</span><span>·</span><span>{{ ex.restLabel }}</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:6px">
+            <sc-for list="{{ ex.setCells }}" as="cell" hint-placeholder-count="4">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:52px">
+                <span style="font-size:10px;color:color-mix(in srgb, var(--color-text) 45%, transparent)">Satz {{ cell.label }}</span>
+                <button type="button" onClick="{{ cell.toggle }}" disabled="{{ cell.disabled }}" style="width:32px;height:32px;border-radius:50%;border:1.5px solid {{ cell.borderColor }};background:{{ cell.bg }};display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+                  <sc-if value="{{ cell.done }}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{ cell.checkColor }}" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </sc-if>
+                </button>
+                <input class="input" type="text" inputmode="decimal" placeholder="{{ ex.weightUnit }}" value="{{ cell.weight }}" onChange="{{ cell.onWeight }}" disabled="{{ cell.disabled }}" style="width:52px;padding:4px 2px;text-align:center;font-size:12px;min-height:auto">
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+
+      <div style="display:flex;align-items:center;gap:10px;padding:var(--space-3);border:1px solid var(--color-divider);border-radius:var(--radius-md);margin-top:var(--space-2)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        <div style="flex:1">
+          <div style="font-size:13px">Erinnerung um {{ reminderHour }} Uhr</div>
+          <div style="font-size:11px;color:color-mix(in srgb, var(--color-text) 50%, transparent)">Nur Mo–Fr, wenn das Training noch offen ist · nur solange diese Seite geöffnet ist</div>
+        </div>
+        <sc-if value="{{ showNotifButton }}">
+          <button type="button" class="btn btn-primary" onClick="{{ requestNotifPermission }}" style="font-size:12px;padding:6px 12px;flex:none">Aktivieren</button>
+        </sc-if>
+        <sc-if value="{{ showNotifActive }}"><span style="font-size:11px;color:var(--color-accent);flex:none">Aktiv</span></sc-if>
+        <sc-if value="{{ showNotifBlocked }}"><span style="font-size:11px;color:color-mix(in srgb, var(--color-text) 50%, transparent);flex:none">Blockiert</span></sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isHistory }}">
+    <div style="padding:var(--space-4)">
+      <div style="font-size:12px;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:var(--space-3)">Tippe auf einen Tag, um ihn zu bearbeiten.</div>
+      <sc-for list="{{ historyWeeks }}" as="wk" hint-placeholder-count="6">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--color-divider)">
+          <div style="flex:none;width:120px">
+            <div style="font-size:13px">{{ wk.label }}</div>
+            <div style="font-size:10.5px;color:color-mix(in srgb, var(--color-text) 50%, transparent)">{{ wk.range }}</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <sc-for list="{{ wk.days }}" as="dy" hint-placeholder-count="5">
+              <button type="button" onClick="{{ dy.onClick }}" disabled="{{ dy.disabled }}" title="{{ dy.title }}" style="width:30px;height:30px;border-radius:50%;border:1.5px solid {{ dy.borderColor }};background:{{ dy.bg }};display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+                <sc-if value="{{ dy.showCheck }}">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1c1a19" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </sc-if>
+                <sc-if value="{{ dy.showDash }}">
+                  <span style="width:5px;height:1.5px;background:color-mix(in srgb, var(--color-text) 35%, transparent)"></span>
+                </sc-if>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    </sc-if>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;reminderHour&quot;: { &quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 20, &quot;min&quot;: 6, &quot;max&quot;: 23, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Verhalten&quot; },
+  &quot;historyWeeks&quot;: { &quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 6, &quot;min&quot;: 4, &quot;max&quot;: 12, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Verhalten&quot; },
+  &quot;weightUnit&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;kg&quot;, &quot;options&quot;: [&quot;kg&quot;, &quot;lb&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Verhalten&quot; }
+}">
+class Component extends DCLogic {
+  STORAGE_KEY = 'gymTracker5DayLogs_v1';
+  DAY_ORDER = ['mon','tue','wed','thu','fri'];
+  SHORT = { mon:'Mo', tue:'Di', wed:'Mi', thu:'Do', fri:'Fr' };
+  MONTHS = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  PLAN = {
+    mon: { name:'Montag', focus:'Bein Kraft + Rumpf', exercises:[
+      { id:'mon1', name:'Bulgarian Split Squat', sets:4, reps:'8/Seite', rest:'90s' },
+      { id:'mon2', name:'Single Leg Deep Squat', sets:4, reps:'10/Seite', rest:'90s' },
+      { id:'mon3', name:'Ausfallschritte', sets:4, reps:'20 Schritte', rest:'60s' },
+      { id:'mon4', name:'Wandsitzen', sets:4, reps:'1 min', rest:'45s' },
+      { id:'mon5', name:'Pallof Press', sets:3, reps:'15/Seite', rest:'45s' },
+      { id:'mon6', name:'Plank', sets:3, reps:'45s', rest:'30s' },
+    ]},
+    tue: { name:'Dienstag', focus:'Oberkörper + Kondition', exercises:[
+      { id:'tue1', name:'Brustpresse Kabel', sets:4, reps:'10', rest:'90s' },
+      { id:'tue2', name:'Latzug', sets:4, reps:'10', rest:'90s' },
+      { id:'tue3', name:'Rudern sitzend Kabel', sets:4, reps:'10', rest:'75s' },
+      { id:'tue4', name:'Schulterdrücken Kabel', sets:4, reps:'10', rest:'90s' },
+      { id:'tue5', name:'Rudergerät Intervalle', sets:8, reps:'30s Belastung', rest:'30s' },
+    ]},
+    wed: { name:'Mittwoch', focus:'Bein Power + Kondition', exercises:[
+      { id:'wed1', name:'Step-ups', sets:4, reps:'12/Seite', rest:'75s' },
+      { id:'wed2', name:'Crab Walk mit Thera', sets:4, reps:'40 Schritte', rest:'60s' },
+      { id:'wed3', name:'Waden auf Treppe', sets:4, reps:'20/Seite', rest:'45s' },
+      { id:'wed4', name:'Crosstrainer', sets:1, reps:'30 min · Puls 145–155', rest:'–' },
+    ]},
+    thu: { name:'Donnerstag', focus:'Oberkörper + Rumpf', exercises:[
+      { id:'thu1', name:'Bizeps Kabel', sets:4, reps:'12', rest:'60s' },
+      { id:'thu2', name:'Trizeps Kabel', sets:4, reps:'12', rest:'60s' },
+      { id:'thu3', name:'Face Pulls', sets:4, reps:'15', rest:'45s' },
+      { id:'thu4', name:'Rücken tief Kabel', sets:4, reps:'15', rest:'60s' },
+      { id:'thu5', name:'Beinheben', sets:4, reps:'20', rest:'45s' },
+      { id:'thu6', name:'Seitplank', sets:3, reps:'30s/Seite', rest:'30s' },
+    ]},
+    fri: { name:'Freitag', focus:'Zirkel + Kondition', note:'3 Runden im Zirkel, danach die Laufband-Einheit.', exercises:[
+      { id:'fri1', name:'Kniebeuge einbeinig (Zirkel)', sets:3, reps:'45s', rest:'15s' },
+      { id:'fri2', name:'Ausfallschritte (Zirkel)', sets:3, reps:'45s', rest:'15s' },
+      { id:'fri3', name:'Liegestütz (Zirkel)', sets:3, reps:'45s', rest:'15s' },
+      { id:'fri4', name:'Crunches (Zirkel)', sets:3, reps:'45s', rest:'15s' },
+      { id:'fri5', name:'Wandsitzen (Zirkel)', sets:3, reps:'45s', rest:'60s' },
+      { id:'fri6', name:'Laufband Grundlage', sets:1, reps:'25 min', rest:'–' },
+      { id:'fri7', name:'Sprints', sets:5, reps:'30s', rest:'90s' },
+    ]},
+  };
+
+  state = {
+    view: 'today',
+    weekOffset: 0,
+    selectedDayKey: this.todayKeyOrMon(),
+    data: this.loadData(),
+    notifPermission: (typeof Notification !== 'undefined') ? Notification.permission : 'unsupported',
+  };
+
+  todayKeyOrMon(){
+    const dow = new Date().getDay();
+    return (dow>=1 && dow<=5) ? this.DAY_ORDER[dow-1] : 'mon';
+  }
+  loadData(){
+    try { const raw = localStorage.getItem(this.STORAGE_KEY); return raw ? JSON.parse(raw) : {logs:{}}; }
+    catch(e){ return {logs:{}}; }
+  }
+  saveData(data){
+    try { localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data)); } catch(e){}
+  }
+
+  pad(n){ return n<10 ? '0'+n : ''+n; }
+  toISO(d){ return d.getFullYear()+'-'+this.pad(d.getMonth()+1)+'-'+this.pad(d.getDate()); }
+  addDays(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+  startOfWeek(d){ const r=new Date(d); const day=(r.getDay()+6)%7; r.setDate(r.getDate()-day); r.setHours(0,0,0,0); return r; }
+  stripTime(d){ const r=new Date(d); r.setHours(0,0,0,0); return r; }
+
+  getSetsArray(iso, exId, setsCount){
+    const log = this.state.data.logs[iso];
+    const arr = log && log.exercises && log.exercises[exId];
+    if(arr && arr.length===setsCount) return arr;
+    return Array.from({length:setsCount}, () => ({ done:false, weight:'' }));
+  }
+  mutateSet(iso, exId, setsCount, idx, patch){
+    const data = JSON.parse(JSON.stringify(this.state.data));
+    if(!data.logs[iso]) data.logs[iso] = { exercises:{} };
+    const cur = data.logs[iso].exercises[exId];
+    if(!cur || cur.length!==setsCount){
+      data.logs[iso].exercises[exId] = Array.from({length:setsCount}, () => ({ done:false, weight:'' }));
+    }
+    data.logs[iso].exercises[exId][idx] = { ...data.logs[iso].exercises[exId][idx], ...patch };
+    this.saveData(data);
+    this.setState({ data });
+  }
+  toggleSet = (iso, exId, setsCount, idx) => {
+    const cur = this.getSetsArray(iso, exId, setsCount)[idx];
+    this.mutateSet(iso, exId, setsCount, idx, { done: !cur.done });
+  };
+  setWeight = (iso, exId, setsCount, idx, value) => {
+    this.mutateSet(iso, exId, setsCount, idx, { weight: value });
+  };
+
+  isDayFullyDone(iso, dayKey){
+    return this.PLAN[dayKey].exercises.every(ex => this.getSetsArray(iso, ex.id, ex.sets).every(s => s.done));
+  }
+  isWeekFullyDone(offset){
+    const ws = this.addDays(this.startOfWeek(new Date()), offset*7);
+    return this.DAY_ORDER.every((key,i) => this.isDayFullyDone(this.toISO(this.addDays(ws,i)), key));
+  }
+  computeWeekStreak(){
+    let offset = this.isWeekFullyDone(0) ? 0 : -1;
+    let streak = 0;
+    while(this.isWeekFullyDone(offset) && streak < 520){ streak++; offset--; }
+    return streak;
+  }
+  computeDayStreak(){
+    const today = this.stripTime(new Date());
+    let d = new Date(today);
+    let streak = 0, guard = 0;
+    while(guard < 1000){
+      guard++;
+      const dow = d.getDay();
+      if(dow===0){ d = this.addDays(d,-2); continue; }
+      if(dow===6){ d = this.addDays(d,-1); continue; }
+      const key = this.DAY_ORDER[dow-1];
+      const iso = this.toISO(d);
+      const done = this.isDayFullyDone(iso, key);
+      if(iso===this.toISO(today) && !done){ d = this.addDays(d,-1); continue; }
+      if(!done) break;
+      streak++;
+      d = this.addDays(d,-1);
+    }
+    return streak;
+  }
+  weekRangeLabel(ws){
+    const we = this.addDays(ws,4);
+    const mn1 = this.MONTHS[ws.getMonth()], mn2 = this.MONTHS[we.getMonth()];
+    return ws.getMonth()===we.getMonth()
+      ? ws.getDate()+'.–'+we.getDate()+'. '+mn2
+      : ws.getDate()+'. '+mn1+' – '+we.getDate()+'. '+mn2;
+  }
+
+  requestNotifPermission = () => {
+    if(typeof Notification === 'undefined') return;
+    Notification.requestPermission().then(p => this.setState({ notifPermission: p }));
+  };
+
+  scheduleEveningCheck(){
+    clearTimeout(this._notifTimer);
+    const hour = this.props.reminderHour ?? 20;
+    const now = new Date();
+    const dow = now.getDay();
+    if(dow < 1 || dow > 5) return;
+    const target = new Date(now); target.setHours(hour,0,0,0);
+    const delay = target - now;
+    if(delay < 0) return;
+    this._notifTimer = setTimeout(() => this.fireReminder(), Math.min(delay, 2147000000));
+  }
+  fireReminder(){
+    const today = new Date();
+    const dow = today.getDay();
+    if(dow < 1 || dow > 5) return;
+    const key = this.DAY_ORDER[dow-1];
+    const iso = this.toISO(today);
+    if(this.isDayFullyDone(iso, key)) return;
+    if(typeof Notification !== 'undefined' && Notification.permission === 'granted'){
+      try {
+        new Notification('Training heute noch offen', {
+          body: this.PLAN[key].name + ' – ' + this.PLAN[key].focus + ' wartet noch auf dich.',
+          icon: './icon.svg',
+        });
+      } catch(e){}
+    }
+  }
+
+  componentDidMount(){
+    this.scheduleEveningCheck();
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+  }
+  componentWillUnmount(){ clearTimeout(this._notifTimer); }
+
+  renderVals(){
+    const weightUnit = this.props.weightUnit ?? 'kg';
+    const historyWeekCount = this.props.historyWeeks ?? 6;
+    const today = this.stripTime(new Date());
+    const viewedWeekStart = this.addDays(this.startOfWeek(new Date()), this.state.weekOffset*7);
+
+    const weekDates = this.DAY_ORDER.map((key,i) => {
+      const d = this.addDays(viewedWeekStart, i);
+      const iso = this.toISO(d);
+      const done = this.isDayFullyDone(iso, key);
+      const isToday = iso === this.toISO(today);
+      const isFuture = d > today;
+      const selected = key === this.state.selectedDayKey;
+      return {
+        key, shortLabel: this.SHORT[key], dateNum: d.getDate(), iso, done, isToday, isFuture,
+        borderColor: selected ? 'var(--color-accent)' : (isToday ? 'color-mix(in srgb, var(--color-text) 35%, transparent)' : 'var(--color-divider)'),
+        bg: selected ? 'color-mix(in srgb, var(--color-accent) 14%, transparent)' : 'transparent',
+        labelColor: selected ? 'var(--color-accent)' : 'color-mix(in srgb, var(--color-text) 55%, transparent)',
+        dotColor: done ? 'var(--color-accent)' : (isFuture ? 'transparent' : 'color-mix(in srgb, var(--color-text) 30%, transparent)'),
+        select: () => this.setState({ selectedDayKey: key }),
+      };
+    });
+
+    const selWd = weekDates.find(w => w.key === this.state.selectedDayKey) || weekDates[0];
+    const dayPlan = this.PLAN[selWd.key];
+    const exercises = dayPlan.exercises.map(ex => {
+      const setsArr = this.getSetsArray(selWd.iso, ex.id, ex.sets);
+      const doneCount = setsArr.filter(s => s.done).length;
+      const allDone = doneCount === ex.sets;
+      const setCells = setsArr.map((s, idx) => ({
+        idx, label: idx+1, done: s.done, weight: s.weight,
+        borderColor: s.done ? 'var(--color-accent)' : 'var(--color-divider)',
+        bg: s.done ? 'var(--color-accent)' : 'transparent',
+        checkColor: s.done ? '#1c1a19' : 'transparent',
+        disabled: selWd.isFuture,
+        toggle: () => this.toggleSet(selWd.iso, ex.id, ex.sets, idx),
+        onWeight: (e) => this.setWeight(selWd.iso, ex.id, ex.sets, idx, e.target.value),
+      }));
+      return {
+        ...ex, setCells, doneCount, allDone,
+        metaLabel: ex.sets + ' × ' + ex.reps,
+        restLabel: 'Pause ' + ex.rest,
+        borderColor: allDone ? 'var(--color-accent)' : 'var(--color-divider)',
+        countColor: allDone ? 'var(--color-accent)' : 'color-mix(in srgb, var(--color-text) 45%, transparent)',
+        opacity: selWd.isFuture ? 0.55 : 1,
+        weightUnit,
+      };
+    });
+    const totalSets = exercises.reduce((a,e) => a+e.sets, 0);
+    const doneSets = exercises.reduce((a,e) => a+e.doneCount, 0);
+    const dayDone = doneSets === totalSets;
+    const selDay = {
+      ...selWd, name: dayPlan.name, focus: dayPlan.focus, note: dayPlan.note || '',
+      hasNote: !!dayPlan.note,
+      statusLabel: dayDone ? 'Erledigt' : (selWd.isFuture ? 'Geplant' : doneSets+'/'+totalSets+' Sätze'),
+      statusColor: dayDone ? 'var(--color-accent)' : 'color-mix(in srgb, var(--color-text) 55%, transparent)',
+      statusBorder: dayDone ? 'var(--color-accent)' : 'var(--color-divider)',
+    };
+
+    const weekLabelText = (this.state.weekOffset===0 ? 'Diese Woche' : this.state.weekOffset===-1 ? 'Letzte Woche' : (-this.state.weekOffset)+' Wochen zuvor') + ' · ' + this.weekRangeLabel(viewedWeekStart);
+
+    const historyWeeks = [];
+    for(let off=0; off > -historyWeekCount; off--){
+      const ws = this.addDays(this.startOfWeek(new Date()), off*7);
+      const days = this.DAY_ORDER.map((key,i) => {
+        const d = this.addDays(ws,i);
+        const iso = this.toISO(d);
+        const isFuture = d > today;
+        const isTodayCell = iso === this.toISO(today);
+        const done = !isFuture && this.isDayFullyDone(iso, key);
+        const pending = isTodayCell && !done && !isFuture;
+        return {
+          key, iso, disabled: isFuture,
+          borderColor: done ? 'var(--color-accent)' : (pending ? 'color-mix(in srgb, var(--color-text) 40%, transparent)' : 'var(--color-divider)'),
+          bg: done ? 'var(--color-accent)' : 'transparent',
+          showCheck: done, showDash: !done && !isFuture && !pending,
+          title: this.PLAN[key].name + ' – ' + iso,
+          onClick: isFuture ? undefined : (() => this.setState({ weekOffset: off, selectedDayKey: key, view:'today' })),
+        };
+      });
+      historyWeeks.push({
+        label: off===0 ? 'Diese Woche' : off===-1 ? 'Letzte Woche' : (-off)+' Wochen zuvor',
+        range: this.weekRangeLabel(ws),
+        days,
+      });
+    }
+
+    const dayStreak = this.computeDayStreak();
+    const weekStreak = this.computeWeekStreak();
+    const notifSupported = typeof Notification !== 'undefined';
+    const perm = this.state.notifPermission;
+
+    return {
+      isToday: this.state.view==='today',
+      isHistory: this.state.view==='history',
+      setViewToday: () => this.setState({ view:'today' }),
+      setViewHistory: () => this.setState({ view:'history' }),
+      weekDates, selDay, exercises, weekLabelText,
+      prevWeek: () => this.setState(s => ({ weekOffset: s.weekOffset-1 })),
+      nextWeek: () => this.setState(s => ({ weekOffset: Math.min(0, s.weekOffset+1) })),
+      nextWeekDisabled: this.state.weekOffset >= 0,
+      historyWeeks,
+      dayStreak, weekStreak,
+      showNotifButton: notifSupported && perm==='default',
+      showNotifActive: notifSupported && perm==='granted',
+      showNotifBlocked: notifSupported && perm==='denied',
+      requestNotifPermission: this.requestNotifPermission,
+      reminderHour: this.props.reminderHour ?? 20,
+    };
+  }
+}
+</script>
+</body>
+</html>

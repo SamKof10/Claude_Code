@@ -1,0 +1,17 @@
+{
+  "name": "Gym Tracker – 5-Tage Plan",
+  "short_name": "Gym Tracker",
+  "description": "Trainingsplan-Tracker: Wochenansicht, Sätze abhaken, Verlauf und Streak.",
+  "start_url": "./Gym%20Tracker.dc.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1c1a19",
+  "theme_color": "#1c1a19",
+  "lang": "de",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

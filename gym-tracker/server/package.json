@@ -1,0 +1,16 @@
+{
+  "name": "gym-tracker-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "Backend for the Gym Tracker PWA: serves the static app and sends real background Web Push reminders.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "generate-vapid-keys": "node generate-vapid-keys.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "web-push": "^3.6.7"
+  }
+}
