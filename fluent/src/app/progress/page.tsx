@@ -4,6 +4,7 @@ import { Card, Mono } from "@/components/ui/Primitives";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { LineTrend, BarRows } from "@/components/ui/Charts";
 import { Reveal } from "@/components/ui/Reveal";
+import { MonthlyTestCard } from "@/components/progress/MonthlyTestCard";
 import { useStore, SKILL_LABELS, type Skill } from "@/lib/store";
 import { LEVELS } from "@/lib/content/levels";
 import { cn } from "@/components/ui/cn";
@@ -38,6 +39,8 @@ export default function ProgressPage() {
           </Card>
         ))}
       </div>
+
+      <MonthlyTestCard />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card className="p-6 sm:p-7">

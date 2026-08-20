@@ -81,4 +81,11 @@ export const ACHIEVEMENTS: Achievement[] = [
     unlocked: (s) => s.totalMinutes >= 3000,
     progress: (s) => ({ current: Math.min(s.totalMinutes, 3000), target: 3000 }),
   },
+  {
+    id: "first-check-in",
+    title: "First Check-In",
+    description: "Complete your first monthly progress test.",
+    unlocked: (s) => s.monthlyTests.length >= 1,
+    progress: (s) => ({ current: Math.min(s.monthlyTests.length, 1), target: 1 }),
+  },
 ];

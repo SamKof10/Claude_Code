@@ -6,12 +6,14 @@ import { StatTiles } from "@/components/dashboard/StatTiles";
 import { SmartReviewPreview } from "@/components/dashboard/SmartReviewPreview";
 import { WeeklyChartCard } from "@/components/dashboard/WeeklyChartCard";
 import { LevelStrip } from "@/components/dashboard/LevelStrip";
+import { MonthlyTestBanner } from "@/components/dashboard/MonthlyTestBanner";
 
 export const metadata: Metadata = { title: "Home" };
 
 export default function HomePage() {
   return (
     <div className="flex flex-col gap-5">
+      <MonthlyTestBanner />
       <Hero />
       <StatTiles />
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.15fr_1fr]">

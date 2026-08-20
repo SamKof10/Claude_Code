@@ -48,6 +48,17 @@ export interface SessionRecord {
   progressGain: number;
 }
 
+/** One completed monthly check-in — see `buildMonthlyTest` in
+ * `lib/content/monthlyTest.ts` for how the test itself is assembled. */
+export interface MonthlyTestRecord {
+  date: string;
+  monthIndex: number;
+  overallScore: number;
+  skillScores: Partial<Record<Skill, number>>;
+  level: string;
+  leveledUp: boolean;
+}
+
 export interface FluentState {
   hydrated: boolean;
   level: string;
@@ -67,53 +78,43 @@ export interface FluentState {
   explanationLanguage: ExplanationLanguage;
   accent: Accent;
   dailyGoalMinutes: number;
+  /** The day you started — the monthly test cadence counts from here. */
+  programStartDate: string | null;
+  monthlyTests: MonthlyTestRecord[];
 }
 
 const STORAGE_KEY = "fluent.state.v1";
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
-function seedVocab(): Record<string, VocabProgress> {
-  return {
-    subtle: { state: "mastered", seen: 6, correct: 6 },
-    "run-into": { state: "familiar", seen: 4, correct: 3, lastResult: "correct" },
-    arguably: { state: "learning", seen: 3, correct: 1, lastResult: "incorrect" },
-    "sold-on": { state: "learning", seen: 2, correct: 1, lastResult: "incorrect" },
-    pivotal: { state: "familiar", seen: 3, correct: 2, lastResult: "correct" },
-    nuanced: { state: "new", seen: 0, correct: 0 },
-    "get-around-to": { state: "learning", seen: 2, correct: 0, lastResult: "incorrect" },
-    candid: { state: "mastered", seen: 5, correct: 5 },
-    daunting: { state: "familiar", seen: 3, correct: 2, lastResult: "correct" },
-    "bear-in-mind": { state: "mastered", seen: 4, correct: 4 },
-  };
-}
-
 function initialState(): FluentState {
   return {
     hydrated: false,
-    level: "B2+",
+    level: "B2",
     targetLevel: "C1",
-    c1Progress: 68,
-    streakDays: 6,
+    c1Progress: 0,
+    streakDays: 0,
     lastActiveDate: null,
-    totalWordsMastered: 1284,
-    totalMinutes: 3120,
+    totalWordsMastered: 0,
+    totalMinutes: 0,
     minutesToday: 0,
-    weeklyProgress: [54, 57, 59, 61, 63, 65, 66, 68],
+    weeklyProgress: [0, 0, 0, 0, 0, 0, 0, 0],
     skillScores: {
-      vocabulary: 74,
-      listening: 69,
-      speaking: 61,
-      grammar: 78,
-      writing: 65,
-      naturalness: 58,
+      vocabulary: 0,
+      listening: 0,
+      speaking: 0,
+      grammar: 0,
+      writing: 0,
+      naturalness: 0,
     },
-    vocab: seedVocab(),
+    vocab: {},
     completedActivities: [],
     sessions: [],
     theme: "dark",
     explanationLanguage: "adaptive",
     accent: "british",
     dailyGoalMinutes: 50,
+    programStartDate: null,
+    monthlyTests: [],
   };
 }
 
@@ -129,6 +130,7 @@ type Action =
   | { type: "logMinutes"; minutes: number }
   | { type: "touchStreak" }
   | { type: "completeSession"; record: SessionRecord }
+  | { type: "completeMonthlyTest"; record: MonthlyTestRecord }
   | { type: "resetProgress" };
 
 function nextSrs(state: SrsState, correct: boolean): SrsState {
@@ -148,8 +150,10 @@ function withStreak(state: FluentState): Pick<FluentState, "streakDays" | "lastA
 
 function reducer(state: FluentState, action: Action): FluentState {
   switch (action.type) {
-    case "hydrate":
-      return { ...state, ...action.state, hydrated: true };
+    case "hydrate": {
+      const merged = { ...state, ...action.state, hydrated: true };
+      return merged.programStartDate ? merged : { ...merged, programStartDate: todayISO() };
+    }
     case "setTheme":
       return { ...state, theme: action.theme };
     case "setExplanationLanguage":
@@ -209,8 +213,16 @@ function reducer(state: FluentState, action: Action): FluentState {
         ...withStreak(state),
       };
     }
+    case "completeMonthlyTest":
+      return {
+        ...state,
+        monthlyTests: [action.record, ...state.monthlyTests].slice(0, 24),
+        skillScores: { ...state.skillScores, ...action.record.skillScores },
+        level: action.record.level,
+        c1Progress: action.record.overallScore,
+      };
     case "resetProgress":
-      return { ...initialState(), hydrated: true, theme: state.theme };
+      return { ...initialState(), hydrated: true, theme: state.theme, programStartDate: todayISO() };
     default:
       return state;
   }
@@ -227,6 +239,7 @@ interface StoreContextValue {
   markActivity: (id: ActivityId) => void;
   logMinutes: (minutes: number) => void;
   completeSession: (record: SessionRecord) => void;
+  completeMonthlyTest: (record: MonthlyTestRecord) => void;
   resetProgress: () => void;
 }
 
@@ -296,6 +309,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     (record: SessionRecord) => dispatch({ type: "completeSession", record }),
     [],
   );
+  const completeMonthlyTest = useCallback(
+    (record: MonthlyTestRecord) => dispatch({ type: "completeMonthlyTest", record }),
+    [],
+  );
   const resetProgress = useCallback(() => dispatch({ type: "resetProgress" }), []);
 
   const value = useMemo<StoreContextValue>(
@@ -310,6 +327,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       markActivity,
       logMinutes,
       completeSession,
+      completeMonthlyTest,
       resetProgress,
     }),
     [
@@ -323,6 +341,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       markActivity,
       logMinutes,
       completeSession,
+      completeMonthlyTest,
       resetProgress,
     ],
   );
@@ -346,3 +365,40 @@ export const SKILL_LABELS: Record<Skill, string> = {
   writing: "Writing",
   naturalness: "Naturalness",
 };
+
+/** Days between monthly check-ins. */
+export const TEST_INTERVAL_DAYS = 30;
+
+function daysBetween(a: string, b: string): number {
+  return Math.floor((new Date(b + "T00:00:00Z").getTime() - new Date(a + "T00:00:00Z").getTime()) / 86400000);
+}
+
+export interface MonthlyTestStatus {
+  /** The month this check-in belongs to (1 = first month), whether it's due yet or not. */
+  monthIndex: number;
+  /** True once enough days have passed since the last check-in (or program start). */
+  available: boolean;
+  daysUntilNext: number;
+}
+
+/** Pure gating logic for the monthly test: due every `TEST_INTERVAL_DAYS`
+ * days, counted from `programStartDate` and then from each completed test. */
+export function monthlyTestStatus(state: FluentState): MonthlyTestStatus {
+  const monthIndex = state.monthlyTests.length + 1;
+  if (!state.programStartDate) return { monthIndex, available: false, daysUntilNext: TEST_INTERVAL_DAYS };
+  const since = state.monthlyTests[0]?.date ?? state.programStartDate;
+  const elapsed = daysBetween(since, todayISO());
+  return {
+    monthIndex,
+    available: elapsed >= TEST_INTERVAL_DAYS,
+    daysUntilNext: Math.max(0, TEST_INTERVAL_DAYS - elapsed),
+  };
+}
+
+/** A level-up is earned, not automatic — only a strong check-in (≥85) moves
+ * you to the next rung of `LEVEL_ORDER`. */
+export function levelAfterTest(currentLevel: string, overallScore: number): { level: string; leveledUp: boolean } {
+  const idx = LEVEL_ORDER.indexOf(currentLevel as (typeof LEVEL_ORDER)[number]);
+  if (idx === -1 || idx === LEVEL_ORDER.length - 1 || overallScore < 85) return { level: currentLevel, leveledUp: false };
+  return { level: LEVEL_ORDER[idx + 1], leveledUp: true };
+}

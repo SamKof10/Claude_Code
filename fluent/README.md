@@ -43,7 +43,7 @@ src/
     session/                  Sitzungs-Runner + sechs Mini-Übungstypen
     vocabulary/, grammar/, listening/, speaking/, writing/
     think/, translate/, natural/, c1c2/, debate/, reallife/, abroad/, tutor/
-    progress/                 Confusable-Pairs-Übung
+    progress/                 Confusable-Pairs-Übung, monatlicher Check-in (Runner + Ergebnisse + Gate)
     ui/                       Button, Card, Charts (Linie/Balken/Ring), Reveal, …
   lib/
     store.tsx                 Globaler Zustand (Context + Reducer, localStorage)
@@ -51,7 +51,8 @@ src/
     achievements.ts            Achievement-Definitionen
     content/                  Alle Lerninhalte: Vokabeln, Grammatik, Hörtexte,
                               Übersetzung, Natural-English-Paare, C1/C2-Material,
-                              Debatten, Szenarien, Confusable Pairs, Tutor-Regeln, Level
+                              Debatten, Szenarien, Confusable Pairs, Tutor-Regeln, Level,
+                              monatlicher Check-in (monthlyTest.ts)
   hooks/                      useMediaQuery, useInViewOnce, useRandomOnMount, …
 ```
 
@@ -117,6 +118,22 @@ verschwindet der Fehler vollständig — die Bibliothek war nie das Problem.
 Da zu diesem Zeitpunkt aber bereits klar war, dass reines CSS für dieses
 Design ausreicht, blieb die Umstellung bestehen: kleinere Bundle-Größe, eine
 Abhängigkeit weniger.
+
+## Startzustand & monatlicher Check-in
+
+Die App startet bei **B2, 0%** — kein vorgetäuschter Fortschritt. `lib/store.tsx`
+setzt `programStartDate` beim allerersten Laden auf heute; von da an zählt ein
+**monatlicher Check-in** (`lib/content/monthlyTest.ts`, `components/progress/
+MonthlyTest*`): 4 Vokabel-MCQs, 4 Grammatik-Korrekturen, 2 Hörverständnisfragen
+und eine kurze Schreibaufgabe, gezogen aus denselben Inhalts-Pools wie das
+tägliche Training, damit der Test misst, was tatsächlich geübt wurde. Das
+Ergebnis kalibriert `skillScores` und `c1Progress` neu; ein Level-Aufstieg
+(`levelAfterTest` in `lib/store.tsx`) ist an einen hohen Score (≥85) gebunden,
+nicht automatisch. Speaking wird bewusst **nicht** im Check-in getestet — dafür
+gibt es keine echte Spracherkennung —, sondern weiterhin nur über die
+Sessions bewertet. Freigeschaltet wird jeder Check-in nach 30 Tagen seit dem
+Start bzw. dem letzten Test (`monthlyTestStatus`), rein datumsbasiert über
+`localStorage` — kein Server, keine Cron-Jobs.
 
 ## KI-Tutor & Bewertungen — bewusst als Demo markiert
 
