@@ -1,9 +1,26 @@
 "use client";
 
-import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
+import { forwardRef, type ButtonHTMLAttributes, type PointerEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { useHasPointer, useMagnetic } from "@/hooks";
 import { cn } from "./cn";
+
+/** Magic UI's "Ripple Button": a short-lived expanding disc from the
+ * pointer-down point (`.ripple-el` in globals.css). Appends directly to
+ * the element clicked and removes itself — no React state involved. */
+function spawnRipple(e: PointerEvent<HTMLElement>) {
+  const el = e.currentTarget;
+  const rect = el.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const ripple = document.createElement("span");
+  ripple.className = "ripple-el";
+  ripple.style.width = `${size}px`;
+  ripple.style.height = `${size}px`;
+  ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+  ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+  el.appendChild(ripple);
+  window.setTimeout(() => ripple.remove(), 700);
+}
 
 type Variant = "primary" | "secondary" | "ghost" | "mint" | "danger";
 type Size = "sm" | "md" | "lg";
@@ -36,6 +53,7 @@ interface CommonProps {
   size?: Size;
   magnetic?: boolean;
   shimmer?: boolean;
+  ripple?: boolean;
   busy?: boolean;
   className?: string;
   children: ReactNode;
@@ -44,7 +62,7 @@ interface CommonProps {
 type ButtonProps = CommonProps & ButtonHTMLAttributes<HTMLButtonElement>;
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = "primary", size = "md", magnetic = false, shimmer = false, busy = false, className, children, ...rest },
+  { variant = "primary", size = "md", magnetic = false, shimmer = false, ripple = false, busy = false, className, children, onPointerDown, ...rest },
   forwardedRef,
 ) {
   const hasPointer = useHasPointer();
@@ -60,6 +78,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       aria-busy={busy || undefined}
       className={cn(base, variants[variant], sizes[size], shimmer && "shimmer", busy && "pointer-events-none", className)}
       style={magnetic && hasPointer ? { transform: `translate3d(${offset.x}px, ${offset.y}px, 0)` } : undefined}
+      onPointerDown={(e) => {
+        if (ripple) spawnRipple(e);
+        onPointerDown?.(e);
+      }}
       {...rest}
     >
       {children}
@@ -73,7 +95,7 @@ interface ButtonLinkProps extends CommonProps {
   "aria-label"?: string;
 }
 
-export function ButtonLink({ href, variant = "primary", size = "md", magnetic = false, shimmer = false, className, children, ...rest }: ButtonLinkProps) {
+export function ButtonLink({ href, variant = "primary", size = "md", magnetic = false, shimmer = false, ripple = false, className, children, ...rest }: ButtonLinkProps) {
   const hasPointer = useHasPointer();
   const { ref, offset } = useMagnetic<HTMLAnchorElement>(0.16, magnetic && hasPointer);
   const isInternal = href.startsWith("/");
@@ -82,6 +104,7 @@ export function ButtonLink({ href, variant = "primary", size = "md", magnetic = 
     ref,
     className: cn(base, variants[variant], sizes[size], shimmer && "shimmer", className),
     style: magnetic && hasPointer ? { transform: `translate3d(${offset.x}px, ${offset.y}px, 0)` } : undefined,
+    onPointerDown: ripple ? spawnRipple : undefined,
     ...rest,
   };
 

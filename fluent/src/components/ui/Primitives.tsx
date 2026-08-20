@@ -68,11 +68,13 @@ export function Card({
   className,
   glass = false,
   as: Tag = "div",
+  style,
 }: {
   children: ReactNode;
   className?: string;
   glass?: boolean;
   as?: "div" | "section" | "article";
+  style?: CSSProperties;
 }) {
   return (
     <Tag
@@ -81,6 +83,7 @@ export function Card({
         glass ? "glass" : "bg-surface-1",
         className,
       )}
+      style={style}
     >
       {children}
     </Tag>

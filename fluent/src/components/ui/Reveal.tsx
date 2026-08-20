@@ -59,15 +59,20 @@ export function RevealItem({ children, className, index = 0 }: { children: React
   );
 }
 
-export function TextReveal({
+/**
+ * A short highlight sweeping through a headline word — Magic UI's
+ * "Shiny Text" idiom, done as a `background-clip: text` gradient sweep
+ * (`.shiny-text` in globals.css). Forced to a flat colour under
+ * `prefers-reduced-motion`, so no branching needed here.
+ */
+export function ShinyText({
   text,
   className,
-  as: Tag = "h2",
+  as: Tag = "span",
 }: {
   text: string;
   className?: string;
-  as?: "h1" | "h2" | "h3" | "p";
-  delay?: number;
+  as?: "span" | "h1" | "h2" | "h3";
 }) {
-  return <Tag className={className}>{text}</Tag>;
+  return <Tag className={cn("shiny-text", className)}>{text}</Tag>;
 }

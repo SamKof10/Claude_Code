@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Menu, X, Sun, Moon, Settings, Flame } from "lucide-react";
@@ -9,6 +9,9 @@ import { SidebarNav } from "./Sidebar";
 import { useStore } from "@/lib/store";
 import { useEscape, useScrollLock } from "@/hooks";
 import { cn } from "@/components/ui/cn";
+import { Tooltip } from "@/components/ui/Tooltip";
+
+const AMBER_TONE = { "--retro-tone": "var(--color-amber)" } as CSSProperties;
 
 function pageTitle(pathname: string): string {
   for (const group of NAV_GROUPS) {
@@ -31,37 +34,46 @@ export function Topbar() {
   return (
     <>
       <header className="glass-solid sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-[var(--line)] px-4 md:px-8">
-        <button
-          type="button"
-          onClick={() => setMenuOpen(true)}
-          aria-label="Open menu"
-          className="grid h-9 w-9 place-items-center rounded-full text-ink-2 hover:bg-surface-2 md:hidden"
-        >
-          <Menu size={19} strokeWidth={1.8} />
-        </button>
+        <Tooltip label="Open menu" className="md:hidden">
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+            className="grid h-9 w-9 place-items-center rounded-full text-ink-2 hover:bg-surface-2"
+          >
+            <Menu size={19} strokeWidth={1.8} />
+          </button>
+        </Tooltip>
 
         <h1 className="text-[14.5px] font-medium text-ink-1">{pageTitle(pathname)}</h1>
 
         <div className="ml-auto flex items-center gap-1.5">
-          <span className="mono hidden items-center gap-1.5 rounded-full border border-[var(--line)] px-2.5 py-1.5 text-amber sm:flex">
+          <span
+            className="retro-badge mono hidden items-center gap-1.5 rounded-full px-2.5 py-1.5 text-amber sm:flex"
+            style={AMBER_TONE}
+          >
             <Flame size={13} strokeWidth={2} />
             {state.streakDays}d streak
           </span>
-          <button
-            type="button"
-            onClick={() => setTheme(state.theme === "dark" ? "light" : "dark")}
-            aria-label="Toggle theme"
-            className="grid h-9 w-9 place-items-center rounded-full text-ink-2 hover:bg-surface-2"
-          >
-            {state.theme === "dark" ? <Sun size={17} strokeWidth={1.8} /> : <Moon size={17} strokeWidth={1.8} />}
-          </button>
-          <Link
-            href="/settings"
-            aria-label="Settings"
-            className="grid h-9 w-9 place-items-center rounded-full text-ink-2 hover:bg-surface-2"
-          >
-            <Settings size={17} strokeWidth={1.8} />
-          </Link>
+          <Tooltip label={state.theme === "dark" ? "Switch to light" : "Switch to dark"}>
+            <button
+              type="button"
+              onClick={() => setTheme(state.theme === "dark" ? "light" : "dark")}
+              aria-label="Toggle theme"
+              className="grid h-9 w-9 place-items-center rounded-full text-ink-2 hover:bg-surface-2"
+            >
+              {state.theme === "dark" ? <Sun size={17} strokeWidth={1.8} /> : <Moon size={17} strokeWidth={1.8} />}
+            </button>
+          </Tooltip>
+          <Tooltip label="Settings">
+            <Link
+              href="/settings"
+              aria-label="Settings"
+              className="grid h-9 w-9 place-items-center rounded-full text-ink-2 hover:bg-surface-2"
+            >
+              <Settings size={17} strokeWidth={1.8} />
+            </Link>
+          </Tooltip>
         </div>
       </header>
 

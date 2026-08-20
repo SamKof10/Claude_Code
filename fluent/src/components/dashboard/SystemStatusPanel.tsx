@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { Card, Mono, StatusDot } from "@/components/ui/Primitives";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { Reveal } from "@/components/ui/Reveal";
@@ -21,7 +22,10 @@ export function SystemStatusPanel() {
 
   return (
     <Reveal delay={0.1}>
-      <Card className="crt relative overflow-hidden bg-surface-1 p-6">
+      <Card
+        className="crt retro-panel relative overflow-hidden bg-surface-1 p-6"
+        style={{ "--retro-tone": "var(--color-mint)" } as CSSProperties}
+      >
         <div className="relative z-[1] flex items-center justify-between">
           <Mono className="text-ink-2">System status</Mono>
           <span className="flex items-center gap-1.5">

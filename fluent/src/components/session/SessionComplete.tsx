@@ -1,12 +1,21 @@
 "use client";
 
+import { useEffect } from "react";
 import { Sparkles } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { Mono } from "@/components/ui/Primitives";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
+import { useConfetti } from "@/hooks";
 import type { SessionRecord } from "@/lib/store";
 
 export function SessionComplete({ record }: { record: SessionRecord }) {
+  const burst = useConfetti();
+
+  useEffect(() => {
+    burst(window.innerWidth / 2, window.innerHeight / 3, 34);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col items-center px-4 py-16 text-center">
       <div className="glow-signal grid h-16 w-16 place-items-center rounded-full bg-signal/15">

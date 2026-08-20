@@ -293,6 +293,181 @@ body {
     0 8px 30px -8px color-mix(in srgb, var(--color-signal) 55%, transparent);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   Accent primitives — small, targeted additions on top of the existing
+   glass/dark system: a border-beam + shiny-text (Magic UI idiom), a
+   marquee and pop-in tooltip (Smooth UI / Unlumen UI idiom), and a
+   dosed neo-brutalist treatment (Retro UI idiom) for the already-retro
+   monospace/gamified surfaces (System Status, streak, achievements).
+   All pure CSS + a bit of React state — same dependency-free approach
+   as the rest of the design system, see README "Warum keine
+   Animationsbibliothek".
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* — border beam: a bright point travelling once around a rounded edge — */
+@property --beam-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes beam-spin {
+  to {
+    --beam-angle: 360deg;
+  }
+}
+.border-beam {
+  position: relative;
+  isolation: isolate;
+}
+.border-beam::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--beam-angle),
+    transparent 0%,
+    var(--beam-color, var(--color-signal)) 8%,
+    transparent 18%,
+    transparent 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: beam-spin var(--beam-duration, 4.5s) linear infinite;
+  pointer-events: none;
+}
+
+/* — shiny text: a soft highlight sweeping through a headline word — */
+@keyframes shiny-text {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+.shiny-text {
+  background-image: linear-gradient(100deg, var(--t-ink-1) 42%, var(--color-signal-soft) 50%, var(--t-ink-1) 58%);
+  background-size: 220% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: shiny-text 3.4s linear infinite;
+}
+
+/* — marquee: infinite horizontal strip, paused on hover/focus — */
+@keyframes marquee-x {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-x var(--marquee-duration, 26s) linear infinite;
+}
+.marquee-pause:hover .marquee-track,
+.marquee-pause:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+/* — pop-in tooltip bubble — */
+.tooltip-bubble {
+  position: absolute;
+  z-index: 60;
+  opacity: 0;
+  transform: translateY(4px) scale(0.94);
+  transition: opacity 140ms var(--ease-out-soft), transform 140ms var(--ease-out-soft);
+  pointer-events: none;
+}
+.tooltip-trigger:hover .tooltip-bubble,
+.tooltip-trigger:focus-visible .tooltip-bubble {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* — ripple: a short-lived expanding disc from the pointer-down point — */
+@keyframes ripple-expand {
+  to {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+.ripple-el {
+  position: absolute;
+  border-radius: 9999px;
+  background: color-mix(in srgb, white 65%, transparent);
+  transform: scale(0);
+  opacity: 0.55;
+  pointer-events: none;
+  animation: ripple-expand 650ms var(--ease-out-soft) forwards;
+}
+
+/* — sliding nav pill behind the active sidebar item — */
+.nav-pill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-radius: 0.75rem;
+  background: var(--t-surface-2);
+  transition: transform 340ms var(--ease-out-soft), height 340ms var(--ease-out-soft), opacity 200ms var(--ease-out-soft);
+  will-change: transform;
+}
+
+/* — confetti piece: short-lived falling square, spawned imperatively — */
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(var(--x0, 0), -12px, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--x1, 0), var(--fall, 420px), 0) rotate(var(--spin, 540deg));
+    opacity: 0;
+  }
+}
+.confetti-piece {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+  z-index: 200;
+  animation: confetti-fall var(--dur, 1400ms) var(--ease-out-soft) forwards;
+}
+
+/* — neo-brutalist accent, dosed onto already-technical/gamified surfaces — */
+.retro-panel {
+  --retro-tone: var(--t-ink-1);
+  border: 2px solid var(--retro-tone);
+  box-shadow: 4px 4px 0 0 var(--retro-tone);
+  transition: transform 160ms var(--ease-out-soft), box-shadow 160ms var(--ease-out-soft);
+}
+.retro-panel:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 0 var(--retro-tone);
+}
+.retro-panel:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 0 var(--retro-tone);
+}
+.retro-badge {
+  --retro-tone: var(--t-ink-1);
+  border: 2px solid var(--retro-tone);
+  box-shadow: 3px 3px 0 0 var(--retro-tone);
+  transition: transform 160ms var(--ease-out-soft), box-shadow 160ms var(--ease-out-soft);
+}
+.retro-badge:hover {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 4.5px 4.5px 0 0 var(--retro-tone);
+}
+
 /* — reduced motion — */
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -302,11 +477,23 @@ body {
   .crt::after,
   .status-dot,
   .wave-bar,
-  .mic-ring {
+  .mic-ring,
+  .border-beam::before,
+  .marquee-track {
     animation: none !important;
   }
   .shimmer::before {
     display: none;
+  }
+  .shiny-text {
+    animation: none !important;
+    background: none !important;
+    -webkit-text-fill-color: currentColor !important;
+    color: var(--t-ink-1) !important;
+  }
+  .ripple-el,
+  .confetti-piece {
+    display: none !important;
   }
   .reveal {
     opacity: 1 !important;

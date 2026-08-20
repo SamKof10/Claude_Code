@@ -176,6 +176,53 @@ export function useRandomOnMount<T>(pick: () => T, initial: T): T {
   return value;
 }
 
+const CONFETTI_COLORS = ["var(--color-signal)", "var(--color-mint)", "var(--color-amber)", "var(--color-coral)", "var(--color-signal-soft)"];
+
+/**
+ * Confetti burst — Magic UI idiom, hand-rolled as a handful of `<span>`
+ * nodes animated with the `.confetti-piece` keyframe (no canvas, no
+ * library). Appends directly to `document.body` and cleans up after
+ * itself, so it never touches React state or triggers a re-render.
+ * Skips entirely under `prefers-reduced-motion`.
+ */
+export function useConfetti() {
+  const reduce = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const busy = useRef(false);
+
+  return useCallback(
+    (originX?: number, originY?: number, count = 24) => {
+      if (reduce || busy.current) return;
+      busy.current = true;
+      const x = originX ?? window.innerWidth / 2;
+      const y = originY ?? window.innerHeight / 3;
+      const pieces: HTMLElement[] = [];
+
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.random() - 0.5) * 340;
+        const distance = 90 + Math.random() * 140;
+        const el = document.createElement("span");
+        el.className = "confetti-piece";
+        el.style.left = `${x}px`;
+        el.style.top = `${y}px`;
+        el.style.background = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
+        el.style.borderRadius = i % 3 === 0 ? "9999px" : "3px";
+        el.style.setProperty("--x1", `${Math.cos((angle * Math.PI) / 180) * distance}px`);
+        el.style.setProperty("--fall", `${260 + Math.random() * 260}px`);
+        el.style.setProperty("--spin", `${360 + Math.random() * 540}deg`);
+        el.style.setProperty("--dur", `${900 + Math.random() * 700}ms`);
+        document.body.appendChild(el);
+        pieces.push(el);
+      }
+
+      window.setTimeout(() => {
+        pieces.forEach((el) => el.remove());
+        busy.current = false;
+      }, 1700);
+    },
+    [reduce],
+  );
+}
+
 /** Simple count-up/count-down timer in seconds. `running` starts/stops it. */
 export function useTimer(running: boolean, direction: "up" | "down" = "up", start = 0) {
   const [seconds, setSeconds] = useState(start);

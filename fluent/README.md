@@ -63,6 +63,42 @@ Koralle für Korrekturen. Monospace-Retro-Label für „System Status" und
 technische Kennzahlen, Glass-Oberflächen, dezentes Rauschen — siehe
 `src/app/globals.css`.
 
+## Akzente inspiriert von Magic UI, Unlumen UI, Smooth UI, Retro UI
+
+Auf Wunsch um ein paar gezielte, kleine Akzente erweitert, die stilistisch an
+diese vier populären React-Komponenten-Bibliotheken angelehnt sind — ohne
+sie tatsächlich zu installieren. Alle vier basieren auf `Motion`, das genau
+aus dem im nächsten Abschnitt beschriebenen Grund hier nicht zum Einsatz
+kommt; stattdessen sind die Effekte als eigene, kleine Primitives in
+`components/ui/` und `globals.css` nachgebaut, im selben dependency-freien
+Stil wie der Rest des Designsystems:
+
+- **`BorderBeam`** (Magic UI) — ein wandernder Lichtpunkt am Rand, per
+  `conic-gradient` + `@property`-Winkel. Um den Level-Ring im Dashboard.
+- **`ShinyText`** (Magic UI) — ein durchlaufender Glanz-Sweep auf
+  `background-clip: text`. Auf der Begrüßung im Dashboard-Hero.
+- **`Marquee`** (Magic UI) — ein pausierbares Endlos-Band. Zeigt
+  freigeschaltete Achievements.
+- **Ripple-Button** (Magic UI) — eine kurze, vom Klickpunkt ausgehende
+  Kreis-Animation, als `ripple`-Prop auf `Button`/`ButtonLink`.
+- **Konfetti** (`useConfetti`, Magic UI) — eine Handvoll `<span>`-Elemente,
+  imperativ erzeugt und wieder entfernt, kein Canvas. Bei Sitzungsabschluss
+  und beim Antippen eines freigeschalteten Achievements.
+- **`Tooltip`** (Unlumen UI) — ein Pop-in-Hinweis auf Icon-Buttons in der
+  Topbar (Menü, Theme, Einstellungen).
+- **Sliding Nav Pill** (Smooth UI) — eine per `getBoundingClientRect`
+  gemessene, weich mitgleitende Markierung hinter dem aktiven
+  Sidebar-Eintrag statt eines harten Klassenwechsels.
+- **`retro-panel` / `retro-badge`** (Retro UI, dosiert) — dicke Kontur +
+  harter Versatz-Schatten statt Blur, bewusst nur auf den ohnehin schon
+  „technischen"/spielerischen Flächen: System-Status-Panel, Streak-Kachel,
+  Streak-Chip in der Topbar, freigeschaltete Achievement-Badges.
+
+Alle neuen Animationen respektieren `prefers-reduced-motion` (siehe
+`globals.css`) und laufen ausschließlich über CSS-Keyframes/-Transitions
+plus punktuelle, unkritische DOM-Manipulation (Ripple, Konfetti) — kein
+zusätzliches Bundle-Gewicht, kein neues Build-Risiko.
+
 ## Warum keine Animationsbibliothek
 
 Der erste Entwurf nutzte `motion` (Framer-Motion-Nachfolger), wie die
