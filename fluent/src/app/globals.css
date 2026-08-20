@@ -2,10 +2,11 @@
 
 /* ═══════════════════════════════════════════════════════════════════════
    FLUENT — Design System
-   A personal English operating system, not a school app. Dark-first,
+   A personal English operating system, not a school app. Light-first on a
+   warm neutral paper base (the same family as the sibling AUREL project),
    glass surfaces, one signal colour (violet) for focus/CTA, mint for
    progress/mastery, amber for streak/energy, coral for corrections.
-   Theme (dark/light) is user-switchable — semantic tokens live as plain
+   Theme (light/dark) is user-switchable — semantic tokens live as plain
    CSS variables so Tailwind utilities stay reactive across the toggle.
    ═══════════════════════════════════════════════════════════════════ */
 
@@ -36,6 +37,20 @@
 }
 
 :root {
+  color-scheme: light;
+  /* Warm neutral paper — same family as AUREL, not a cool grey. */
+  --t-surface-0: #f6f4f0;
+  --t-surface-1: #fbfaf7;
+  --t-surface-2: #efece5;
+  --t-surface-3: #e6e2d9;
+  --t-ink-1: #131211;
+  --t-ink-2: #55514c;
+  --t-ink-3: #8b857d;
+  --line: color-mix(in srgb, var(--t-ink-1) 11%, transparent);
+  --line-strong: color-mix(in srgb, var(--t-ink-1) 18%, transparent);
+}
+
+:root[data-theme="dark"] {
   color-scheme: dark;
   --t-surface-0: #08080b;
   --t-surface-1: #0e0e14;
@@ -46,19 +61,6 @@
   --t-ink-3: #6f6c81;
   --line: color-mix(in srgb, var(--t-ink-1) 11%, transparent);
   --line-strong: color-mix(in srgb, var(--t-ink-1) 20%, transparent);
-}
-
-:root[data-theme="light"] {
-  color-scheme: light;
-  --t-surface-0: #f7f6fa;
-  --t-surface-1: #ffffff;
-  --t-surface-2: #eeecf4;
-  --t-surface-3: #e2e0ec;
-  --t-ink-1: #131218;
-  --t-ink-2: #5b5870;
-  --t-ink-3: #928fa3;
-  --line: color-mix(in srgb, var(--t-ink-1) 10%, transparent);
-  --line-strong: color-mix(in srgb, var(--t-ink-1) 17%, transparent);
 }
 
 * {

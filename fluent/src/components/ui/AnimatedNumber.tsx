@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useInViewOnce } from "@/hooks";
-import { useMediaQuery } from "@/hooks";
+import { useEffect, useRef, useState } from "react";
+import { useInView, useReducedMotion } from "motion/react";
 
 interface AnimatedNumberProps {
   value: number;
@@ -13,12 +12,18 @@ interface AnimatedNumberProps {
   className?: string;
 }
 
-/** Counts up once, when it scrolls into view. Starts at zero on both server
- * and client, so there's no hydration mismatch — the count-up only begins
- * after mount, inside an effect. */
+/**
+ * Counts up once, when it scrolls into view.
+ *
+ * The rendered text starts at zero on the server and on the client alike —
+ * `useReducedMotion()` is false during SSR, so branching the output on it
+ * would produce a hydration mismatch. Reduced motion instead collapses the
+ * duration to zero, so the value snaps into place on the first frame.
+ */
 export function AnimatedNumber({ value, decimals = 0, duration = 1200, prefix = "", suffix = "", className }: AnimatedNumberProps) {
-  const { ref, inView } = useInViewOnce<HTMLSpanElement>();
-  const reduce = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-15% 0px" });
+  const reduce = useReducedMotion();
   const [eased, setEased] = useState(0);
   const runtime = reduce ? 0 : duration;
 

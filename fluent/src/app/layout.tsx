@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { StoreProvider } from "@/lib/store";
 import { AppShell } from "@/components/layout/AppShell";
+import { MotionProvider } from "@/components/ui/MotionProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -39,7 +40,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: dark)", color: "#08080b" },
-    { media: "(prefers-color-scheme: light)", color: "#f7f6fa" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f4f0" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -49,19 +50,21 @@ export const viewport: Viewport = {
 const THEME_INIT = `
 try {
   var t = localStorage.getItem('fluent.theme');
-  document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+  document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
 } catch (e) {}
 `;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-theme="dark" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" data-theme="light" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
       </head>
       <body className="antialiased">
         <StoreProvider>
-          <AppShell>{children}</AppShell>
+          <MotionProvider>
+            <AppShell>{children}</AppShell>
+          </MotionProvider>
         </StoreProvider>
       </body>
     </html>

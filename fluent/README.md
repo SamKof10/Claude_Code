@@ -9,10 +9,11 @@ Alltagssimulationen und einem KI-Tutor.
 
 ## Stack
 
-Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Lucide.
-Keine Animationsbibliothek — Reveals, Zähler und Übergänge laufen über reines
-CSS (`transition`/`@keyframes`) plus `IntersectionObserver`, siehe
-„Bekannte Grenzen" unten für den Grund.
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Lucide ·
+Motion. Scroll-Reveals und Zähler laufen über `motion/react` (wie die
+Schwesterprojekte `aurel`/`mudroom`); die meisten übrigen Effekte (Border-
+Beam, Marquee, Ripple, Konfetti, Sliding-Indicator, Retro-Akzente) bleiben
+handgebautes CSS/DOM ohne die Bibliothek — siehe „Design" unten.
 
 ## Starten
 
@@ -58,21 +59,23 @@ src/
 
 ## Design
 
-Dunkel als Standard, umschaltbar auf Hell (`Settings`). Ein Signalfarbton
+Hell als Standard — eine warme, neutrale Papier-Basis (dieselbe Farbfamilie
+wie das Schwesterprojekt `aurel`: `#f6f4f0`/`#131211` statt kühlem Grau),
+umschaltbar auf Dunkel (Topbar-Toggle, `Settings`). Ein Signalfarbton
 (Violett) für Fokus/CTA, Mint für Fortschritt/Mastery, Amber für Streak,
-Koralle für Korrekturen. Monospace-Retro-Label für „System Status" und
-technische Kennzahlen, Glass-Oberflächen, dezentes Rauschen — siehe
-`src/app/globals.css`.
+Koralle für Korrekturen — FLUENTs eigene vier Akzente bleiben unverändert,
+nur die neutrale Basis wurde AUREL angeglichen. Monospace-Retro-Label für
+„System Status" und technische Kennzahlen, Glass-Oberflächen, dezentes
+Rauschen — siehe `src/app/globals.css`.
 
 ## Akzente inspiriert von Magic UI, Unlumen UI, Smooth UI, Retro UI
 
 Auf Wunsch um ein paar gezielte, kleine Akzente erweitert, die stilistisch an
 diese vier populären React-Komponenten-Bibliotheken angelehnt sind — ohne
-sie tatsächlich zu installieren. Alle vier basieren auf `Motion`, das genau
-aus dem im nächsten Abschnitt beschriebenen Grund hier nicht zum Einsatz
-kommt; stattdessen sind die Effekte als eigene, kleine Primitives in
-`components/ui/` und `globals.css` nachgebaut, im selben dependency-freien
-Stil wie der Rest des Designsystems:
+sie tatsächlich zu installieren. Bis auf Scroll-Reveals/Zähler (die inzwischen
+echtes `Motion` nutzen, siehe „Motion & Animationen" unten) sind die Effekte
+als eigene, kleine Primitives in `components/ui/` und `globals.css`
+nachgebaut, im selben dependency-freien Stil wie der Rest des Designsystems:
 
 - **`BorderBeam`** (Magic UI) — ein wandernder Lichtpunkt am Rand, per
   `conic-gradient` + `@property`-Winkel. Um den Level-Ring im Dashboard.
@@ -103,7 +106,7 @@ Alle neuen Animationen respektieren `prefers-reduced-motion` (siehe
 plus punktuelle, unkritische DOM-Manipulation (Ripple, Konfetti) — kein
 zusätzliches Bundle-Gewicht, kein neues Build-Risiko.
 
-## Warum keine Animationsbibliothek
+## Motion & Animationen
 
 Der erste Entwurf nutzte `motion` (Framer-Motion-Nachfolger), wie die
 Schwesterprojekte `aurel` und `mudroom`. In dieser Umgebung crashte
@@ -115,9 +118,16 @@ die Next intern zu einer inkonsistenten React-Modulauflösung während der
 statischen Generierung verleitete (`next build` erzwingt normalerweise
 selbst Produktions-Verhalten). Mit explizit gesetztem `NODE_ENV=production`
 verschwindet der Fehler vollständig — die Bibliothek war nie das Problem.
-Da zu diesem Zeitpunkt aber bereits klar war, dass reines CSS für dieses
-Design ausreicht, blieb die Umstellung bestehen: kleinere Bundle-Größe, eine
-Abhängigkeit weniger.
+Zunächst blieb die CSS-Umstellung trotzdem bestehen (kleinere Bundle-Größe),
+bis auf Wunsch dieselbe butterweiche Reveal-/Zähler-Qualität wie bei `aurel`
+gefragt war: `Reveal` (`components/ui/Reveal.tsx`) und `AnimatedNumber`
+laufen jetzt über `motion/react` — `whileInView` mit `viewport={{ once }}`
+statt eigenem `IntersectionObserver`-Hook, `MotionConfig
+reducedMotion="user"` in `components/ui/MotionProvider.tsx` respektiert
+`prefers-reduced-motion` global, ohne SSR/CSR-Mismatch-Risiko (siehe
+Kommentar dort). Alles andere — Border-Beam, Marquee, Ripple, Konfetti,
+Sliding-Indicator, Retro-Akzente — bleibt bewusst dependency-freies CSS/DOM,
+da diese Effekte kein Scroll-/Viewport-Tracking brauchen.
 
 ## Startzustand & monatlicher Check-in
 

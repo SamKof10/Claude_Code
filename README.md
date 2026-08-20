@@ -8,7 +8,7 @@ eigenen Ordner und ist unabhängig lauffähig.
 | [`fpv-portfolio/`](fpv-portfolio) | Ghost Line FPV — Portfolio-Single-Page | statisches HTML/CSS/JS, kein Build |
 | [`aurel/`](aurel) | AUREL — Premium-Store für eine zirkadiane Schreibtischleuchte | Next.js 16, React 19, Tailwind 4, Motion |
 | [`mudroom/`](mudroom) | MUDROOM — Premium-Store für eine automatische Bike-Waschbox | Next.js 16, React 19, Tailwind 4, Motion |
-| [`fluent/`](fluent) | FLUENT — Persönliches Englisch-Lern-Betriebssystem (B2 → C1/C2) | Next.js 16, React 19, Tailwind 4 |
+| [`fluent/`](fluent) | FLUENT — Persönliches Englisch-Lern-Betriebssystem (B2 → C1/C2) | Next.js 16, React 19, Tailwind 4, Motion |
 
 ## Fertige Seiten ohne Build
 

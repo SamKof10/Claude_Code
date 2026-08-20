@@ -134,32 +134,6 @@ export function useInterval(callback: () => void, ms: number | null, active: boo
   }, [ms, active]);
 }
 
-/** True once the element has intersected the viewport; stays true after (a
- * lightweight, dependency-free replacement for Motion's `useInView(once)`). */
-export function useInViewOnce<T extends HTMLElement>(margin = "-10% 0px -10% 0px") {
-  const ref = useRef<T>(null);
-  const [inView, setInView] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || inView) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: margin, threshold: 0.01 },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [margin]);
-
-  return { ref, inView };
-}
-
 /**
  * Avoids SSR/CSR hydration mismatches from `Math.random()`-based content
  * selection: renders `initial` on both the server and the client's first

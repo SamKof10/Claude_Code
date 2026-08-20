@@ -109,7 +109,7 @@ function initialState(): FluentState {
     vocab: {},
     completedActivities: [],
     sessions: [],
-    theme: "dark",
+    theme: "light",
     explanationLanguage: "adaptive",
     accent: "british",
     dailyGoalMinutes: 50,
