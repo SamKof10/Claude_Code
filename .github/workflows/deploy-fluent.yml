@@ -14,9 +14,6 @@ permissions:
   contents: read
   pages: write
   id-token: write
-  # Needed once, for configure-pages' `enablement: true` to create the
-  # Pages site automatically instead of requiring a manual Settings click.
-  administration: write
 
 # Only one Pages deployment can run at a time; let a newer push win instead
 # of queuing behind an older one.
@@ -49,11 +46,11 @@ jobs:
           NEXT_BASE_PATH: /${{ github.event.repository.name }}/fluent
         run: npm run export
 
+      # First run of this workflow needs Pages enabled once by hand:
+      # Settings → Pages → Build and deployment → Source: GitHub Actions.
+      # Creating a Pages site requires repo-admin rights that the default
+      # GITHUB_TOKEN can't be granted, so this can't be automated from here.
       - uses: actions/configure-pages@v5
-        with:
-          # Auto-creates the Pages site (source = GitHub Actions) on first
-          # run instead of requiring a manual Settings → Pages click.
-          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
