@@ -1,0 +1,337 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MUDROOM — design system
+
+   Dark-first, because the product is a machine. One accent, hi-vis, used
+   only where the machine says "go". Mud is a semantic colour, not a
+   decorative one: it appears on dirty things and nowhere else.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@theme {
+  --color-steel: #0d0f11;
+  --color-steel-2: #141719;
+  --color-steel-3: #1d2124;
+  --color-steel-4: #2a2f33;
+
+  --color-concrete: #e9eae5;
+  --color-concrete-2: #dcded7;
+  --color-concrete-3: #c9ccc3;
+
+  --color-hivis: #c8f249;
+  --color-hivis-deep: #9ac21c;
+  --color-water: #7fd4e8;
+  --color-mud: #7a5c33;
+  --color-mud-2: #4a3a22;
+
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-face), ui-monospace, "SF Mono", monospace;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+:root {
+  --edge: color-mix(in srgb, #e9eae5 13%, transparent);
+  --edge-strong: color-mix(in srgb, #e9eae5 22%, transparent);
+  --edge-light: color-mix(in srgb, #0d0f11 12%, transparent);
+  --edge-light-strong: color-mix(in srgb, #0d0f11 20%, transparent);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  background: var(--color-steel);
+}
+
+body {
+  background: var(--color-steel);
+  color: var(--color-concrete);
+  font-family: var(--font-body);
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-hivis);
+  color: var(--color-steel);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-hivis);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* — type — */
+.display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 0.86;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.h-section {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.lede {
+  font-size: clamp(1rem, 0.94rem + 0.4vw, 1.16rem);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* — the plate: a machined metal surface, used for panels — */
+.plate {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, #e9eae5 5%, transparent), transparent 42%),
+    var(--color-steel-2);
+}
+
+/* — hazard stripes, the one place the brand shouts — */
+.hazard {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--color-hivis) 0 14px,
+    var(--color-steel) 14px 28px
+  );
+}
+
+/* — grain, fixed and cheap — */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* — scanline whisper, only on the status readouts — */
+@keyframes crt-drift {
+  to {
+    background-position: 0 -12px;
+  }
+}
+.crt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-water) 8%, transparent) 0 1px,
+    transparent 1px 3px
+  );
+  background-size: 100% 12px;
+  animation: crt-drift 1.3s linear infinite;
+  opacity: 0.55;
+}
+
+/* — status pulse — */
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+.status-dot {
+  animation: status-pulse 2.2s var(--ease-in-out-soft) infinite;
+}
+
+/* — shimmer sweep on the primary CTA — */
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-130%); }
+  100% { transform: translateX(230%); }
+}
+.shimmer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    100deg,
+    transparent 22%,
+    color-mix(in srgb, white 45%, transparent) 50%,
+    transparent 76%
+  );
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+.shimmer:hover::before {
+  animation: shimmer-sweep 900ms var(--ease-out-soft);
+}
+
+/* — animated conic edge, used on one card at a time — */
+@property --ab-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes ab-spin {
+  to { --ab-angle: 360deg; }
+}
+.anim-edge {
+  position: relative;
+  isolation: isolate;
+}
+.anim-edge::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--ab-angle),
+    transparent 0%,
+    var(--color-hivis) 11%,
+    transparent 24%,
+    transparent 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: ab-spin 5s linear infinite;
+  pointer-events: none;
+}
+
+/* — marquee — */
+@keyframes marquee-x {
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee-x var(--marquee-duration, 40s) linear infinite;
+  will-change: transform;
+}
+.marquee-host:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* — brush rotation, only while the wash is running — */
+@keyframes brush-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* — range input — */
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: grab;
+}
+.slider:active { cursor: grabbing; }
+.slider::-webkit-slider-runnable-track { height: 2px; background: transparent; }
+.slider::-moz-range-track { height: 2px; background: transparent; }
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  margin-top: -12px;
+  border-radius: 4px;
+  background: var(--color-hivis);
+  border: none;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--color-hivis) 45%, transparent);
+  transition: transform 180ms var(--ease-out-soft);
+}
+.slider::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  background: var(--color-hivis);
+  border: none;
+}
+.slider:hover::-webkit-slider-thumb { transform: scale(1.08); }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.glass {
+  /* Opaque enough to stay steel over the hi-vis section — at 72 % the bar
+     mixed with the chartreuse behind it and went olive. */
+  background: color-mix(in srgb, var(--color-steel) 88%, transparent);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .marquee-track,
+  .anim-edge::before,
+  .crt::after,
+  .status-dot { animation: none !important; }
+  .shimmer::before { display: none; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* — hero stage: the machine settles in as the page takes hold — */
+.hero-scene {
+  transform: scale(calc(0.965 + var(--ts, 0) * 0.035));
+  opacity: calc(0.88 + var(--ts, 0) * 0.12);
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+}
+
+/* — brush cylinder: bristle stripes travelling sideways read as spin — */
+@keyframes brush-slide {
+  to {
+    background-position: 0 0, 24px 0;
+  }
+}
+.brush-cyl {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.5),
+      rgba(0, 0, 0, 0) 26%,
+      rgba(233, 234, 229, 0.16) 52%,
+      rgba(0, 0, 0, 0) 74%,
+      rgba(0, 0, 0, 0.55)
+    ),
+    repeating-linear-gradient(100deg, #414a50 0 9px, #272d31 9px 18px);
+  background-position: 0 0, 0 0;
+  animation: brush-slide 0.5s linear infinite;
+}
+
+/* — brush bristles travelling, as CSS rather than SMIL: the reduced-motion
+     block below stops CSS animations, and it cannot stop SMIL — */
+@keyframes brush-run-y {
+  to {
+    transform: translateY(16px);
+  }
+}
+@keyframes brush-run-x {
+  to {
+    transform: translateX(16px);
+  }
+}
+.brush-run-y {
+  animation: brush-run-y 0.5s linear infinite;
+}
+.brush-run-x {
+  animation: brush-run-x 0.42s linear infinite;
+}

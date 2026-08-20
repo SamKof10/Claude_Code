@@ -1,0 +1,273 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════
+   AUREL — Design System
+   Two accents only, and both are the product itself: ember (1800K) and
+   day (6500K). Everything else is paper, ink and line.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@theme {
+  --color-paper: #f6f4f0;
+  --color-paper-2: #efece5;
+  --color-paper-3: #e6e2d9;
+
+  --color-ink: #131211;
+  --color-ink-2: #55514c;
+  --color-ink-3: #8b857d;
+
+  --color-night: #0b0b0c;
+  --color-night-2: #141416;
+  --color-night-3: #1e1e21;
+
+  --color-ember: #e8a33d;
+  --color-ember-deep: #c4761b;
+  --color-day: #b9d5f5;
+  --color-day-deep: #6f9fd8;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+:root {
+  --line: color-mix(in srgb, #131211 11%, transparent);
+  --line-strong: color-mix(in srgb, #131211 18%, transparent);
+  --line-night: color-mix(in srgb, #f6f4f0 12%, transparent);
+  --line-night-strong: color-mix(in srgb, #f6f4f0 20%, transparent);
+  /* Live colour temperature — driven by the hero scrubber, read by the lamp. */
+  --k-glow: #f0b95f;
+  --k-glow-soft: #f7d6a1;
+}
+
+* { -webkit-tap-highlight-color: transparent; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection { background: color-mix(in srgb, var(--color-ember) 32%, transparent); }
+
+:focus-visible {
+  outline: 2px solid var(--color-ember-deep);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* — typography scale — */
+.display {
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+  text-wrap: balance;
+}
+.h-section {
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+.lede {
+  font-size: clamp(1rem, 0.95rem + 0.45vw, 1.2rem);
+  line-height: 1.55;
+  color: var(--color-ink-2);
+  text-wrap: pretty;
+}
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* — grain: one fixed layer, GPU-cheap, never repainted — */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+.grain-light::after { mix-blend-mode: overlay; opacity: 0.22; }
+
+/* — hairline rules that respect the ground they sit on — */
+.rule { border-color: var(--line); }
+.rule-night { border-color: var(--line-night); }
+
+/* — shimmer sweep (used on badges + the primary CTA) — */
+@keyframes shimmer-sweep {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(220%); }
+}
+.shimmer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in srgb, white 55%, transparent) 48%,
+    transparent 74%
+  );
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+.shimmer:hover::before { animation: shimmer-sweep 900ms var(--ease-out-soft); }
+
+/* — animated conic border (gradient border, used sparingly) — */
+@property --ab-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes ab-spin { to { --ab-angle: 360deg; } }
+.anim-border {
+  position: relative;
+  isolation: isolate;
+}
+.anim-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--ab-angle),
+    transparent 0%,
+    var(--color-ember) 12%,
+    transparent 26%,
+    transparent 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: ab-spin 5s linear infinite;
+  pointer-events: none;
+}
+
+/* — CRT scanline whisper, only on the technology readouts — */
+@keyframes crt-drift { to { background-position: 0 -14px; } }
+.crt {
+  position: relative;
+}
+.crt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-day) 7%, transparent) 0 1px,
+    transparent 1px 3px
+  );
+  background-size: 100% 14px;
+  animation: crt-drift 1.4s linear infinite;
+  opacity: 0.6;
+}
+
+/* — status dot — */
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.45; transform: scale(0.82); }
+}
+.status-dot { animation: status-pulse 2.4s var(--ease-in-out-soft) infinite; }
+
+/* — marquee — */
+@keyframes marquee-x { to { transform: translateX(-50%); } }
+.marquee-track {
+  animation: marquee-x var(--marquee-duration, 42s) linear infinite;
+  will-change: transform;
+}
+.marquee-host:hover .marquee-track { animation-play-state: paused; }
+
+/* — the light the product casts; hue comes from --k-glow — */
+.emissive {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--k-glow-soft) 92%, white),
+    var(--k-glow)
+  );
+  box-shadow:
+    0 0 14px 1px color-mix(in srgb, var(--k-glow) 62%, transparent),
+    0 0 44px 6px color-mix(in srgb, var(--k-glow) 34%, transparent),
+    0 0 120px 26px color-mix(in srgb, var(--k-glow) 20%, transparent);
+}
+
+/* — range input, restyled for the temperature scrubber — */
+.scrub {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: grab;
+}
+.scrub:active { cursor: grabbing; }
+.scrub::-webkit-slider-runnable-track { height: 2px; background: transparent; }
+.scrub::-moz-range-track { height: 2px; background: transparent; }
+.scrub::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  margin-top: -12px;
+  border-radius: 50%;
+  background: var(--color-paper);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.14), 0 6px 18px color-mix(in srgb, var(--k-glow) 45%, transparent);
+  transition: transform 180ms var(--ease-out-soft);
+}
+.scrub::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-paper);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.14), 0 6px 18px color-mix(in srgb, var(--k-glow) 45%, transparent);
+}
+.scrub:hover::-webkit-slider-thumb { transform: scale(1.08); }
+.scrub:active::-webkit-slider-thumb { transform: scale(0.96); }
+
+/* — scroll-driven reveals fall back to visible when JS/motion is off — */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .marquee-track,
+  .anim-border::before,
+  .crt::after,
+  .status-dot { animation: none !important; }
+  .shimmer::before { display: none; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* — utilities — */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.glass {
+  background: color-mix(in srgb, var(--color-paper) 90%, transparent);
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+}
+.glass-night {
+  background: color-mix(in srgb, var(--color-night) 62%, transparent);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+}

@@ -1,0 +1,29 @@
+@import "../src/app/globals.css";
+
+@source "../src";
+@source "./App.tsx";
+
+/* The artifact host paints its own ground behind the page; without this the
+   over-scroll area borrows the host theme instead of the steel. */
+html {
+  background: var(--color-steel);
+}
+
+/* next/font is not in play here — the same faces come from Google Fonts. */
+:root {
+  --font-archivo: "Archivo";
+  --font-mono-face: "JetBrains Mono";
+}
+
+/* Tailwind's sr-only pair, used by the skip link. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
