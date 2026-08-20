@@ -40,10 +40,14 @@ jobs:
 
       - name: Build static export
         env:
-          # FLUENT is served under a subpath (github.io/<repo>/fluent), not
-          # domain root — next/link and the App Router prefix every internal
-          # link and asset with this automatically.
-          NEXT_BASE_PATH: /${{ github.event.repository.name }}/fluent
+          # upload-pages-artifact below publishes fluent/out as the *root*
+          # of the Pages site (not a fluent/ subfolder within it), and
+          # project sites are served at github.io/<repo>/ — so the app's
+          # basePath must match that exactly (repo name only, no extra
+          # /fluent segment) or every asset/link URL baked into the HTML
+          # points at a path that doesn't exist and the page loads with no
+          # JavaScript at all (looks static, nothing is clickable).
+          NEXT_BASE_PATH: /${{ github.event.repository.name }}
         run: npm run export
 
       # First run of this workflow needs Pages enabled once by hand:
