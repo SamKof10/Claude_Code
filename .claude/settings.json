@@ -1,0 +1,22 @@
+{
+  "extraKnownMarketplaces": {
+    "thedotmack": {
+      "source": { "source": "github", "repo": "thedotmack/claude-mem" }
+    },
+    "claude-flow-marketplace": {
+      "source": { "source": "github", "repo": "n4s5ti/claude-flow" }
+    },
+    "caveman": {
+      "source": { "source": "github", "repo": "juliusbrussee/caveman" }
+    },
+    "marketingskills": {
+      "source": { "source": "github", "repo": "coreyhaines31/marketingskills" }
+    }
+  },
+  "enabledPlugins": {
+    "claude-mem@thedotmack": true,
+    "claude-flow@claude-flow-marketplace": true,
+    "caveman@caveman": true,
+    "marketing-skills@marketingskills": true
+  }
+}
