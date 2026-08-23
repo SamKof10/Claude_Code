@@ -1,0 +1,264 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* =========================================================
+   GHOST LINE FPV — design tokens
+   Graphite-teal ground (carbon fibre / night-flight black)
+   against a signal-amber accent — the teal/orange split every
+   FPV edit gets color-graded into. Dark-only by design: this
+   is one committed visual world, not a light/dark toggle, so
+   :root itself carries the dark values (no .dark gate needed).
+   ========================================================= */
+
+:root {
+  --background: #0b1013;
+  --foreground: #edf2f1;
+
+  --card: #131a1e;
+  --card-foreground: #edf2f1;
+  --popover: #151c21;
+  --popover-foreground: #edf2f1;
+
+  --primary: #f2863c;
+  --primary-foreground: #1a0f06;
+  --primary-hover: #ffa05c;
+
+  --secondary: #1a2328;
+  --secondary-foreground: #edf2f1;
+  --secondary-hover: #212c32;
+
+  --muted: #1a2328;
+  --muted-foreground: #8fa3a6;
+
+  --accent: #1a2328;
+  --accent-foreground: #edf2f1;
+
+  --destructive: #ff4b4b;
+  --destructive-foreground: #edf2f1;
+
+  --border: #263239;
+  --input: #263239;
+  --ring: #f2863c;
+
+  --radius: 0.2rem;
+
+  /* brand tokens — used directly by our own code and picked up by
+     library components that read --color-brand / --color-amber */
+  --brand: #f2863c;
+  --brand-ink: #1a0f06;
+  --brand-dim: #b45f27;
+  --brand-secondary: #ffa05c;
+  --brand-light: #ffb877;
+  --brand-lighter: #ffd4ab;
+  --ok: #6fcf7c;
+  --rec: #ff4b4b;
+  --faint: #56666b;
+  --line-soft: #1b2429;
+
+  --font-display: 'Big Shoulders Condensed', sans-serif;
+  --font-tech: 'Chakra Petch', sans-serif;
+  --font-body: 'IBM Plex Sans', sans-serif;
+
+  --chart-1: #f2863c;
+  --chart-2: #6fcf7c;
+  --chart-3: #8fa3a6;
+  --chart-4: #ff4b4b;
+  --chart-5: #56666b;
+
+  --sidebar: #131a1e;
+  --sidebar-foreground: #edf2f1;
+  --sidebar-primary: #f2863c;
+  --sidebar-primary-foreground: #1a0f06;
+  --sidebar-accent: #1a2328;
+  --sidebar-accent-foreground: #edf2f1;
+  --sidebar-border: #263239;
+  --sidebar-ring: #f2863c;
+
+  /* smoothui's own semantic color axis — amber retuned to our brand,
+     blue/green left as their defaults (only used by demo-only variants) */
+  --amber: #f2863c;
+  --amber-fg: #1a0f06;
+  --amber-hover: #ffa05c;
+  --blue: oklch(0.62 0.19 256);
+  --blue-fg: #fff;
+  --blue-hover: oklch(0.56 0.2 256);
+  --green: #6fcf7c;
+  --green-fg: #0d1a0f;
+  --green-hover: #8adb93;
+
+  --smooth-50: #1b2429;
+  --smooth-100: #202b31;
+  --smooth-200: #263239;
+  --smooth-300: #2e3c44;
+  --smooth-400: #3c4d56;
+  --smooth-500: #56666b;
+  --smooth-600: #6f7f83;
+  --smooth-700: #8fa3a6;
+  --smooth-800: #aebcbe;
+  --smooth-900: #cdd6d7;
+  --smooth-950: #e4eaea;
+  --smooth-1000: #f4f7f7;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-dim: var(--brand-dim);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-light: var(--brand-light);
+  --color-brand-lighter: var(--brand-lighter);
+  --color-ok: var(--ok);
+  --color-rec: var(--rec);
+  --color-faint: var(--faint);
+  --color-line-soft: var(--line-soft);
+
+  --color-amber: var(--amber);
+  --color-amber-fg: var(--amber-fg);
+  --color-amber-hover: var(--amber-hover);
+  --color-blue: var(--blue);
+  --color-blue-fg: var(--blue-fg);
+  --color-blue-hover: var(--blue-hover);
+  --color-green: var(--green);
+  --color-green-fg: var(--green-fg);
+  --color-green-hover: var(--green-hover);
+
+  --color-smooth-50: var(--smooth-50);
+  --color-smooth-100: var(--smooth-100);
+  --color-smooth-200: var(--smooth-200);
+  --color-smooth-300: var(--smooth-300);
+  --color-smooth-400: var(--smooth-400);
+  --color-smooth-500: var(--smooth-500);
+  --color-smooth-600: var(--smooth-600);
+  --color-smooth-700: var(--smooth-700);
+  --color-smooth-800: var(--smooth-800);
+  --color-smooth-900: var(--smooth-900);
+  --color-smooth-950: var(--smooth-950);
+  --color-smooth-1000: var(--smooth-1000);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-display: var(--font-display);
+  --font-tech: var(--font-tech);
+  --font-body: var(--font-body);
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  --animate-meteor: meteor 5s linear infinite;
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  --animate-shiny-text: shiny-text 8s infinite;
+
+  @keyframes meteor {
+    0% {
+      transform: rotate(var(--angle)) translateX(0);
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(var(--angle)) translateX(-500px);
+      opacity: 0;
+    }
+  }
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes marquee-vertical {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes shiny-text {
+    0%, 90%, 100% {
+      background-position: calc(-100% - var(--shiny-width)) 0;
+    }
+    30%, 60% {
+      background-position: calc(100% + var(--shiny-width)) 0;
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px;
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

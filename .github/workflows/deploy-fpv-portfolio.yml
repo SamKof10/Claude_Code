@@ -1,0 +1,61 @@
+name: Deploy Ghost Line FPV to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "fpv-portfolio-react/**"
+      - ".github/workflows/deploy-fpv-portfolio.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one Pages deployment can run at a time; let a newer push win instead
+# of queuing behind an older one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: fpv-portfolio-react
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: fpv-portfolio-react/package-lock.json
+
+      - run: npm ci
+
+      # vite.config.ts hardcodes base: '/Claude_Code/' — project sites are
+      # served at github.io/<repo>/, and upload-pages-artifact below
+      # publishes fpv-portfolio-react/dist as the *root* of the Pages site,
+      # so every asset URL baked into the built HTML must already carry
+      # that /Claude_Code/ prefix or the page loads with no JS/CSS at all.
+      - run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: fpv-portfolio-react/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

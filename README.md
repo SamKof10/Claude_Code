@@ -3,9 +3,15 @@
 Projekte, die in Claude-Code-Sessions entstanden sind. Jedes liegt in einem
 eigenen Ordner und ist unabhängig lauffähig.
 
+**Live:** [samkof10.github.io/Claude_Code](https://samkof10.github.io/Claude_Code/)
+— das Ghost-Line-FPV-Portfolio, automatisch deployed via GitHub Actions bei
+jedem Push, der `fpv-portfolio-react/` ändert
+([Workflow](.github/workflows/deploy-fpv-portfolio.yml)).
+
 | Ordner | Was es ist | Stack |
 |---|---|---|
-| [`fpv-portfolio/`](fpv-portfolio) | Ghost Line FPV — Portfolio-Single-Page | statisches HTML/CSS/JS, kein Build |
+| [`fpv-portfolio-react/`](fpv-portfolio-react) | Ghost Line FPV — Portfolio, mit Komponenten aus Magic UI, Smooth UI, Retro UI und unlumen UI | Vite, React 19, Tailwind 4, shadcn/ui, Motion |
+| [`fpv-portfolio/`](fpv-portfolio) | Ghost Line FPV — dieselbe Seite als Ur-Version | statisches HTML/CSS/JS, kein Build |
 | [`aurel/`](aurel) | AUREL — Premium-Store für eine zirkadiane Schreibtischleuchte | Next.js 16, React 19, Tailwind 4, Motion |
 | [`mudroom/`](mudroom) | MUDROOM — Premium-Store für eine automatische Bike-Waschbox | Next.js 16, React 19, Tailwind 4, Motion |
 | [`gym-tracker/`](gym-tracker) | Gym Tracker — PWA für einen 5-Tage-Split, mit echtem Background-Push | Vanilla JS PWA + Node/Express |
