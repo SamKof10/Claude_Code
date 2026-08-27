@@ -67,6 +67,15 @@ their own empty StudyHub rather than seeing yours, and nothing is synced between
 your devices. `robots: noindex` is set in `layout.tsx`, so search engines skip
 it. See *What remains to be connected* below.
 
+**If the deployment shows `404: NOT_FOUND`.** That page means Vercel served the
+repository root rather than StudyHub. The root has no `package.json`, so with
+Root Directory unset Vercel detects no framework, publishes the bare repo as
+static files, and `/` has nothing to serve. Two things have to be true at once:
+Settings → Build and Deployment → **Root Directory = `studyhub`**, and a
+production branch that actually contains `studyhub/`. After changing either,
+redeploy from Deployments → ⋯ → **Redeploy** — settings do not retro-apply to a
+build that already ran.
+
 ## Environment variables
 
 **None are required.** Copy `.env.example` to `.env.local` only if you want to
