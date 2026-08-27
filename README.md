@@ -15,6 +15,7 @@ jedem Push, der `fpv-portfolio-react/` ändert
 | [`aurel/`](aurel) | AUREL — Premium-Store für eine zirkadiane Schreibtischleuchte | Next.js 16, React 19, Tailwind 4, Motion |
 | [`mudroom/`](mudroom) | MUDROOM — Premium-Store für eine automatische Bike-Waschbox | Next.js 16, React 19, Tailwind 4, Motion |
 | [`gym-tracker/`](gym-tracker) | Gym Tracker — PWA für einen 5-Tage-Split, mit echtem Background-Push | Vanilla JS PWA + Node/Express |
+| [`studyhub/`](studyhub) | StudyHub — KI-gestützte Lernplattform: Dokumente, Notizen, Karteikarten, Quizze, Prüfungspläne und ein AI-Tutor | Next.js 16, React 19, Tailwind 4, Zustand, Tiptap, Recharts |
 
 ## Fertige Seiten ohne Build
 
@@ -47,6 +48,22 @@ npm start                     # App + API auf http://localhost:3000
 Push braucht HTTPS in Produktion und einen dauerhaft laufenden Server —
 Details in [`gym-tracker/README.md`](gym-tracker/README.md).
 
+## StudyHub starten
+
+```bash
+cd studyhub
+npm install
+npm run dev     # http://localhost:3000
+```
+
+Läuft ohne jede Konfiguration: Beim ersten Start legt StudyHub einen
+vollständigen Demo-Datensatz an (Fächer, Dokumente, Karteikarten, Quizze,
+Prüfungen, Lernstatistiken), und alle KI-Funktionen laufen über einen
+eingebauten Demo-Generator, der aus den eigenen Dokumenten und Notizen
+ableitet. Mit `ANTHROPIC_API_KEY` in `.env.local` schaltet die App auf ein
+echtes Modell um — der Schlüssel wird ausschließlich serverseitig gelesen.
+Details in [`studyhub/README.md`](studyhub/README.md).
+
 ## Die Next.js-Projekte lokal starten
 
 ```bash
@@ -72,3 +89,7 @@ Projekts.
 AUREL und MUDROOM sind Konzeptseiten. Produkte, Preise, Maße, technische
 Werte und Bewertungen sind Demodaten, und die Checkouts nehmen keine
 echten Zahlungen entgegen — das steht auch auf den Seiten selbst.
+
+Auch die StudyHub-Daten sind erfunden. Ohne API-Key stammen alle
+KI-Antworten aus dem lokalen Demo-Generator; die Oberfläche kennzeichnet
+das entsprechend.
