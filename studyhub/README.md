@@ -40,6 +40,33 @@ npm run check:contrast # colour-contrast gate (exits 1 on a failure)
 
 ---
 
+## Deploying to Vercel
+
+This repo holds several projects, so the one setting that matters is **Root
+Directory** — without it Vercel builds the repo root and finds no app.
+
+1. [vercel.com/new](https://vercel.com/new) → import `SamKof10/Claude_Code`.
+2. Set **Root Directory** to `studyhub`. Framework preset should say *Next.js*;
+   leave the build and output settings on their defaults.
+3. Deploy. Nothing else is required — StudyHub runs in demo mode out of the box.
+
+**Which branch becomes the live URL.** Vercel's production domain follows the
+repo's default branch (`master`). Until StudyHub is merged there, `master` has
+no app — so either merge it first, or open Settings → Git and set the
+production branch to `claude/studyhub-platform-dvent3`. Either way every branch
+and pull request also gets its own preview URL immediately.
+
+**Turning on real AI.** In Settings → Environment Variables add
+`ANTHROPIC_API_KEY` (and optionally `ANTHROPIC_MODEL`), then redeploy. The key
+is only ever read inside the `/api/ai` route on the server; it is never sent to
+the browser. Settings → AI provider in the app shows which mode is live.
+
+**Two things to know before sharing the URL.** There is no authentication yet,
+and all data lives in each visitor's own browser — so anyone with the link gets
+their own empty StudyHub rather than seeing yours, and nothing is synced between
+your devices. `robots: noindex` is set in `layout.tsx`, so search engines skip
+it. See *What remains to be connected* below.
+
 ## Environment variables
 
 **None are required.** Copy `.env.example` to `.env.local` only if you want to
