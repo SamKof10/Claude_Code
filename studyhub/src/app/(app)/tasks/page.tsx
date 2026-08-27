@@ -103,11 +103,11 @@ export default function TasksPage() {
                   if (id) moveTask(id, col.status);
                   setDragOverCol(null);
                 }}
-                className={cn("rounded-2xl border border-border bg-[var(--bg-elevated)] p-3 transition-colors", dragOverCol === col.status && "border-[var(--color-signal)] bg-[color-mix(in_srgb,var(--color-signal)_6%,transparent)]")}
+                className={cn("rounded-2xl border border-border bg-[var(--chrome)] p-3 transition-colors", dragOverCol === col.status && "border-[var(--color-signal)] bg-[color-mix(in_srgb,var(--color-signal)_6%,transparent)]")}
               >
                 <div className="mb-3 flex items-center justify-between px-1">
-                  <h2 className="text-[13px] font-semibold text-ink">{col.label}</h2>
-                  <span className="text-[11px] text-ink-3">{items.length}</span>
+                  <h2 className="t-callout font-semibold text-ink">{col.label}</h2>
+                  <span className="t-caption text-ink-3">{items.length}</span>
                 </div>
                 <div className="space-y-2.5 min-h-16">
                   {items.map((task) => (
@@ -121,7 +121,7 @@ export default function TasksPage() {
                       />
                     </div>
                   ))}
-                  {items.length === 0 && <p className="px-1 py-4 text-center text-[11.5px] text-ink-3">Nothing here</p>}
+                  {items.length === 0 && <p className="px-1 py-4 text-center t-caption text-ink-3">Nothing here</p>}
                 </div>
               </div>
             );

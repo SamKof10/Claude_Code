@@ -21,7 +21,7 @@ export function QuizListItem({ quiz, subject, onDelete }: { quiz: Quiz; subject:
         {quiz.status === "draft" ? <ListChecks className="size-4" /> : <CircleDot className="size-4" />}
       </div>
       <Link href={`/quizzes/${quiz.id}`} className="min-w-0 flex-1">
-        <p className="truncate text-[13.5px] font-medium text-ink">{quiz.title}</p>
+        <p className="truncate t-body font-medium text-ink">{quiz.title}</p>
         <div className="mt-1 flex flex-wrap items-center gap-1.5">
           {subject && <SubjectPill subject={subject} />}
           <Badge variant="outline">{quiz.questions.length} questions</Badge>
@@ -31,7 +31,7 @@ export function QuizListItem({ quiz, subject, onDelete }: { quiz: Quiz; subject:
           {quiz.status === "draft" && <Badge variant="outline">Not started</Badge>}
         </div>
       </Link>
-      <span className="hidden shrink-0 text-[11px] text-ink-3 sm:block">
+      <span className="hidden shrink-0 t-caption text-ink-3 sm:block">
         {formatDistanceToNow(new Date(quiz.completedAt ?? quiz.createdAt), { addSuffix: true })}
       </span>
       <DropdownMenu>

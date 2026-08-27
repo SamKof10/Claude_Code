@@ -24,12 +24,12 @@ export function StatCard({
         <Icon
           className={cn(
             "size-[15px]",
-            tone === "warning" ? "text-warning" : tone === "success" ? "text-success" : "text-ink-3"
+            tone === "warning" ? "text-warning-text" : tone === "success" ? "text-success-text" : "text-ink-3"
           )}
         />
       </div>
       <p className="mt-2 text-2xl font-semibold tracking-tight text-ink">{value}</p>
-      {hint && <p className="mt-1 text-[12px] text-ink-3">{hint}</p>}
+      {hint && <p className="mt-1 t-caption text-ink-3">{hint}</p>}
     </Card>
   );
 }

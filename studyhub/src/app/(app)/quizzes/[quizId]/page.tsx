@@ -68,7 +68,7 @@ export default function QuizDetailPage() {
   if (!quiz) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-        <p className="text-[14px] font-medium text-ink">Quiz not found</p>
+        <p className="t-body font-medium text-ink">Quiz not found</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
           <Link href="/quizzes">
             <ArrowLeft className="size-3.5" /> Back to quizzes
@@ -125,7 +125,7 @@ export default function QuizDetailPage() {
             <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl signal-gradient">
               <ListChecks className="size-6 text-white" />
             </div>
-            <h1 className="text-[19px] font-semibold text-ink">{quiz.title}</h1>
+            <h1 className="t-title-2 font-semibold text-ink">{quiz.title}</h1>
             <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
               {subject && <SubjectPill subject={subject} />}
               <Badge variant="outline">{quiz.questions.length} questions</Badge>
@@ -136,7 +136,7 @@ export default function QuizDetailPage() {
                 </Badge>
               )}
             </div>
-            {quiz.topics.length > 0 && <p className="mt-3 text-[12.5px] text-ink-3">Topics: {quiz.topics.join(", ")}</p>}
+            {quiz.topics.length > 0 && <p className="mt-3 t-callout text-ink-3">Topics: {quiz.topics.join(", ")}</p>}
             <Button className="mt-6 w-full" onClick={() => startQuiz(quiz.id)}>
               Start quiz
             </Button>
@@ -173,7 +173,7 @@ export default function QuizDetailPage() {
           <Button variant="ghost" onClick={() => setIndex((i) => Math.max(0, i - 1))} disabled={index === 0}>
             <ArrowLeft className="size-3.5" /> Previous
           </Button>
-          <span className="text-[12px] text-ink-3">{answered}/{quiz.questions.length} answered</span>
+          <span className="t-caption text-ink-3">{answered}/{quiz.questions.length} answered</span>
           {isLast ? (
             <Button onClick={submit}>Submit quiz</Button>
           ) : (
@@ -201,12 +201,12 @@ export default function QuizDetailPage() {
         <CardContent className="pt-6 text-center">
           <p className="mono-label">Your score</p>
           <p className="mt-1 text-4xl font-semibold tracking-tight text-ink">{quiz.score}%</p>
-          <p className="mt-1 text-[13px] text-ink-3">
+          <p className="mt-1 t-callout text-ink-3">
             {correctCount} of {quiz.questions.length} correct
           </p>
           {quiz.weakTopics && quiz.weakTopics.length > 0 && (
             <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5">
-              <span className="text-[12px] text-ink-3">Focus on:</span>
+              <span className="t-caption text-ink-3">Focus on:</span>
               {quiz.weakTopics.map((t) => (
                 <Badge key={t} variant="warning">
                   {t}
@@ -235,20 +235,20 @@ export default function QuizDetailPage() {
             <Card key={q.id}>
               <CardContent className="pt-5">
                 <div className="mb-2 flex items-start gap-2">
-                  {correct ? <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" /> : <XCircle className="mt-0.5 size-4 shrink-0 text-danger" />}
+                  {correct ? <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success-text" /> : <XCircle className="mt-0.5 size-4 shrink-0 text-danger-text" />}
                   <div className="min-w-0 flex-1">
-                    <p className="text-[13.5px] font-medium text-ink">
+                    <p className="t-body font-medium text-ink">
                       {i + 1}. {q.prompt}
                     </p>
-                    <p className="mt-1 text-[12.5px] text-ink-3">
-                      Your answer: <span className={correct ? "text-success" : "text-danger"}>{given || "—"}</span>
+                    <p className="mt-1 t-callout text-ink-3">
+                      Your answer: <span className={correct ? "text-success-text" : "text-danger-text"}>{given || "—"}</span>
                     </p>
                     {!correct && (
-                      <p className="text-[12.5px] text-ink-3">
+                      <p className="t-callout text-ink-3">
                         Correct: <span className="text-ink">{q.correctAnswer}</span>
                       </p>
                     )}
-                    <p className="mt-1.5 text-[12px] text-ink-3">{q.explanation}</p>
+                    <p className="mt-1.5 t-caption text-ink-3">{q.explanation}</p>
                   </div>
                   <Badge variant="outline" className="shrink-0">
                     {q.topic}

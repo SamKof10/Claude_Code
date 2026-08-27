@@ -79,7 +79,7 @@ export default function CalendarPage() {
         <Button variant="outline" size="icon-sm" onClick={() => navigate(1)}>
           <ChevronRight className="size-4" />
         </Button>
-        <h2 className="text-[15px] font-semibold text-ink">{title}</h2>
+        <h2 className="t-headline font-semibold text-ink">{title}</h2>
         <Button variant="ghost" size="sm" onClick={() => setAnchor(new Date())} className="ml-auto">
           Today
         </Button>
@@ -112,7 +112,7 @@ function MonthView({ anchor, eventsOn, bySubject, onSelect }: ViewProps) {
     <div className="overflow-hidden rounded-2xl border border-border">
       <div className="grid grid-cols-7 border-b border-border bg-surface-2">
         {WEEKDAY_LABELS.map((d) => (
-          <div key={d} className="px-2 py-2 text-center text-[11px] font-medium text-ink-3">
+          <div key={d} className="px-2 py-2 text-center t-caption font-medium text-ink-3">
             {d}
           </div>
         ))}
@@ -127,15 +127,15 @@ function MonthView({ anchor, eventsOn, bySubject, onSelect }: ViewProps) {
               key={day.toISOString()}
               className={cn("min-h-[104px] border-b border-r border-border p-1.5 last:border-r-0", !inMonth && "bg-[var(--bg)] opacity-40")}
             >
-              <div className={cn("mb-1 flex size-5 items-center justify-center rounded-full text-[11px]", isToday(day) ? "signal-gradient text-white font-semibold" : "text-ink-3")}>
+              <div className={cn("mb-1 flex size-5 items-center justify-center rounded-full t-caption", isToday(day) ? "signal-gradient text-white font-semibold" : "text-ink-3")}>
                 {format(day, "d")}
               </div>
               <div className="space-y-0.5">
                 {dayEvents.slice(0, 3).map((e) => (
                   <EventChip key={e.id} event={e} subject={e.subjectId ? bySubject.get(e.subjectId) : null} onClick={() => onSelect(e)} dense />
                 ))}
-                {dayEvents.length > 3 && <p className="px-1.5 text-[10px] text-ink-3">+{dayEvents.length - 3} more</p>}
-                {sessionCount > 0 && <p className="px-1.5 text-[10px] text-ink-3">{sessionCount} study session{sessionCount === 1 ? "" : "s"}</p>}
+                {dayEvents.length > 3 && <p className="px-1.5 t-caption text-ink-3">+{dayEvents.length - 3} more</p>}
+                {sessionCount > 0 && <p className="px-1.5 t-caption text-ink-3">{sessionCount} study session{sessionCount === 1 ? "" : "s"}</p>}
               </div>
             </div>
           );
@@ -153,11 +153,11 @@ function WeekView({ anchor, eventsOn, bySubject, onSelect }: ViewProps) {
         const dayEvents = eventsOn(day);
         return (
           <div key={day.toISOString()} className="rounded-xl border border-border bg-surface p-2.5">
-            <div className={cn("mb-2 flex items-center gap-1.5 text-[12px] font-medium", isToday(day) ? "text-[var(--color-signal-2)]" : "text-ink-2")}>
+            <div className={cn("mb-2 flex items-center gap-1.5 t-caption font-medium", isToday(day) ? "text-[var(--color-signal-2)]" : "text-ink-2")}>
               {format(day, "EEE d")}
             </div>
             <div className="space-y-1">
-              {dayEvents.length === 0 && <p className="text-[11px] text-ink-3">—</p>}
+              {dayEvents.length === 0 && <p className="t-caption text-ink-3">—</p>}
               {dayEvents.map((e) => (
                 <EventChip key={e.id} event={e} subject={e.subjectId ? bySubject.get(e.subjectId) : null} onClick={() => onSelect(e)} />
               ))}
@@ -174,7 +174,7 @@ function DayView({ anchor, eventsOn, bySubject, onSelect }: ViewProps) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-4">
       {dayEvents.length === 0 ? (
-        <p className="py-8 text-center text-[13px] text-ink-3">Nothing scheduled for this day.</p>
+        <p className="py-8 text-center t-callout text-ink-3">Nothing scheduled for this day.</p>
       ) : (
         <ul className="divide-y divide-border">
           {dayEvents.map((e) => (

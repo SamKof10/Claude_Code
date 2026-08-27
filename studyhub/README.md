@@ -32,9 +32,10 @@ and insight has something true to say.
 Other commands:
 
 ```bash
-npm run build        # production build
-npm start            # serve the production build
-npm run lint         # ESLint (currently clean)
+npm run build          # production build
+npm start              # serve the production build
+npm run lint           # ESLint (currently clean)
+npm run check:contrast # colour-contrast gate (exits 1 on a failure)
 ```
 
 ---
@@ -70,7 +71,7 @@ Settings → **AI provider** shows live which mode you're in.
 | **Tasks** | Drag-and-drop board across todo / in-progress / done, with priority, deadline, estimate, and recurring tasks that respawn on completion. Overdue is highlighted everywhere. |
 | **Calendar** | Day / week / month views merging exams, deadlines and study sessions; click any event for details. |
 | **Progress** | Study time, quiz trends, subject performance, flashcard retention, task completion and exam readiness — plus an on-demand AI weakness analysis per subject. |
-| **AI Tutor** | Streaming chat with six modes (Explain, Socratic, Exam, Simplify, Practice, Review), subject and document context, markdown + math rendering, conversation history and suggested questions. |
+| **AI Tutor** | Streaming chat with six modes (Explain, Socratic, Exam, Simplify, Practice, Review), subject and document context, markdown + math rendering, conversation history and suggested questions. Every answer is labelled Live AI or Demo AI, carries a standing "AI can make mistakes" caveat, and can be rated up/down. |
 | **Settings** | Profile, subjects, theme, live AI-provider status, JSON export, demo reset, full wipe. |
 | **⌘K everywhere** | Raycast-style palette searching documents, notes, subjects, decks, tasks, exams, quizzes and conversations, with quick actions. |
 
@@ -79,6 +80,51 @@ Settings → **AI provider** shows live which mode you're in.
 there's a skip-to-content link and the sidebar is fully collapsible.
 
 ---
+
+## Design system & accessibility
+
+The interface was audited against Apple's Human Interface Guidelines (via the
+[apple-design](../.claude/skills/apple-design) skill vendored into this repo)
+and reworked against the findings. The parts worth knowing:
+
+**Colour is measured, not eyeballed.** `npm run check:contrast` parses the
+palette straight out of `globals.css` and checks every foreground token against
+every surface it can land on, in both appearances — text to 4.5:1, graphic
+marks to 3:1, plus white-on-accent for filled buttons and a check that elevated
+surfaces are never dimmer than the ones they float above. It exits non-zero on a
+failure, so it works as a gate. The audit it was written for found eight real
+failures, including the primary button (white on the old gradient measured
+3.86:1) and secondary text in *both* themes.
+
+**Two token families, deliberately.** `--success` / `--warning` / `--danger` and
+the eight `--subj-*` accents are *fills* — chart bars, progress meters, badge
+washes — held to 3:1. Their `-text` counterparts are tuned per appearance for
+4.5:1 and are what any word or meaning-bearing icon uses. The brand gradient is a
+third case: it always carries white text, so `--grad-1/2` are tuned for
+white-on-fill rather than against a page surface. Mixing these up is what caused
+most of the original failures.
+
+**Appearance follows the system.** There's no app-only theme; `data-theme` is
+stamped on `<html>` only when someone explicitly overrides System, so
+`prefers-color-scheme` drives everything else and an Auto switch at dusk reaches
+an already-open page with no reload.
+
+**Reduce Motion is honoured by the JavaScript too**, not just the CSS media
+query — page and step transitions become fades, and the flashcard flip (a z-axis
+depth change, which the guidelines name explicitly) cross-fades in place.
+
+**Charts are readable without seeing them.** Each one hides its SVG from
+assistive tech and exposes a one-line takeaway plus the underlying numbers as a
+real table.
+
+**Type is a named scale** (`t-display` → `t-caption`), sizes and leading only, so
+a step composes with any `font-*` weight instead of overriding it. Nothing below
+12px carries meaning any more.
+
+One trade-off stated plainly: the HIG desktop minimum is 10pt (~13px) and the
+caption step here is 12px. This is a web app whose density conventions sit below
+native macOS, so rather than matching that figure the smallest steps were raised
+off 10.5–11px and every one of them is now guaranteed ≥4.5:1 against its surface.
 
 ## Architecture
 

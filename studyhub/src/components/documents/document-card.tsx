@@ -27,7 +27,7 @@ export function DocumentCard({
   return (
     <div className="group relative rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-border-strong">
       <div className="absolute right-3 top-3 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-        <button onClick={onToggleStar} className="flex size-7 items-center justify-center rounded-md text-ink-3 hover:bg-surface-2 hover:text-warning">
+        <button onClick={onToggleStar} className="flex size-7 items-center justify-center rounded-md text-ink-3 hover:bg-surface-2 hover:text-warning-text">
           <Star className={document.starred ? "size-3.5 fill-warning text-warning" : "size-3.5"} />
         </button>
         <DropdownMenu>
@@ -50,8 +50,8 @@ export function DocumentCard({
             <Icon className="size-[18px]" />
           </div>
           <div className="min-w-0 flex-1 pr-10">
-            <h3 className="truncate text-[13.5px] font-semibold text-ink">{document.name}</h3>
-            <p className="mt-0.5 text-[11px] text-ink-3">
+            <h3 className="truncate t-body font-semibold text-ink">{document.name}</h3>
+            <p className="mt-0.5 t-caption text-ink-3">
               {document.pages ? `${document.pages} pages · ` : ""}
               {formatBytes(document.sizeBytes)}
             </p>
@@ -81,7 +81,7 @@ export function DocumentCard({
           </div>
         )}
 
-        <p className="mt-3 text-[11px] text-ink-3">Uploaded {formatDistanceToNow(new Date(document.uploadDate), { addSuffix: true })}</p>
+        <p className="mt-3 t-caption text-ink-3">Uploaded {formatDistanceToNow(new Date(document.uploadDate), { addSuffix: true })}</p>
       </Link>
     </div>
   );

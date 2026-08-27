@@ -230,7 +230,7 @@ export default function NewQuizPage() {
             <Label>Question types</Label>
             <div className="grid grid-cols-2 gap-2">
               {QUESTION_TYPES.map((t) => (
-                <label key={t.value} className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-[13px] text-ink-2">
+                <label key={t.value} className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 t-callout text-ink-2">
                   <Checkbox checked={types.includes(t.value)} onCheckedChange={() => toggleType(t.value)} />
                   {t.label}
                 </label>

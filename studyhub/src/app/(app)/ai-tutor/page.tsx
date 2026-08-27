@@ -11,6 +11,7 @@ import type { TutorMode } from "@/lib/types";
 import { TUTOR_MODES, suggestedQuestions } from "@/lib/tutor-modes";
 import { ConversationSidebar } from "@/components/ai-tutor/conversation-sidebar";
 import { ChatMessage } from "@/components/ai-tutor/chat-message";
+import { AIDataNotice, AIErrorCaveat, useAILiveStatus } from "@/components/shared/ai-disclosure";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,6 +43,7 @@ export default function AITutorPage() {
   const abortRef = React.useRef<AbortController | null>(null);
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const streamBufferRef = React.useRef("");
+  const aiLive = useAILiveStatus();
 
   const active = conversations.find((c) => c.id === activeId) ?? null;
   const messages = active ? allMessages.filter((m) => m.conversationId === active.id) : [];
@@ -141,7 +143,7 @@ export default function AITutorPage() {
         </SheetContent>
       </Sheet>
 
-      <div className="flex min-w-0 flex-1 flex-col bg-[var(--bg-elevated)]">
+      <div className="flex min-w-0 flex-1 flex-col bg-[var(--chrome)]">
         <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2.5">
           <Button variant="ghost" size="icon-sm" className="md:hidden" onClick={() => setMobileHistoryOpen(true)}>
             <History className="size-4" />
@@ -198,8 +200,8 @@ export default function AITutorPage() {
               <div className="mb-3 flex size-12 items-center justify-center rounded-2xl signal-gradient">
                 {React.createElement(TUTOR_MODES.find((m) => m.value === effectiveMode)!.icon, { className: "size-6 text-white" })}
               </div>
-              <h2 className="text-[16px] font-semibold text-ink">Ask your AI Tutor anything</h2>
-              <p className="mt-1 text-[13px] text-ink-3">
+              <h2 className="t-headline font-semibold text-ink">Ask your AI Tutor anything</h2>
+              <p className="mt-1 t-callout text-ink-3">
                 {TUTOR_MODES.find((m) => m.value === effectiveMode)!.description}
                 {subject ? ` · ${subject.name}` : ""}
                 {document ? ` · ${document.name}` : ""}
@@ -209,7 +211,7 @@ export default function AITutorPage() {
                   <button
                     key={q}
                     onClick={() => send(q)}
-                    className="rounded-xl border border-border bg-surface px-3.5 py-2.5 text-left text-[12.5px] text-ink-2 transition-colors hover:border-border-strong hover:bg-surface-2"
+                    className="rounded-xl border border-border bg-surface px-3.5 py-2.5 text-left t-callout text-ink-2 transition-colors hover:border-border-strong hover:bg-surface-2"
                   >
                     {q}
                   </button>
@@ -251,12 +253,18 @@ export default function AITutorPage() {
               </Button>
             )}
           </div>
-          {active && (
-            <p className="mx-auto mt-1.5 max-w-2xl text-[10.5px] text-ink-3">
-              <Badge variant="outline" className="mr-1">{TUTOR_MODES.find((m) => m.value === effectiveMode)!.label}</Badge>
-              mode locked to this conversation&apos;s context — start a new conversation to change subject or document
-            </p>
-          )}
+          <div className="mx-auto mt-2 max-w-2xl space-y-1">
+            <AIErrorCaveat />
+            {document && <AIDataNotice live={aiLive === true} what={`“${document.name}”`} />}
+            {active && (
+              <p className="t-caption text-ink-3">
+                <Badge variant="outline" className="mr-1">
+                  {TUTOR_MODES.find((m) => m.value === effectiveMode)!.label}
+                </Badge>
+                mode is fixed for this conversation — start a new one to change subject or document.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

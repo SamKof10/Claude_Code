@@ -21,7 +21,7 @@ function AvatarFallback({ className, ...props }: React.ComponentProps<typeof Ava
   return (
     <AvatarPrimitive.Fallback
       className={cn(
-        "flex size-full items-center justify-center rounded-full signal-gradient text-[11px] font-semibold text-white",
+        "flex size-full items-center justify-center rounded-full signal-gradient t-caption font-semibold text-white",
         className
       )}
       {...props}

@@ -32,7 +32,7 @@ function DialogContent({
       <DialogOverlay />
       <DialogPrimitive.Content
         className={cn(
-          "fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-[var(--bg-elevated)] p-6 shadow-2xl data-[state=open]:animate-scale-in max-h-[85vh] overflow-y-auto",
+          "fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-[var(--surface-overlay)] p-6 shadow-2xl data-[state=open]:animate-scale-in max-h-[85vh] overflow-y-auto",
           className
         )}
         {...props}
@@ -63,7 +63,7 @@ function DialogTitle({ className, ...props }: React.ComponentProps<typeof Dialog
 }
 
 function DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>) {
-  return <DialogPrimitive.Description className={cn("text-[13px] text-ink-3", className)} {...props} />;
+  return <DialogPrimitive.Description className={cn("t-callout text-ink-3", className)} {...props} />;
 }
 
 function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {

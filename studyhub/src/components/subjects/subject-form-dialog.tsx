@@ -88,7 +88,7 @@ function SubjectFormBody({ subject, onClose }: { subject?: Subject; onClose: () 
                 key={c}
                 type="button"
                 onClick={() => setColor(c)}
-                className={cn("size-7 rounded-full ring-offset-2 ring-offset-[var(--bg-elevated)] transition-all", color === c && "ring-2 ring-[var(--color-signal)]")}
+                className={cn("size-7 rounded-full ring-offset-2 ring-offset-[var(--surface-overlay)] transition-all", color === c && "ring-2 ring-[var(--color-signal)]")}
                 style={{ background: subjectColorVar(c) }}
                 aria-label={`Accent color ${c}`}
                 aria-pressed={color === c}

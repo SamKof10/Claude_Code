@@ -20,14 +20,14 @@ function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement
 function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={cn("text-[15px] font-semibold tracking-tight text-ink", className)}
+      className={cn("t-headline font-semibold tracking-tight text-ink", className)}
       {...props}
     />
   );
 }
 
 function CardDescription({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn("text-[13px] text-ink-3", className)} {...props} />;
+  return <p className={cn("t-callout text-ink-3", className)} {...props} />;
 }
 
 function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {

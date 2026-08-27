@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArrowLeft, ArrowRight, Moon, Plus, Sparkles, Sun, Sunrise, Sunset, X } from "lucide-react";
 import { useStudyStore } from "@/lib/store";
 import type { StudyTime } from "@/lib/types";
@@ -42,7 +42,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors",
+        "rounded-full border px-3.5 py-1.5 t-callout font-medium transition-colors",
         active
           ? "border-transparent signal-gradient text-white"
           : "border-border bg-surface-2 text-ink-2 hover:border-border-strong hover:text-ink"
@@ -55,6 +55,8 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 
 export function OnboardingFlow() {
   const completeOnboarding = useStudyStore((s) => s.completeOnboarding);
+  // Steps slide horizontally by default; under Reduce Motion they cross-fade.
+  const reduceMotion = useReducedMotion();
   const [step, setStep] = React.useState(0);
   const [customSubject, setCustomSubject] = React.useState("");
   const [form, setForm] = React.useState<FormState>({
@@ -111,16 +113,16 @@ export function OnboardingFlow() {
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
-              initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -16 }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 16 }}
+              animate={reduceMotion ? { opacity: 1 } : { opacity: 1, x: 0 }}
+              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -16 }}
+              transition={{ duration: reduceMotion ? 0.12 : 0.22, ease: [0.22, 1, 0.36, 1] }}
             >
               {step === 0 && (
                 <div className="space-y-4">
                   <div>
                     <h2 className="text-lg font-semibold text-ink">What should we call you?</h2>
-                    <p className="mt-1 text-[13px] text-ink-3">Your name shows up across StudyHub.</p>
+                    <p className="mt-1 t-callout text-ink-3">Your name shows up across StudyHub.</p>
                   </div>
                   <Input
                     autoFocus
@@ -136,7 +138,7 @@ export function OnboardingFlow() {
                 <div className="space-y-4">
                   <div>
                     <h2 className="text-lg font-semibold text-ink">Where do you study?</h2>
-                    <p className="mt-1 text-[13px] text-ink-3">Your school or institution.</p>
+                    <p className="mt-1 t-callout text-ink-3">Your school or institution.</p>
                   </div>
                   <Input
                     autoFocus
@@ -152,7 +154,7 @@ export function OnboardingFlow() {
                 <div className="space-y-4">
                   <div>
                     <h2 className="text-lg font-semibold text-ink">What grade or year are you in?</h2>
-                    <p className="mt-1 text-[13px] text-ink-3">e.g. &ldquo;11th Grade&rdquo; or &ldquo;Year 12&rdquo;.</p>
+                    <p className="mt-1 t-callout text-ink-3">e.g. &ldquo;11th Grade&rdquo; or &ldquo;Year 12&rdquo;.</p>
                   </div>
                   <Input
                     autoFocus
@@ -168,7 +170,7 @@ export function OnboardingFlow() {
                 <div className="space-y-4">
                   <div>
                     <h2 className="text-lg font-semibold text-ink">Which subjects are you taking?</h2>
-                    <p className="mt-1 text-[13px] text-ink-3">Pick as many as you like — you can add more later.</p>
+                    <p className="mt-1 t-callout text-ink-3">Pick as many as you like — you can add more later.</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {SUGGESTED_SUBJECTS.map((s) => (
@@ -217,7 +219,7 @@ export function OnboardingFlow() {
                 <div className="space-y-4">
                   <div>
                     <h2 className="text-lg font-semibold text-ink">What are you hoping to get out of StudyHub?</h2>
-                    <p className="mt-1 text-[13px] text-ink-3">Optional — helps us prioritize what to show you.</p>
+                    <p className="mt-1 t-callout text-ink-3">Optional — helps us prioritize what to show you.</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {SUGGESTED_GOALS.map((g) => (
@@ -233,7 +235,7 @@ export function OnboardingFlow() {
                 <div className="space-y-4">
                   <div>
                     <h2 className="text-lg font-semibold text-ink">When do you usually study?</h2>
-                    <p className="mt-1 text-[13px] text-ink-3">We&apos;ll time reminders and suggestions around this.</p>
+                    <p className="mt-1 t-callout text-ink-3">We&apos;ll time reminders and suggestions around this.</p>
                   </div>
                   <div className="grid grid-cols-2 gap-2.5">
                     {STUDY_TIMES.map(({ value, label, hint, icon: Icon }) => (
@@ -248,8 +250,8 @@ export function OnboardingFlow() {
                       >
                         <Icon className={cn("size-4", form.studyTime === value ? "text-[var(--color-signal-2)]" : "text-ink-3")} />
                         <div>
-                          <p className="text-[13px] font-medium text-ink">{label}</p>
-                          <p className="text-[11px] text-ink-3">{hint}</p>
+                          <p className="t-callout font-medium text-ink">{label}</p>
+                          <p className="t-caption text-ink-3">{hint}</p>
                         </div>
                       </button>
                     ))}

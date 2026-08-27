@@ -26,7 +26,7 @@ export function ConversationSidebar({
       <div className="p-3">
         <button
           onClick={onNew}
-          className="flex w-full items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-[13px] font-medium text-ink transition-colors hover:border-border-strong hover:bg-surface-hover"
+          className="flex w-full items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 t-callout font-medium text-ink transition-colors hover:border-border-strong hover:bg-surface-hover"
         >
           <MessageSquarePlus className="size-4" /> New conversation
         </button>
@@ -43,21 +43,21 @@ export function ConversationSidebar({
               )}
             >
               <button onClick={() => onSelect(c.id)} className="min-w-0 flex-1 text-left">
-                <p className={cn("truncate text-[12.5px]", activeId === c.id ? "font-medium text-ink" : "text-ink-2")}>{c.title}</p>
-                <p className="mt-0.5 flex items-center gap-1 text-[10.5px] text-ink-3">
+                <p className={cn("truncate t-callout", activeId === c.id ? "font-medium text-ink" : "text-ink-2")}>{c.title}</p>
+                <p className="mt-0.5 flex items-center gap-1 t-caption text-ink-3">
                   <mode.icon className="size-2.5" /> {mode.label} · {formatDistanceToNow(new Date(c.updatedAt), { addSuffix: true })}
                 </p>
               </button>
               <button
                 onClick={() => onDelete(c.id)}
-                className="flex size-6 shrink-0 items-center justify-center rounded text-ink-3 opacity-0 transition-opacity hover:text-danger group-hover:opacity-100"
+                className="flex size-6 shrink-0 items-center justify-center rounded text-ink-3 opacity-0 transition-opacity hover:text-danger-text group-hover:opacity-100"
               >
                 <Trash2 className="size-3.5" />
               </button>
             </div>
           );
         })}
-        {sorted.length === 0 && <p className="px-2.5 py-4 text-[12px] text-ink-3">No conversations yet</p>}
+        {sorted.length === 0 && <p className="px-2.5 py-4 t-caption text-ink-3">No conversations yet</p>}
       </div>
     </div>
   );

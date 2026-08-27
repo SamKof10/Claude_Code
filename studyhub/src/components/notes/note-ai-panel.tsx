@@ -10,8 +10,8 @@ import { htmlToText } from "@/lib/html-to-text";
 import type { Note, QuizQuestion, QuizQuestionType } from "@/lib/types";
 import { uid } from "@/lib/utils";
 import { Markdown } from "@/components/shared/markdown";
+import { AIErrorCaveat, AIFeedback, AISourceBadge } from "@/components/shared/ai-disclosure";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
 type Kind = "improve" | "summarize" | "explain" | "flashcards" | "quiz" | "missing";
 
@@ -126,19 +126,22 @@ export function NoteAIPanel({ note }: { note: Note }) {
           <Sparkles className="size-3.5 text-white" />
         </div>
         <div>
-          <p className="text-[13px] font-semibold text-ink">AI actions</p>
-          <p className="text-[11px] text-ink-3">Works on this note&apos;s content</p>
+          <p className="t-callout font-semibold text-ink">AI actions</p>
+          <p className="t-caption text-ink-3">Works on this note&apos;s content</p>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {turns.length === 0 && <p className="text-[12.5px] text-ink-3">Pick an action below to get help with this note.</p>}
+        {turns.length === 0 && <p className="t-callout text-ink-3">Pick an action below to get help with this note.</p>}
         {turns.map((t) => (
           <TurnCard key={t.id} turn={t} onSaveFlashcards={saveFlashcards} onSaveQuiz={saveQuiz} />
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-1.5 border-t border-border p-3">
+      <div className="border-t border-border px-3 pt-2.5">
+        <AIErrorCaveat />
+      </div>
+      <div className="grid grid-cols-2 gap-1.5 px-3 pb-3 pt-2.5">
         {ACTIONS.map((a) => (
           <Button key={a.kind} variant="secondary" size="sm" disabled={busy} onClick={() => run(a.kind)} className="justify-start gap-1.5">
             <a.icon className="size-3.5" /> {a.label}
@@ -162,28 +165,27 @@ function TurnCard({
 
   if (turn.status === "loading") {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-border bg-surface-2 px-3.5 py-3 text-[12.5px] text-ink-3">
+      <div className="flex items-center gap-2 rounded-xl border border-border bg-surface-2 px-3.5 py-3 t-callout text-ink-3">
         <Loader2 className="size-3.5 animate-spin" /> {meta.label}…
       </div>
     );
   }
   if (turn.status === "error") {
-    return <div className="rounded-xl border border-danger/30 bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] px-3.5 py-3 text-[12.5px] text-danger">{turn.errorMessage}</div>;
+    return <div className="rounded-xl border border-danger/30 bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] px-3.5 py-3 t-callout text-danger-text">{turn.errorMessage}</div>;
   }
 
   return (
     <div className="rounded-xl border border-border bg-surface p-3.5">
       <div className="mb-2 flex items-center gap-1.5">
         <meta.icon className="size-3.5 text-[var(--color-signal-2)]" />
-        <span className="text-[12px] font-medium text-ink-2">{meta.label}</span>
-        <Badge variant={turn.source === "live" ? "signal" : "outline"} className="ml-auto">
-          {turn.source === "live" ? "Live AI" : "Demo AI"}
-        </Badge>
+        <span className="t-caption font-medium text-ink-2">{meta.label}</span>
+        <AISourceBadge source={turn.source} className="ml-auto" />
       </div>
 
       {turn.text && <Markdown>{turn.text}</Markdown>}
+      {turn.text && <AIFeedback className="mt-1.5 -ml-1" />}
       {turn.keyPoints && turn.keyPoints.length > 0 && (
-        <ul className="mt-2 space-y-1 text-[12.5px] text-ink-2">
+        <ul className="mt-2 space-y-1 t-callout text-ink-2">
           {turn.keyPoints.map((p, i) => (
             <li key={i} className="flex gap-2">
               <span className="mt-1.5 size-1 shrink-0 rounded-full bg-ink-3" />
@@ -198,11 +200,11 @@ function TurnCard({
           <div className="space-y-2">
             {turn.cards.slice(0, 3).map((c, i) => (
               <div key={i} className="rounded-lg bg-surface-2 px-3 py-2">
-                <p className="text-[12.5px] font-medium text-ink">{c.front}</p>
-                <p className="mt-0.5 text-[12px] text-ink-3">{c.back}</p>
+                <p className="t-callout font-medium text-ink">{c.front}</p>
+                <p className="mt-0.5 t-caption text-ink-3">{c.back}</p>
               </div>
             ))}
-            {turn.cards.length > 3 && <p className="text-[11px] text-ink-3">+{turn.cards.length - 3} more</p>}
+            {turn.cards.length > 3 && <p className="t-caption text-ink-3">+{turn.cards.length - 3} more</p>}
           </div>
           <Button size="sm" onClick={() => onSaveFlashcards(turn.cards!)}>
             <Layers3 className="size-3.5" /> Save {turn.cards.length} cards
@@ -214,7 +216,7 @@ function TurnCard({
         <div className="space-y-2.5">
           <ul className="space-y-1.5">
             {turn.questions.slice(0, 4).map((q) => (
-              <li key={q.id} className="text-[12.5px] text-ink-2">
+              <li key={q.id} className="t-callout text-ink-2">
                 {q.prompt}
               </li>
             ))}

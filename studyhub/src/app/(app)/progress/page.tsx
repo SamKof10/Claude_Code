@@ -117,7 +117,7 @@ export default function ProgressPage() {
             </CardHeader>
             <CardContent>
               {scoreData.length === 0 ? (
-                <p className="py-10 text-center text-[12.5px] text-ink-3">No completed quizzes yet.</p>
+                <p className="py-10 text-center t-callout text-ink-3">No completed quizzes yet.</p>
               ) : (
                 <ScoreLineChart data={scoreData} height={200} />
               )}
@@ -128,7 +128,7 @@ export default function ProgressPage() {
             <CardHeader>
               <CardTitle>Subject performance</CardTitle>
             </CardHeader>
-            <CardContent>{perf.length > 0 ? <SubjectBarList items={perf} /> : <p className="text-[12.5px] text-ink-3">No subjects yet.</p>}</CardContent>
+            <CardContent>{perf.length > 0 ? <SubjectBarList items={perf} /> : <p className="t-callout text-ink-3">No subjects yet.</p>}</CardContent>
           </Card>
 
           <Card>
@@ -136,7 +136,7 @@ export default function ProgressPage() {
               <CardTitle>Exam readiness</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {exams.length === 0 && <p className="text-[12.5px] text-ink-3">No exams scheduled.</p>}
+              {exams.length === 0 && <p className="t-callout text-ink-3">No exams scheduled.</p>}
               {exams.map((exam) => {
                 const readiness = examReadiness(exam);
                 const subject = subjects.find((s) => s.id === exam.subjectId);
@@ -144,13 +144,13 @@ export default function ProgressPage() {
                   <Link key={exam.id} href={`/exams/${exam.id}`} className="block rounded-lg border border-border bg-surface-2 p-3 transition-colors hover:border-border-strong">
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="truncate text-[13px] font-medium text-ink">{exam.title}</p>
+                        <p className="truncate t-callout font-medium text-ink">{exam.title}</p>
                         <div className="mt-1 flex items-center gap-1.5">
                           {subject && <SubjectPill subject={subject} />}
-                          <span className="text-[11px] text-ink-3">{formatDateShort(exam.date)}</span>
+                          <span className="t-caption text-ink-3">{formatDateShort(exam.date)}</span>
                         </div>
                       </div>
-                      <span className="shrink-0 text-[13px] font-semibold text-ink">{readiness}%</span>
+                      <span className="shrink-0 t-callout font-semibold text-ink">{readiness}%</span>
                     </div>
                     <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surface">
                       <div className={`h-full rounded-full ${readiness >= 70 ? "bg-success" : readiness >= 40 ? "bg-warning" : "bg-danger"}`} style={{ width: `${readiness}%` }} />
@@ -171,12 +171,12 @@ export default function ProgressPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               {insights.length === 0 ? (
-                <p className="text-[12.5px] text-ink-3">Complete a few quizzes and flashcard reviews to unlock insights.</p>
+                <p className="t-callout text-ink-3">Complete a few quizzes and flashcard reviews to unlock insights.</p>
               ) : (
                 insights.map((i) => (
                   <div key={i.id} className="flex gap-2.5 rounded-lg border border-border bg-surface-2 p-3">
-                    <TrendingUp className={`mt-0.5 size-3.5 shrink-0 ${i.tone === "positive" ? "text-success" : i.tone === "warning" ? "rotate-180 text-warning" : "text-[var(--color-signal-2)]"}`} />
-                    <p className="text-[12.5px] leading-relaxed text-ink-2">{i.text}</p>
+                    <TrendingUp className={`mt-0.5 size-3.5 shrink-0 ${i.tone === "positive" ? "text-success-text" : i.tone === "warning" ? "rotate-180 text-warning-text" : "text-[var(--color-signal-2)]"}`} />
+                    <p className="t-callout leading-relaxed text-ink-2">{i.text}</p>
                   </div>
                 ))
               )}
@@ -216,7 +216,7 @@ export default function ProgressPage() {
                       ))}
                     </div>
                   )}
-                  <Markdown className="text-[12.5px]">{analysis.recommendation}</Markdown>
+                  <Markdown className="t-callout">{analysis.recommendation}</Markdown>
                 </div>
               )}
             </CardContent>

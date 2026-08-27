@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { CheckCircle2, RotateCcw, X } from "lucide-react";
 import { useStudyStore } from "@/lib/store";
 import { isDue, type ReviewGrade } from "@/lib/srs";
@@ -12,10 +12,10 @@ import { Progress } from "@/components/ui/progress";
 import { EmptyState } from "@/components/shared/empty-state";
 
 const GRADES: { grade: ReviewGrade; label: string; hint: string; className: string }[] = [
-  { grade: 1, label: "Again", hint: "1", className: "border-danger/40 text-danger hover:bg-[color-mix(in_srgb,var(--danger)_10%,transparent)]" },
-  { grade: 2, label: "Difficult", hint: "2", className: "border-warning/40 text-warning hover:bg-[color-mix(in_srgb,var(--warning)_10%,transparent)]" },
+  { grade: 1, label: "Again", hint: "1", className: "border-danger/40 text-danger-text hover:bg-[color-mix(in_srgb,var(--danger)_10%,transparent)]" },
+  { grade: 2, label: "Difficult", hint: "2", className: "border-warning/40 text-warning-text hover:bg-[color-mix(in_srgb,var(--warning)_10%,transparent)]" },
   { grade: 3, label: "Good", hint: "3", className: "border-[var(--color-signal)]/40 text-[var(--color-signal-2)] hover:bg-[color-mix(in_srgb,var(--color-signal)_10%,transparent)]" },
-  { grade: 4, label: "Easy", hint: "4", className: "border-success/40 text-success hover:bg-[color-mix(in_srgb,var(--success)_10%,transparent)]" },
+  { grade: 4, label: "Easy", hint: "4", className: "border-success/40 text-success-text hover:bg-[color-mix(in_srgb,var(--success)_10%,transparent)]" },
 ];
 
 export default function StudyModePage() {
@@ -37,6 +37,7 @@ export default function StudyModePage() {
     return [...source].sort((a, b) => +new Date(a.nextReview) - +new Date(b.nextReview)).map((c) => c.id);
   });
 
+  const reduceMotion = useReducedMotion();
   const [index, setIndex] = React.useState(0);
   const [revealed, setRevealed] = React.useState(false);
   const [results, setResults] = React.useState<ReviewGrade[]>([]);
@@ -89,7 +90,7 @@ export default function StudyModePage() {
   if (!deck) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-        <p className="text-[14px] font-medium text-ink">Deck not found</p>
+        <p className="t-body font-medium text-ink">Deck not found</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
           <Link href="/flashcards">Back to flashcards</Link>
         </Button>
@@ -120,22 +121,22 @@ export default function StudyModePage() {
         <div className="mb-4 flex size-14 items-center justify-center rounded-2xl signal-gradient">
           <CheckCircle2 className="size-7 text-white" />
         </div>
-        <h1 className="text-[20px] font-semibold text-ink">Session complete</h1>
-        <p className="mt-1.5 text-[13px] text-ink-3">
+        <h1 className="t-title font-semibold text-ink">Session complete</h1>
+        <p className="mt-1.5 t-callout text-ink-3">
           You reviewed {results.length} card{results.length === 1 ? "" : "s"} from {deck.name}.
         </p>
         <div className="mt-6 grid w-full grid-cols-3 gap-3">
           <div className="rounded-xl border border-border bg-surface p-3">
             <p className="text-lg font-semibold text-ink">{accuracy}%</p>
-            <p className="text-[11px] text-ink-3">Accuracy</p>
+            <p className="t-caption text-ink-3">Accuracy</p>
           </div>
           <div className="rounded-xl border border-border bg-surface p-3">
             <p className="text-lg font-semibold text-ink">{results.filter((r) => r === 1).length}</p>
-            <p className="text-[11px] text-ink-3">Again</p>
+            <p className="t-caption text-ink-3">Again</p>
           </div>
           <div className="rounded-xl border border-border bg-surface p-3">
             <p className="text-lg font-semibold text-ink">{results.filter((r) => r === 4).length}</p>
-            <p className="text-[11px] text-ink-3">Easy</p>
+            <p className="t-caption text-ink-3">Easy</p>
           </div>
         </div>
         <div className="mt-6 flex gap-2">
@@ -159,35 +160,53 @@ export default function StudyModePage() {
           </Link>
         </Button>
         <Progress value={((index + (revealed ? 0.5 : 0)) / queue.length) * 100} className="flex-1" />
-        <span className="shrink-0 text-[12px] tabular-nums text-ink-3">
+        <span className="shrink-0 t-caption tabular-nums text-ink-3">
           {index + 1}/{queue.length}
         </span>
       </div>
 
-      <div className="w-full" style={{ perspective: 1200 }}>
+      {/* The flip is a z-axis depth change, which HIG Accessibility calls out
+          by name under Reduce Motion ("Avoiding animating depth changes in
+          z-axis layers"). With it on, the two faces cross-fade in place. */}
+      <div className="w-full" style={reduceMotion ? undefined : { perspective: 1200 }}>
         <motion.button
           type="button"
           onClick={() => setRevealed((r) => !r)}
-          className="relative flex h-72 w-full items-center justify-center rounded-3xl border border-border bg-surface p-8 text-center shadow-xl focus-visible:outline-none"
-          animate={{ rotateY: revealed ? 180 : 0 }}
+          aria-live="polite"
+          aria-label={revealed ? `Answer: ${card?.back}. Press to hide.` : `Question: ${card?.front}. Press to reveal the answer.`}
+          className="relative flex h-72 w-full items-center justify-center rounded-3xl border border-border bg-surface p-8 text-center shadow-xl focus-visible:ring-2 focus-visible:ring-[var(--color-signal)] focus-visible:outline-none"
+          animate={reduceMotion ? {} : { rotateY: revealed ? 180 : 0 }}
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-          style={{ transformStyle: "preserve-3d" }}
+          style={reduceMotion ? undefined : { transformStyle: "preserve-3d" }}
         >
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-3xl p-8" style={{ backfaceVisibility: "hidden" }}>
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-3xl p-8 transition-opacity duration-150"
+            style={
+              reduceMotion
+                ? { opacity: revealed ? 0 : 1, pointerEvents: "none" }
+                : { backfaceVisibility: "hidden" }
+            }
+          >
             <span className="mono-label">Question</span>
-            <p className="text-[19px] font-medium leading-snug text-ink text-balance">{card?.front}</p>
+            <p className="t-title font-medium text-ink text-balance">{card?.front}</p>
           </div>
           <div
-            className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-3xl bg-surface-2 p-8"
-            style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-3xl bg-surface-2 p-8 transition-opacity duration-150"
+            style={
+              reduceMotion
+                ? { opacity: revealed ? 1 : 0, pointerEvents: "none" }
+                : { backfaceVisibility: "hidden", transform: "rotateY(180deg)" }
+            }
           >
             <span className="mono-label">Answer</span>
-            <p className="text-[16px] leading-relaxed text-ink text-pretty">{card?.back}</p>
+            <p className="t-title-2 font-normal leading-relaxed text-ink text-pretty">{card?.back}</p>
           </div>
         </motion.button>
       </div>
 
-      <p className="mt-4 text-[11.5px] text-ink-3">Press <kbd className="rounded border border-border px-1.5 py-0.5 font-mono">Space</kbd> to flip</p>
+      <p className="mt-4 t-caption text-ink-3">
+        Press <kbd className="rounded border border-border px-1.5 py-0.5 font-mono">Space</kbd> to flip
+      </p>
 
       <div className="mt-6 grid w-full grid-cols-4 gap-2">
         {GRADES.map((g) => (
@@ -195,10 +214,10 @@ export default function StudyModePage() {
             key={g.grade}
             onClick={() => grade(g.grade)}
             disabled={!revealed}
-            className={`flex flex-col items-center gap-1 rounded-xl border bg-surface px-3 py-3 text-[13px] font-medium transition-colors disabled:pointer-events-none disabled:opacity-30 ${g.className}`}
+            className={`flex flex-col items-center gap-1 rounded-xl border bg-surface px-3 py-3 t-callout font-medium transition-colors disabled:pointer-events-none disabled:opacity-30 ${g.className}`}
           >
             {g.label}
-            <kbd className="text-[10px] text-ink-3">{g.hint}</kbd>
+            <kbd className="t-caption text-ink-3">{g.hint}</kbd>
           </button>
         ))}
       </div>

@@ -22,7 +22,7 @@ function NavLink({ href, label, icon: Icon, collapsed }: { href: string; label: 
       aria-current={active ? "page" : undefined}
       aria-label={collapsed ? label : undefined}
       className={cn(
-        "group relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-colors",
+        "group relative flex items-center gap-3 rounded-lg px-2.5 py-2 t-callout font-medium transition-colors",
         active ? "text-ink" : "text-ink-3 hover:text-ink hover:bg-surface-2",
         collapsed && "justify-center px-0 h-9 w-9"
       )}
@@ -72,7 +72,7 @@ export function Sidebar({ className }: { className?: string }) {
   return (
     <aside
       className={cn(
-        "hidden md:flex h-dvh shrink-0 flex-col border-r border-border bg-[var(--bg-elevated)] transition-[width] duration-200 ease-out",
+        "hidden md:flex h-dvh shrink-0 flex-col border-r border-border bg-[var(--chrome)] transition-[width] duration-200 ease-out",
         collapsed ? "w-[68px]" : "w-[236px]",
         className
       )}
@@ -81,7 +81,7 @@ export function Sidebar({ className }: { className?: string }) {
         <div className="flex size-7 shrink-0 items-center justify-center rounded-lg signal-gradient">
           <Sparkles className="size-4 text-white" strokeWidth={2.25} />
         </div>
-        {!collapsed && <span className="text-[15px] font-semibold tracking-tight text-ink">StudyHub</span>}
+        {!collapsed && <span className="t-headline font-semibold tracking-tight text-ink">StudyHub</span>}
       </div>
 
       <nav aria-label="Main" className="flex-1 overflow-y-auto no-scrollbar px-3 py-2 space-y-0.5">
@@ -95,7 +95,7 @@ export function Sidebar({ className }: { className?: string }) {
           <div className="rounded-xl border border-border bg-surface p-3 space-y-2">
             <div className="flex items-center justify-between">
               <span className="mono-label">AI usage</span>
-              <span className="text-[11px] text-ink-3">
+              <span className="t-caption text-ink-3">
                 {profile?.aiUsage.used ?? 0}/{profile?.aiUsage.limit ?? 0}
               </span>
             </div>
@@ -120,8 +120,8 @@ export function Sidebar({ className }: { className?: string }) {
           </Avatar>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px] font-medium text-ink">{profile?.name ?? "Student"}</p>
-              <p className="truncate text-[11px] text-ink-3">{profile?.schoolYear ?? ""}</p>
+              <p className="truncate t-callout font-medium text-ink">{profile?.name ?? "Student"}</p>
+              <p className="truncate t-caption text-ink-3">{profile?.schoolYear ?? ""}</p>
             </div>
           )}
         </div>
@@ -131,7 +131,7 @@ export function Sidebar({ className }: { className?: string }) {
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           aria-expanded={!collapsed}
           className={cn(
-            "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[12px] text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink",
+            "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 t-caption text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink",
             collapsed && "justify-center px-0"
           )}
         >

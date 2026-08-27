@@ -33,8 +33,8 @@ export function ExamCard({ exam, subject, onDelete }: { exam: Exam; subject: Sub
 
       <Link href={`/exams/${exam.id}`} className="block">
         <div className="pr-8">
-          <h3 className="text-[14.5px] font-semibold text-ink">{exam.title}</h3>
-          <p className="text-[11.5px] text-ink-3">{formatDateShort(exam.date)}</p>
+          <h3 className="t-body font-semibold text-ink">{exam.title}</h3>
+          <p className="t-caption text-ink-3">{formatDateShort(exam.date)}</p>
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
@@ -45,7 +45,7 @@ export function ExamCard({ exam, subject, onDelete }: { exam: Exam; subject: Sub
         </div>
 
         <div className="mt-3">
-          <div className="mb-1.5 flex items-center justify-between text-[12px]">
+          <div className="mb-1.5 flex items-center justify-between t-caption">
             <span className="text-ink-3">Readiness</span>
             <span className="font-medium text-ink">{readiness}%</span>
           </div>
@@ -57,7 +57,7 @@ export function ExamCard({ exam, subject, onDelete }: { exam: Exam; subject: Sub
           </div>
         </div>
 
-        {exam.topics.length > 0 && <p className="mt-3 line-clamp-1 text-[11.5px] text-ink-3">{exam.topics.join(" · ")}</p>}
+        {exam.topics.length > 0 && <p className="mt-3 line-clamp-1 t-caption text-ink-3">{exam.topics.join(" · ")}</p>}
       </Link>
     </div>
   );

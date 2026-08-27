@@ -56,13 +56,13 @@ export function SubjectCard({
         <div className="flex items-center gap-3">
           <SubjectIcon subject={subject} size={18} />
           <div className="min-w-0">
-            <h3 className="truncate text-[15px] font-semibold text-ink">{subject.name}</h3>
-            <p className="text-[11px] text-ink-3">{documentCount} document{documentCount === 1 ? "" : "s"}</p>
+            <h3 className="truncate t-headline font-semibold text-ink">{subject.name}</h3>
+            <p className="t-caption text-ink-3">{documentCount} document{documentCount === 1 ? "" : "s"}</p>
           </div>
         </div>
 
         <div className="mt-4">
-          <div className="mb-1.5 flex items-center justify-between text-[12px]">
+          <div className="mb-1.5 flex items-center justify-between t-caption">
             <span className="text-ink-3">Progress</span>
             <span className="font-medium text-ink">{progress}%</span>
           </div>
@@ -74,7 +74,7 @@ export function SubjectCard({
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3 text-[12px]">
+        <div className="mt-4 grid grid-cols-2 gap-3 t-caption">
           <div>
             <p className="text-ink-3">Quiz average</p>
             <p className="font-medium text-ink">{quizAverage != null ? `${quizAverage}%` : "—"}</p>
@@ -86,7 +86,7 @@ export function SubjectCard({
         </div>
 
         {nextExam && (
-          <div className="mt-3 rounded-lg border border-border bg-surface-2 px-2.5 py-2 text-[12px]">
+          <div className="mt-3 rounded-lg border border-border bg-surface-2 px-2.5 py-2 t-caption">
             <span className="text-ink-3">Next exam · </span>
             <span className="font-medium text-ink">{nextExam.title}</span>
             <span className="text-ink-3"> · {formatDueLabel(nextExam.date)}</span>
@@ -103,7 +103,7 @@ export function SubjectCard({
           </div>
         )}
 
-        <p className="mt-3 text-[11px] text-ink-3">
+        <p className="mt-3 t-caption text-ink-3">
           {lastActivity ? `Active ${formatDistanceToNow(new Date(lastActivity), { addSuffix: true })}` : "No activity yet"}
         </p>
       </Link>

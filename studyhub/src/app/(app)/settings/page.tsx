@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { Check, Database, Download, Loader2, Moon, Plus, RotateCcw, Sparkles, Sun, Trash2, X } from "lucide-react";
+import { Check, Database, Download, Loader2, Monitor, Moon, Plus, RotateCcw, Sparkles, Sun, Trash2 } from "lucide-react";
 import { useStudyStore } from "@/lib/store";
-import { useTheme } from "@/components/providers/theme-provider";
+import { useTheme, type ThemePreference } from "@/components/providers/theme-provider";
 import type { StudyTime, Subject } from "@/lib/types";
 import { PageHeader } from "@/components/shared/page-header";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -18,6 +18,13 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { RemoveChipButton } from "@/components/shared/remove-chip-button";
+
+const APPEARANCES: { value: ThemePreference; label: string; icon: React.ElementType }[] = [
+  { value: "system", label: "System", icon: Monitor },
+  { value: "light", label: "Light", icon: Sun },
+  { value: "dark", label: "Dark", icon: Moon },
+];
 
 const STUDY_TIMES: { value: StudyTime; label: string }[] = [
   { value: "morning", label: "Morning" },
@@ -33,7 +40,7 @@ export default function SettingsPage() {
   const deleteSubject = useStudyStore((s) => s.deleteSubject);
   const resetDemoData = useStudyStore((s) => s.resetDemoData);
   const clearAllData = useStudyStore((s) => s.clearAllData);
-  const { theme, setTheme } = useTheme();
+  const { theme, preference, setPreference } = useTheme();
 
   const [subjectDialog, setSubjectDialog] = React.useState<{ open: boolean; subject?: Subject }>({ open: false });
   const [pendingDeleteSubject, setPendingDeleteSubject] = React.useState<Subject | null>(null);
@@ -128,9 +135,7 @@ export default function SettingsPage() {
                 {profile.learningGoals.map((g) => (
                   <Badge key={g} variant="outline" className="gap-1">
                     {g}
-                    <button onClick={() => updateProfile({ learningGoals: profile.learningGoals.filter((x) => x !== g) })} className="hover:text-danger">
-                      <X className="size-2.5" />
-                    </button>
+                    <RemoveChipButton label={g} onClick={() => updateProfile({ learningGoals: profile.learningGoals.filter((x) => x !== g) })} />
                   </Badge>
                 ))}
               </div>
@@ -162,15 +167,15 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             {state.subjects.length === 0 ? (
-              <p className="text-[12.5px] text-ink-3">No subjects yet.</p>
+              <p className="t-callout text-ink-3">No subjects yet.</p>
             ) : (
               <ul className="divide-y divide-border">
                 {state.subjects.map((s) => (
                   <li key={s.id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
                     <SubjectIcon subject={s} size={14} />
-                    <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{s.name}</span>
+                    <span className="min-w-0 flex-1 truncate t-callout text-ink">{s.name}</span>
                     <Button variant="ghost" size="icon-sm" onClick={() => setSubjectDialog({ open: true, subject: s })}>
-                      <span className="text-[11px]">Edit</span>
+                      <span className="t-caption">Edit</span>
                     </Button>
                     <Button variant="ghost" size="icon-sm" onClick={() => setPendingDeleteSubject(s)}>
                       <Trash2 className="size-3.5" />
@@ -186,25 +191,44 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Appearance</CardTitle>
-            <CardDescription>StudyHub is designed dark-first, but light mode is fully supported.</CardDescription>
+            <CardDescription>
+              StudyHub follows your system appearance by default, so it changes with everything else on your
+              device. Pick Light or Dark to override it just here.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid max-w-sm grid-cols-2 gap-2.5">
-              {(["dark", "light"] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTheme(t)}
-                  className={cn(
-                    "flex items-center gap-2 rounded-xl border px-3.5 py-3 text-[13px] font-medium transition-colors",
-                    theme === t ? "border-[var(--color-signal)] bg-[color-mix(in_srgb,var(--color-signal)_10%,transparent)] text-ink" : "border-border bg-surface-2 text-ink-2 hover:border-border-strong"
-                  )}
-                >
-                  {t === "dark" ? <Moon className="size-4" /> : <Sun className="size-4" />}
-                  <span className="capitalize">{t}</span>
-                  {theme === t && <Check className="ml-auto size-3.5 text-[var(--color-signal-2)]" />}
-                </button>
-              ))}
+            <div
+              role="radiogroup"
+              aria-label="Appearance"
+              className="grid max-w-md grid-cols-1 gap-2.5 sm:grid-cols-3"
+            >
+              {APPEARANCES.map(({ value, label, icon: Icon }) => {
+                const selected = preference === value;
+                return (
+                  <button
+                    key={value}
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => setPreference(value)}
+                    className={cn(
+                      "flex items-center gap-2 rounded-xl border px-3.5 py-3 t-callout font-medium transition-colors",
+                      selected
+                        ? "border-[var(--color-signal)] bg-[color-mix(in_srgb,var(--color-signal)_10%,transparent)] text-ink"
+                        : "border-border bg-surface-2 text-ink-2 hover:border-border-strong"
+                    )}
+                  >
+                    <Icon className="size-4 shrink-0" />
+                    {label}
+                    {selected && <Check className="ml-auto size-3.5 shrink-0 text-[var(--color-signal-2)]" />}
+                  </button>
+                );
+              })}
             </div>
+            {preference === "system" && (
+              <p className="mt-2.5 t-caption text-ink-3">
+                Your system is currently set to {theme}.
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -228,7 +252,7 @@ export default function SettingsPage() {
                 <Badge variant="outline">Demo AI</Badge>
               )}
             </div>
-            <p className="text-[12.5px] leading-relaxed text-ink-3">
+            <p className="t-callout leading-relaxed text-ink-3">
               {aiStatus === "live" ? (
                 <>
                   <code className="rounded bg-surface-2 px-1 py-0.5">ANTHROPIC_API_KEY</code> is configured on the server, so every AI action calls the real model. The key is read server-side only and is never sent to the browser.
@@ -241,7 +265,7 @@ export default function SettingsPage() {
               )}
             </p>
             <div>
-              <div className="mb-1.5 flex items-center justify-between text-[12px]">
+              <div className="mb-1.5 flex items-center justify-between t-caption">
                 <span className="text-ink-3">AI usage this month</span>
                 <span className="text-ink">
                   {profile.aiUsage.used} / {profile.aiUsage.limit}
@@ -267,7 +291,7 @@ export default function SettingsPage() {
             <Button variant="secondary" size="sm" onClick={() => setConfirmReset(true)}>
               <RotateCcw className="size-3.5" /> Reset demo data
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => setConfirmClear(true)} className="text-danger hover:text-danger">
+            <Button variant="ghost" size="sm" onClick={() => setConfirmClear(true)} className="text-danger-text hover:text-danger-text">
               <Trash2 className="size-3.5" /> Delete everything
             </Button>
           </CardContent>
@@ -307,6 +331,7 @@ export default function SettingsPage() {
         title="Delete all your data?"
         description="Everything — subjects, documents, notes, decks, quizzes, tasks and progress — is permanently removed and you'll start from onboarding again. Export first if you want a copy."
         confirmLabel="Delete everything"
+        confirmPhrase="DELETE"
         onConfirm={() => {
           clearAllData();
           toast.success("All data deleted");

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useStudyStore } from "@/lib/store";
 import { aiStudyPlan, AIClientError } from "@/lib/ai/client";
 import type { KnowledgeLevel } from "@/lib/types";
@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { RemoveChipButton } from "@/components/shared/remove-chip-button";
 
 function inNDays(n: number) {
   const d = new Date();
@@ -148,9 +149,7 @@ function ExamFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
             {topics.map((t) => (
               <Badge key={t} variant="outline" className="gap-1">
                 {t}
-                <button aria-label={`Remove ${t}`} onClick={() => setTopics((prev) => prev.filter((x) => x !== t))} className="hover:text-danger">
-                  <X className="size-2.5" />
-                </button>
+                <RemoveChipButton label={t} onClick={() => setTopics((prev) => prev.filter((x) => x !== t))} />
               </Badge>
             ))}
           </div>

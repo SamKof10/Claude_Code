@@ -32,8 +32,8 @@ export function TaskCard({
       <div className="flex items-start gap-2.5">
         <Checkbox checked={task.status === "done"} onCheckedChange={onToggleDone} className="mt-0.5" />
         <button onClick={onEdit} className="min-w-0 flex-1 text-left">
-          <p className={cn("text-[13.5px] font-medium text-ink", task.status === "done" && "line-through text-ink-3")}>{task.title}</p>
-          {task.description && <p className="mt-0.5 line-clamp-2 text-[12px] text-ink-3">{task.description}</p>}
+          <p className={cn("t-body font-medium text-ink", task.status === "done" && "line-through text-ink-3")}>{task.title}</p>
+          {task.description && <p className="mt-0.5 line-clamp-2 t-caption text-ink-3">{task.description}</p>}
         </button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -60,7 +60,7 @@ export function TaskCard({
             <Clock className="size-2.5" /> {formatDueLabel(task.deadline)}
           </Badge>
         )}
-        {task.estimatedMinutes && <span className="text-[10.5px] text-ink-3">{formatMinutes(task.estimatedMinutes)}</span>}
+        {task.estimatedMinutes && <span className="t-caption text-ink-3">{formatMinutes(task.estimatedMinutes)}</span>}
         {task.recurring && <Repeat className="size-3 text-ink-3" />}
       </div>
     </div>

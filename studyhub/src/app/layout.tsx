@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
-import { ThemeProvider } from "@/components/providers/theme-provider";
+import { ThemeProvider, THEME_INIT_SCRIPT } from "@/components/providers/theme-provider";
 import { StoreHydrator } from "@/components/providers/store-hydrator";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
@@ -43,10 +43,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <body className="antialiased bg-bg text-ink">
         <script
-          // Applies the stored theme before paint, avoiding a flash of the wrong theme.
-          dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('studyhub:theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}`,
-          }}
+          // Applies an explicit override before first paint. Without one it
+          // does nothing, leaving the page to follow prefers-color-scheme.
+          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
         />
         <ThemeProvider>
           <TooltipProvider delayDuration={200}>
@@ -54,11 +53,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
             <Toaster
               position="bottom-right"
-              theme="dark"
+              // Toasts are painted from our own tokens, so let Sonner follow
+              // the system rather than pinning it to one appearance.
+              theme="system"
               toastOptions={{
                 classNames: {
                   toast:
-                    "!bg-[var(--bg-elevated)] !border !border-border !text-ink !rounded-xl !shadow-2xl",
+                    "!bg-[var(--surface-overlay)] !border !border-border !text-ink !rounded-xl !shadow-2xl",
                   description: "!text-ink-3",
                 },
               }}

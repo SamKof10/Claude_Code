@@ -19,8 +19,8 @@ export function EmptyState({
       <div className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-surface-2">
         <Icon className="size-5 text-ink-3" />
       </div>
-      <h3 className="text-[15px] font-semibold text-ink">{title}</h3>
-      <p className="mt-1.5 max-w-sm text-[13px] text-ink-3">{description}</p>
+      <h3 className="t-headline font-semibold text-ink">{title}</h3>
+      <p className="mt-1.5 max-w-sm t-callout text-ink-3">{description}</p>
       {action && <div className="mt-5">{action}</div>}
     </div>
   );

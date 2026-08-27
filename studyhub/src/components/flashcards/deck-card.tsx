@@ -46,11 +46,11 @@ export function DeckCard({
             <Layers3 className="size-4" />
           </div>
           <div className="min-w-0">
-            <h3 className="truncate text-[14px] font-semibold text-ink">{deck.name}</h3>
-            <p className="text-[11px] text-ink-3">{cardCount} card{cardCount === 1 ? "" : "s"}</p>
+            <h3 className="truncate t-body font-semibold text-ink">{deck.name}</h3>
+            <p className="t-caption text-ink-3">{cardCount} card{cardCount === 1 ? "" : "s"}</p>
           </div>
         </div>
-        {deck.description && <p className="mt-2.5 line-clamp-2 text-[12.5px] text-ink-3">{deck.description}</p>}
+        {deck.description && <p className="mt-2.5 line-clamp-2 t-callout text-ink-3">{deck.description}</p>}
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {subject && <SubjectPill subject={subject} />}
           <Badge variant="outline">{masteredPct}% mastered</Badge>

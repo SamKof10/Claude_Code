@@ -1,1 +1,4 @@
-.claude/
+# Lokale Claude-Code-Einstellungen bleiben außen vor …
+.claude/*
+# … geteilte Skills werden aber mitversioniert, damit sie das Repo begleiten.
+!.claude/skills/

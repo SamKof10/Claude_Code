@@ -19,6 +19,7 @@ import { aiConcepts, aiExplain, aiFlashcards, AIClientError, aiDocumentQA, aiQui
 import type { QuizQuestion, QuizQuestionType, StudyDocument } from "@/lib/types";
 import { uid } from "@/lib/utils";
 import { Markdown } from "@/components/shared/markdown";
+import { AIDataNotice, AIErrorCaveat, AIFeedback, AISourceBadge, useAILiveStatus } from "@/components/shared/ai-disclosure";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -69,6 +70,7 @@ export function DocumentAIPanel({ document }: { document: StudyDocument }) {
   const busy = turns.some((t) => t.status === "loading");
   const subject = subjects.find((s) => s.id === document.subjectId);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const aiLive = useAILiveStatus();
 
   React.useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -177,16 +179,17 @@ export function DocumentAIPanel({ document }: { document: StudyDocument }) {
           <Sparkles className="size-3.5 text-white" />
         </div>
         <div>
-          <p className="text-[13px] font-semibold text-ink">AI Assistant</p>
-          <p className="text-[11px] text-ink-3">Grounded in this document</p>
+          <p className="t-callout font-semibold text-ink">AI Assistant</p>
+          <p className="t-caption text-ink-3">Grounded in this document</p>
         </div>
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="space-y-4 p-4">
           {turns.length === 0 && (
-            <div className="rounded-xl border border-dashed border-border p-4 text-[12.5px] text-ink-3">
+            <div className="rounded-xl border border-dashed border-border p-4 t-callout text-ink-3">
               Ask a question about &ldquo;{document.name}&rdquo;, or try an action below — summarize it, get a simple explanation, or turn it into flashcards and a quiz.
+              <AIDataNotice live={aiLive === true} what="This document's text" className="mt-2.5" />
             </div>
           )}
           {turns.map((turn) => (
@@ -196,6 +199,7 @@ export function DocumentAIPanel({ document }: { document: StudyDocument }) {
       </div>
 
       <div className="border-t border-border p-3">
+        <AIErrorCaveat className="mb-2.5" />
         <div className="mb-2.5 flex flex-wrap gap-1.5">
           {ACTIONS.map((a) => (
             <Button key={a.kind} variant="secondary" size="sm" disabled={busy} onClick={() => runAction(a.kind)} className="gap-1.5">
@@ -226,21 +230,12 @@ export function DocumentAIPanel({ document }: { document: StudyDocument }) {
   );
 }
 
-function SourceBadge({ source }: { source?: "live" | "demo" }) {
-  if (!source) return null;
-  return (
-    <Badge variant={source === "live" ? "signal" : "outline"} className="ml-auto">
-      {source === "live" ? "Live AI" : "Demo AI"}
-    </Badge>
-  );
-}
-
 function TurnHeader({ icon: Icon, label, source }: { icon: React.ElementType; label: string; source?: "live" | "demo" }) {
   return (
     <div className="mb-2 flex items-center gap-1.5">
       <Icon className="size-3.5 text-[var(--color-signal-2)]" />
-      <span className="text-[12px] font-medium text-ink-2">{label}</span>
-      <SourceBadge source={source} />
+      <span className="t-caption font-medium text-ink-2">{label}</span>
+      <AISourceBadge source={source} className="ml-auto" />
     </div>
   );
 }
@@ -257,14 +252,14 @@ function TurnView({
   if (turn.status === "loading") {
     const meta = ACTIONS.find((a) => a.kind === turn.kind);
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-border bg-surface-2 px-3.5 py-3 text-[12.5px] text-ink-3">
+      <div className="flex items-center gap-2 rounded-xl border border-border bg-surface-2 px-3.5 py-3 t-callout text-ink-3">
         <Loader2 className="size-3.5 animate-spin" /> {turn.kind === "qa" ? "Thinking…" : `${meta?.label ?? "Working"}…`}
       </div>
     );
   }
 
   if (turn.status === "error") {
-    return <div className="rounded-xl border border-danger/30 bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] px-3.5 py-3 text-[12.5px] text-danger">{turn.errorMessage}</div>;
+    return <div className="rounded-xl border border-danger/30 bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] px-3.5 py-3 t-callout text-danger-text">{turn.errorMessage}</div>;
   }
 
   if (turn.kind === "qa") {
@@ -272,11 +267,12 @@ function TurnView({
       <div className="space-y-2.5">
         <div className="flex items-start gap-2 rounded-xl bg-surface-2 px-3.5 py-2.5">
           <User className="mt-0.5 size-3.5 shrink-0 text-ink-3" />
-          <p className="text-[13px] text-ink">{turn.question}</p>
+          <p className="t-callout text-ink">{turn.question}</p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-3.5">
           <TurnHeader icon={Sparkles} label="Answer" source={turn.source} />
           <Markdown>{turn.answer ?? ""}</Markdown>
+          <AIFeedback className="mt-1.5 -ml-1" />
         </div>
       </div>
     );
@@ -292,7 +288,7 @@ function TurnView({
         <div className="space-y-3">
           <Markdown>{turn.summary.summary}</Markdown>
           {turn.summary.keyPoints.length > 0 && (
-            <ul className="space-y-1.5 text-[13px] text-ink-2">
+            <ul className="space-y-1.5 t-callout text-ink-2">
               {turn.summary.keyPoints.map((p, i) => (
                 <li key={i} className="flex gap-2">
                   <span className="mt-1.5 size-1 shrink-0 rounded-full bg-ink-3" />
@@ -310,8 +306,8 @@ function TurnView({
         <div className="space-y-2">
           {turn.concepts.map((c, i) => (
             <div key={i} className="rounded-lg bg-surface-2 px-3 py-2">
-              <p className="text-[12.5px] font-semibold text-ink">{c.term}</p>
-              <p className="text-[12.5px] text-ink-2">{c.definition}</p>
+              <p className="t-callout font-semibold text-ink">{c.term}</p>
+              <p className="t-callout text-ink-2">{c.definition}</p>
             </div>
           ))}
         </div>
@@ -322,11 +318,11 @@ function TurnView({
           <div className="space-y-2">
             {turn.cards.slice(0, 4).map((c, i) => (
               <div key={i} className="rounded-lg bg-surface-2 px-3 py-2">
-                <p className="text-[12.5px] font-medium text-ink">{c.front}</p>
-                <p className="mt-0.5 text-[12px] text-ink-3">{c.back}</p>
+                <p className="t-callout font-medium text-ink">{c.front}</p>
+                <p className="mt-0.5 t-caption text-ink-3">{c.back}</p>
               </div>
             ))}
-            {turn.cards.length > 4 && <p className="text-[11px] text-ink-3">+{turn.cards.length - 4} more</p>}
+            {turn.cards.length > 4 && <p className="t-caption text-ink-3">+{turn.cards.length - 4} more</p>}
           </div>
           <Button size="sm" onClick={() => onSaveFlashcards(turn.cards!)}>
             <Layers3 className="size-3.5" /> Save {turn.cards.length} cards to a deck
@@ -338,7 +334,7 @@ function TurnView({
         <div className="space-y-3">
           <ul className="space-y-1.5">
             {turn.questions.slice(0, 5).map((q) => (
-              <li key={q.id} className="flex items-start gap-2 text-[12.5px] text-ink-2">
+              <li key={q.id} className="flex items-start gap-2 t-callout text-ink-2">
                 <Badge variant="outline" className="mt-0.5 shrink-0">
                   {q.type}
                 </Badge>
@@ -356,12 +352,12 @@ function TurnView({
         <div className="space-y-2">
           {turn.weeks.map((w, i) => (
             <div key={i} className="rounded-lg bg-surface-2 px-3 py-2">
-              <p className="text-[12.5px] font-semibold text-ink">{w.label}</p>
-              <p className="text-[12px] text-ink-2">{w.topics.join(", ")}</p>
-              <p className="mt-0.5 text-[11.5px] text-ink-3">{w.focus}</p>
+              <p className="t-callout font-semibold text-ink">{w.label}</p>
+              <p className="t-caption text-ink-2">{w.topics.join(", ")}</p>
+              <p className="mt-0.5 t-caption text-ink-3">{w.focus}</p>
             </div>
           ))}
-          <p className="text-[11px] text-ink-3">Head to Exams to turn this into a full, trackable prep timeline.</p>
+          <p className="t-caption text-ink-3">Head to Exams to turn this into a full, trackable prep timeline.</p>
         </div>
       )}
     </div>

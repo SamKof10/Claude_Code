@@ -30,7 +30,7 @@ function CommandDialog({
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[var(--overlay)] backdrop-blur-sm data-[state=open]:animate-fade-in" />
-        <DialogPrimitive.Content className="fixed left-1/2 top-[12vh] z-50 w-[92vw] max-w-xl -translate-x-1/2 overflow-hidden rounded-2xl border border-border bg-[var(--bg-elevated)] shadow-2xl data-[state=open]:animate-scale-in">
+        <DialogPrimitive.Content className="fixed left-1/2 top-[12vh] z-50 w-[92vw] max-w-xl -translate-x-1/2 overflow-hidden rounded-2xl border border-border bg-[var(--surface-overlay)] shadow-2xl data-[state=open]:animate-scale-in">
           <DialogPrimitive.Title className="sr-only">Command palette</DialogPrimitive.Title>
           <DialogPrimitive.Description className="sr-only">Search StudyHub or run a command</DialogPrimitive.Description>
           <Command shouldFilter loop>
@@ -49,7 +49,7 @@ const CommandInput = React.forwardRef<React.ElementRef<typeof CommandPrimitive.I
       <CommandPrimitive.Input
         ref={ref}
         className={cn(
-          "flex h-12 w-full rounded-md bg-transparent py-3 text-[14px] text-ink outline-none placeholder:text-ink-3 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-12 w-full rounded-md bg-transparent py-3 t-body text-ink outline-none placeholder:text-ink-3 disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
         {...props}
@@ -67,7 +67,7 @@ const CommandList = React.forwardRef<React.ElementRef<typeof CommandPrimitive.Li
 CommandList.displayName = "CommandList";
 
 const CommandEmpty = React.forwardRef<React.ElementRef<typeof CommandPrimitive.Empty>, React.ComponentProps<typeof CommandPrimitive.Empty>>(
-  (props, ref) => <CommandPrimitive.Empty ref={ref} className="py-10 text-center text-[13px] text-ink-3" {...props} />
+  (props, ref) => <CommandPrimitive.Empty ref={ref} className="py-10 text-center t-callout text-ink-3" {...props} />
 );
 CommandEmpty.displayName = "CommandEmpty";
 
@@ -92,7 +92,7 @@ const CommandItem = React.forwardRef<React.ElementRef<typeof CommandPrimitive.It
     <CommandPrimitive.Item
       ref={ref}
       className={cn(
-        "relative flex cursor-pointer select-none items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] text-ink-2 outline-none transition-colors data-[selected=true]:bg-surface-2 data-[selected=true]:text-ink data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-40 [&_svg]:size-[15px] [&_svg]:shrink-0 [&_svg]:text-ink-3",
+        "relative flex cursor-pointer select-none items-center gap-2.5 rounded-lg px-2.5 py-2 t-callout text-ink-2 outline-none transition-colors data-[selected=true]:bg-surface-2 data-[selected=true]:text-ink data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-40 [&_svg]:size-[15px] [&_svg]:shrink-0 [&_svg]:text-ink-3",
         className
       )}
       {...props}
@@ -102,7 +102,7 @@ const CommandItem = React.forwardRef<React.ElementRef<typeof CommandPrimitive.It
 CommandItem.displayName = "CommandItem";
 
 function CommandShortcut({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) {
-  return <span className={cn("ml-auto font-mono text-[10px] tracking-widest text-ink-3", className)} {...props} />;
+  return <span className={cn("ml-auto font-mono t-caption tracking-widest text-ink-3", className)} {...props} />;
 }
 
 export {

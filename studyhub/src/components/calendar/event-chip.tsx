@@ -16,7 +16,7 @@ export function EventChip({ event, subject, onClick, dense }: { event: CalendarE
     <button
       onClick={onClick}
       className={cn(
-        "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[11px] transition-colors hover:bg-surface-2",
+        "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left t-caption transition-colors hover:bg-surface-2",
         event.done && "opacity-50 line-through",
         dense ? "truncate" : ""
       )}

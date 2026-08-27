@@ -53,15 +53,15 @@ export function Topbar() {
           <Menu className="size-[18px]" />
         </button>
 
-        <h1 className="text-[14px] font-medium text-ink md:hidden">{pageTitle(pathname)}</h1>
+        <h1 className="t-body font-medium text-ink md:hidden">{pageTitle(pathname)}</h1>
 
         <button
           onClick={() => setCommandPaletteOpen(true)}
-          className="hidden md:flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 h-8 text-[13px] text-ink-3 transition-colors hover:border-border-strong hover:text-ink w-64 lg:w-80"
+          className="hidden md:flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 h-8 t-callout text-ink-3 transition-colors hover:border-border-strong hover:text-ink w-64 lg:w-80"
         >
           <Search className="size-[15px]" />
           <span className="flex-1 text-left">Search StudyHub…</span>
-          <kbd className="rounded border border-border bg-surface px-1.5 py-0.5 text-[10px] font-mono text-ink-3">⌘K</kbd>
+          <kbd className="rounded border border-border bg-surface px-1.5 py-0.5 t-caption font-mono text-ink-3">⌘K</kbd>
         </button>
 
         <button
@@ -94,7 +94,13 @@ export function Topbar() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Switch to light appearance" : "Switch to dark appearance"}
+            title="Appearance — set it back to System in Settings"
+          >
             {theme === "dark" ? <Sun className="size-[17px]" /> : <Moon className="size-[17px]" />}
           </Button>
 
@@ -136,7 +142,7 @@ export function Topbar() {
                   href={item.href}
                   onClick={() => setMobileNavOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium",
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 t-body font-medium",
                     active ? "bg-surface-2 text-ink" : "text-ink-2 hover:bg-surface-2 hover:text-ink"
                   )}
                 >

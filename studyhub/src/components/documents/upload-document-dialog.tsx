@@ -111,8 +111,8 @@ function UploadFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: stri
           }`}
         >
           <Upload className="size-5 text-ink-3" />
-          <p className="text-[13px] font-medium text-ink">Drop files here, or click to browse</p>
-          <p className="text-[11px] text-ink-3">PDF, DOCX, PNG/JPG, TXT</p>
+          <p className="t-callout font-medium text-ink">Drop files here, or click to browse</p>
+          <p className="t-caption text-ink-3">PDF, DOCX, PNG/JPG, TXT</p>
           <input
             ref={inputRef}
             type="file"
@@ -126,7 +126,7 @@ function UploadFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: stri
         {files.length > 0 && (
           <ul className="space-y-1.5">
             {files.map((f, i) => (
-              <li key={`${f.name}-${i}`} className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-[12.5px]">
+              <li key={`${f.name}-${i}`} className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 t-callout">
                 <FileText className="size-4 shrink-0 text-ink-3" />
                 <span className="min-w-0 flex-1 truncate text-ink">{f.name}</span>
                 <span className="shrink-0 text-ink-3">{formatBytes(f.size)}</span>
@@ -134,7 +134,7 @@ function UploadFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: stri
                   type="button"
                   aria-label={`Remove ${f.name}`}
                   onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
-                  className="shrink-0 text-ink-3 hover:text-danger"
+                  className="shrink-0 text-ink-3 hover:text-danger-text"
                 >
                   <X className="size-3.5" />
                 </button>

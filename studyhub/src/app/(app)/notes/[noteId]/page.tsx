@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, Pin, Trash2, X } from "lucide-react";
+import { ArrowLeft, Pin, Trash2 } from "lucide-react";
 import { useStudyStore } from "@/lib/store";
 import { formatDistanceToNow } from "date-fns";
 import { RichTextEditor } from "@/components/notes/rich-text-editor";
@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RemoveChipButton } from "@/components/shared/remove-chip-button";
 
 export default function NoteDetailPage() {
   const params = useParams<{ noteId: string }>();
@@ -31,7 +32,7 @@ export default function NoteDetailPage() {
   if (!note) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-        <p className="text-[14px] font-medium text-ink">Note not found</p>
+        <p className="t-body font-medium text-ink">Note not found</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
           <Link href="/notes">
             <ArrowLeft className="size-3.5" /> Back to notes
@@ -60,9 +61,9 @@ export default function NoteDetailPage() {
               value={note.title}
               onChange={(e) => updateNote(note.id, { title: e.target.value })}
               placeholder="Untitled note"
-              className="h-auto border-none bg-transparent px-0 text-[20px] font-semibold tracking-tight text-ink placeholder:text-ink-3 focus-visible:ring-0"
+              className="h-auto border-none bg-transparent px-0 t-title font-semibold tracking-tight text-ink placeholder:text-ink-3 focus-visible:ring-0"
             />
-            <p className="text-[11px] text-ink-3">Edited {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}</p>
+            <p className="t-caption text-ink-3">Edited {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
@@ -92,9 +93,7 @@ export default function NoteDetailPage() {
         {note.tags.map((t) => (
           <Badge key={t} variant="outline" className="gap-1">
             #{t}
-            <button onClick={() => updateNote(note.id, { tags: note.tags.filter((x) => x !== t) })} className="hover:text-danger">
-              <X className="size-2.5" />
-            </button>
+            <RemoveChipButton label={t} onClick={() => updateNote(note.id, { tags: note.tags.filter((x) => x !== t) })} />
           </Badge>
         ))}
         <Input
@@ -107,7 +106,7 @@ export default function NoteDetailPage() {
             }
           }}
           placeholder="+ add tag"
-          className="h-6 w-24 border-none bg-transparent px-1 text-[11px]"
+          className="h-6 w-24 border-none bg-transparent px-1 t-caption"
         />
       </div>
 
@@ -115,7 +114,7 @@ export default function NoteDetailPage() {
         <div className="flex-1 overflow-hidden border-b border-border bg-surface lg:border-b-0 lg:border-r">
           <RichTextEditor content={note.contentHTML} onChange={handleContentChange} className="h-full" />
         </div>
-        <div className="w-full shrink-0 bg-[var(--bg-elevated)] lg:w-[380px]">
+        <div className="w-full shrink-0 bg-[var(--chrome)] lg:w-[380px]">
           <NoteAIPanel note={note} />
         </div>
       </div>

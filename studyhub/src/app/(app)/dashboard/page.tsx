@@ -122,7 +122,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader className="flex-row items-center justify-between">
               <CardTitle>Continue learning</CardTitle>
-              <Link href="/documents" className="text-[12px] text-ink-3 hover:text-ink transition-colors">
+              <Link href="/documents" className="t-caption text-ink-3 hover:text-ink transition-colors">
                 View all
               </Link>
             </CardHeader>
@@ -153,8 +153,8 @@ export default function DashboardPage() {
                             <item.icon className="size-4" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-[13px] font-medium text-ink group-hover:text-[var(--color-signal-2)] transition-colors">{item.title}</p>
-                            <p className="mt-0.5 text-[11px] text-ink-3">{item.meta}</p>
+                            <p className="truncate t-callout font-medium text-ink group-hover:text-[var(--color-signal-2)] transition-colors">{item.title}</p>
+                            <p className="mt-0.5 t-caption text-ink-3">{item.meta}</p>
                           </div>
                         </div>
                         {subject && (
@@ -173,7 +173,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader className="flex-row items-center justify-between">
               <CardTitle>Upcoming</CardTitle>
-              <Link href="/calendar" className="text-[12px] text-ink-3 hover:text-ink transition-colors">
+              <Link href="/calendar" className="t-caption text-ink-3 hover:text-ink transition-colors">
                 Open calendar
               </Link>
             </CardHeader>
@@ -192,7 +192,7 @@ export default function DashboardPage() {
                           <Icon className="size-4" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-[13px] font-medium text-ink">{item.title}</p>
+                          <p className="truncate t-callout font-medium text-ink">{item.title}</p>
                           {subject && <SubjectPill subject={subject} className="mt-1" />}
                         </div>
                         <Badge variant={item.kind === "exam" ? "signal" : overdueItem ? "danger" : "outline"} className="shrink-0">
@@ -225,18 +225,18 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               {insights.length === 0 ? (
-                <p className="text-[13px] text-ink-3">Complete a few quizzes or flashcard reviews and StudyHub will start surfacing insights here.</p>
+                <p className="t-callout text-ink-3">Complete a few quizzes or flashcard reviews and StudyHub will start surfacing insights here.</p>
               ) : (
                 insights.map((insight) => (
                   <div key={insight.id} className="flex gap-2.5 rounded-lg border border-border bg-surface-2 p-3">
                     {insight.tone === "warning" ? (
-                      <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-warning" />
+                      <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-warning-text" />
                     ) : insight.tone === "positive" ? (
-                      <TrendingDown className="mt-0.5 size-3.5 shrink-0 rotate-180 text-success" />
+                      <TrendingDown className="mt-0.5 size-3.5 shrink-0 rotate-180 text-success-text" />
                     ) : (
                       <Sparkles className="mt-0.5 size-3.5 shrink-0 text-[var(--color-signal-2)]" />
                     )}
-                    <p className="text-[12.5px] leading-relaxed text-ink-2">{insight.text}</p>
+                    <p className="t-callout leading-relaxed text-ink-2">{insight.text}</p>
                   </div>
                 ))
               )}

@@ -29,7 +29,7 @@ export default function ExamDetailPage() {
   if (!exam) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-        <p className="text-[14px] font-medium text-ink">Exam not found</p>
+        <p className="t-body font-medium text-ink">Exam not found</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
           <Link href="/exams">
             <ArrowLeft className="size-3.5" /> Back to exams
@@ -52,8 +52,8 @@ export default function ExamDetailPage() {
             </Link>
           </Button>
           <div>
-            <h1 className="text-[19px] font-semibold tracking-tight text-ink">{exam.title}</h1>
-            <p className="mt-0.5 text-[13px] text-ink-3">{format(new Date(exam.date), "EEEE, MMMM d, yyyy")}</p>
+            <h1 className="t-title-2 font-semibold tracking-tight text-ink">{exam.title}</h1>
+            <p className="mt-0.5 t-callout text-ink-3">{format(new Date(exam.date), "EEEE, MMMM d, yyyy")}</p>
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               {subject && <SubjectPill subject={subject} />}
               <Badge variant={daysLeft <= 3 ? "danger" : daysLeft <= 7 ? "warning" : "outline"}>
@@ -73,7 +73,7 @@ export default function ExamDetailPage() {
       <div className="mb-6 rounded-2xl border border-border bg-surface p-5">
         <div className="mb-2 flex items-center justify-between">
           <span className="mono-label">Readiness</span>
-          <span className="text-[13px] font-semibold text-ink">{readiness}%</span>
+          <span className="t-callout font-semibold text-ink">{readiness}%</span>
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-surface-2">
           <div className={cn("h-full rounded-full transition-all", readiness >= 70 ? "bg-success" : readiness >= 40 ? "bg-warning" : "bg-danger")} style={{ width: `${readiness}%` }} />
@@ -89,7 +89,7 @@ export default function ExamDetailPage() {
         )}
       </div>
 
-      <h2 className="mb-4 text-[15px] font-semibold text-ink">Study plan</h2>
+      <h2 className="mb-4 t-headline font-semibold text-ink">Study plan</h2>
       <div className="relative space-y-6 pl-8">
         <div className="absolute left-[15px] top-2 bottom-2 w-px bg-border" />
         {exam.studyPlan.map((week) => (
@@ -97,7 +97,7 @@ export default function ExamDetailPage() {
             <button
               onClick={() => toggleStudyPlanWeek(exam.id, week.weekNumber)}
               className={cn(
-                "absolute -left-8 top-0.5 flex size-6 items-center justify-center rounded-full border-2 transition-colors",
+                "absolute -left-[2.15rem] top-0 flex size-7 items-center justify-center rounded-full border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-signal)]",
                 week.done ? "border-success bg-success text-white" : "border-border-strong bg-surface text-ink-3 hover:border-[var(--color-signal)]"
               )}
             >
@@ -105,8 +105,8 @@ export default function ExamDetailPage() {
             </button>
             <div className={cn("rounded-xl border border-border bg-surface p-4", week.done && "opacity-60")}>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-[13.5px] font-semibold text-ink">{week.label}</p>
-                <span className="text-[11px] text-ink-3">
+                <p className="t-body font-semibold text-ink">{week.label}</p>
+                <span className="t-caption text-ink-3">
                   {format(new Date(week.startDate), "MMM d")} – {format(new Date(week.endDate), "MMM d")}
                 </span>
               </div>
@@ -117,7 +117,7 @@ export default function ExamDetailPage() {
                   </Badge>
                 ))}
               </div>
-              <p className="mt-2.5 text-[12.5px] text-ink-2">{week.focus}</p>
+              <p className="mt-2.5 t-callout text-ink-2">{week.focus}</p>
             </div>
           </div>
         ))}
@@ -125,7 +125,7 @@ export default function ExamDetailPage() {
           <div className="absolute -left-8 top-0.5 flex size-6 items-center justify-center rounded-full border-2 border-border-strong bg-surface text-ink-3">
             <GraduationCap className="size-3.5" />
           </div>
-          <div className="rounded-xl border border-dashed border-border p-4 text-[12.5px] text-ink-3">Exam day — {format(new Date(exam.date), "EEEE, MMMM d")}</div>
+          <div className="rounded-xl border border-dashed border-border p-4 t-callout text-ink-3">Exam day — {format(new Date(exam.date), "EEEE, MMMM d")}</div>
         </div>
       </div>
 

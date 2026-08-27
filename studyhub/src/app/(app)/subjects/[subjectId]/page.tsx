@@ -63,7 +63,7 @@ export default function SubjectWorkspacePage() {
   if (!subject) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-        <p className="text-[14px] font-medium text-ink">Subject not found</p>
+        <p className="t-body font-medium text-ink">Subject not found</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
           <Link href="/subjects">
             <ArrowLeft className="size-3.5" /> Back to subjects
@@ -98,8 +98,8 @@ export default function SubjectWorkspacePage() {
           </Button>
           <SubjectIcon subject={subject} size={22} />
           <div>
-            <h1 className="text-[22px] font-semibold tracking-tight text-ink">{subject.name}</h1>
-            <p className="mt-0.5 text-[12.5px] text-ink-3">
+            <h1 className="t-title font-semibold tracking-tight text-ink">{subject.name}</h1>
+            <p className="mt-0.5 t-callout text-ink-3">
               {lastActivity ? `Last active ${formatDistanceToNow(new Date(lastActivity), { addSuffix: true })}` : "No activity yet"}
             </p>
           </div>
@@ -165,8 +165,8 @@ export default function SubjectWorkspacePage() {
                               <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-ink-3">
                                 <item.icon className="size-4" />
                               </div>
-                              <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{item.title}</span>
-                              <span className="shrink-0 text-[11px] text-ink-3">{formatDistanceToNow(new Date(item.date), { addSuffix: true })}</span>
+                              <span className="min-w-0 flex-1 truncate t-callout text-ink">{item.title}</span>
+                              <span className="shrink-0 t-caption text-ink-3">{formatDistanceToNow(new Date(item.date), { addSuffix: true })}</span>
                             </Link>
                           </li>
                         ))}
@@ -192,7 +192,7 @@ export default function SubjectWorkspacePage() {
                 </CardHeader>
                 <CardContent>
                   {weakTopics.length === 0 ? (
-                    <p className="text-[12.5px] text-ink-3">Nothing flagged yet — take a quiz and StudyHub will pinpoint what to review.</p>
+                    <p className="t-callout text-ink-3">Nothing flagged yet — take a quiz and StudyHub will pinpoint what to review.</p>
                   ) : (
                     <div className="flex flex-wrap gap-1.5">
                       {weakTopics.map((t) => (
@@ -209,7 +209,7 @@ export default function SubjectWorkspacePage() {
                 <CardHeader>
                   <CardTitle>Study statistics</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2.5 text-[13px]">
+                <CardContent className="space-y-2.5 t-callout">
                   <Row label="Time studied (30d)" value={formatMinutes(subjectStudyMinutes(sessions, subject.id, 30))} />
                   <Row label="Study sessions" value={String(sessions.length)} />
                   <Row label="Flashcard retention" value={perf.retention != null ? `${perf.retention}%` : "—"} />
@@ -367,7 +367,7 @@ export default function SubjectWorkspacePage() {
               </CardHeader>
               <CardContent>
                 {quizScoreSeries(quizzes, subject.id).length === 0 ? (
-                  <p className="py-10 text-center text-[12.5px] text-ink-3">No completed quizzes yet.</p>
+                  <p className="py-10 text-center t-callout text-ink-3">No completed quizzes yet.</p>
                 ) : (
                   <ScoreLineChart data={quizScoreSeries(quizzes, subject.id)} />
                 )}
@@ -385,7 +385,7 @@ export default function SubjectWorkspacePage() {
               <CardHeader>
                 <CardTitle>Where you stand</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2.5 text-[13px]">
+              <CardContent className="space-y-2.5 t-callout">
                 <Row label="Overall progress" value={`${perf.progress}%`} />
                 <Row label="Quiz average" value={perf.quizAverage != null ? `${perf.quizAverage}%` : "—"} />
                 <Row label="Flashcard retention" value={perf.retention != null ? `${perf.retention}%` : "—"} />
@@ -443,8 +443,8 @@ function LinkTile({
         <Icon className="size-4" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13px] font-medium text-ink group-hover:text-[var(--color-signal-2)] transition-colors">{title}</p>
-        <p className="mt-0.5 text-[11px] text-ink-3">{subtitle}</p>
+        <p className="truncate t-callout font-medium text-ink group-hover:text-[var(--color-signal-2)] transition-colors">{title}</p>
+        <p className="mt-0.5 t-caption text-ink-3">{subtitle}</p>
       </div>
       {badge && (
         <Badge variant="outline" className="shrink-0 capitalize">

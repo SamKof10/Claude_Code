@@ -38,7 +38,7 @@ export default function QuizzesPage() {
       />
 
       {quizzes.length > 0 && (
-        <div className="mb-5 flex gap-4 text-[13px] text-ink-3">
+        <div className="mb-5 flex gap-4 t-callout text-ink-3">
           <span>
             <strong className="text-ink">{quizzes.length}</strong> total
           </span>

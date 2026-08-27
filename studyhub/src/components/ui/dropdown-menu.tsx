@@ -37,7 +37,7 @@ function DropdownMenuSubContent({ className, ...props }: React.ComponentProps<ty
   return (
     <DropdownMenuPrimitive.SubContent
       className={cn(
-        "z-50 min-w-[10rem] overflow-hidden rounded-lg border border-border bg-[var(--bg-elevated)] p-1 shadow-xl data-[state=open]:animate-scale-in",
+        "z-50 min-w-[10rem] overflow-hidden rounded-lg border border-border bg-[var(--surface-overlay)] p-1 shadow-xl data-[state=open]:animate-scale-in",
         className
       )}
       {...props}
@@ -55,7 +55,7 @@ function DropdownMenuContent({
       <DropdownMenuPrimitive.Content
         sideOffset={sideOffset}
         className={cn(
-          "z-50 min-w-[10rem] overflow-hidden rounded-lg border border-border bg-[var(--bg-elevated)] p-1 shadow-xl data-[state=open]:animate-scale-in",
+          "z-50 min-w-[10rem] overflow-hidden rounded-lg border border-border bg-[var(--surface-overlay)] p-1 shadow-xl data-[state=open]:animate-scale-in",
           className
         )}
         {...props}
@@ -76,8 +76,8 @@ function DropdownMenuItem({
   return (
     <DropdownMenuPrimitive.Item
       className={cn(
-        "relative flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-[13px] text-ink outline-none transition-colors focus:bg-surface-2 data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
-        variant === "destructive" && "text-danger focus:bg-[color-mix(in_srgb,var(--danger)_14%,transparent)] focus:text-danger",
+        "relative flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 t-callout text-ink outline-none transition-colors focus:bg-surface-2 data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
+        variant === "destructive" && "text-danger-text focus:bg-[color-mix(in_srgb,var(--danger)_14%,transparent)] focus:text-danger-text",
         inset && "pl-8",
         className
       )}
@@ -95,7 +95,7 @@ function DropdownMenuCheckboxItem({
   return (
     <DropdownMenuPrimitive.CheckboxItem
       className={cn(
-        "relative flex cursor-pointer select-none items-center rounded-md py-1.5 pl-8 pr-2 text-[13px] outline-none focus:bg-surface-2",
+        "relative flex cursor-pointer select-none items-center rounded-md py-1.5 pl-8 pr-2 t-callout outline-none focus:bg-surface-2",
         className
       )}
       checked={checked}
@@ -115,7 +115,7 @@ function DropdownMenuRadioItem({ className, children, ...props }: React.Componen
   return (
     <DropdownMenuPrimitive.RadioItem
       className={cn(
-        "relative flex cursor-pointer select-none items-center rounded-md py-1.5 pl-8 pr-2 text-[13px] outline-none focus:bg-surface-2",
+        "relative flex cursor-pointer select-none items-center rounded-md py-1.5 pl-8 pr-2 t-callout outline-none focus:bg-surface-2",
         className
       )}
       {...props}

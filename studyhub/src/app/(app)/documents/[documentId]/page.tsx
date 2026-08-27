@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, File, FileText, FileType, Image as ImageIcon, Loader2, Star, Trash2, X } from "lucide-react";
+import { ArrowLeft, File, FileText, FileType, Image as ImageIcon, Loader2, Star, Trash2 } from "lucide-react";
 import { useStudyStore } from "@/lib/store";
 import { formatBytes } from "@/lib/utils";
 import { formatDateShort } from "@/lib/date-format";
@@ -14,6 +14,7 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { RemoveChipButton } from "@/components/shared/remove-chip-button";
 
 const FILE_ICON = { pdf: FileText, docx: FileType, image: ImageIcon, text: File } as const;
 
@@ -33,7 +34,7 @@ export default function DocumentDetailPage() {
   if (!document) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-        <p className="text-[14px] font-medium text-ink">Document not found</p>
+        <p className="t-body font-medium text-ink">Document not found</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
           <Link href="/documents">
             <ArrowLeft className="size-3.5" /> Back to documents
@@ -58,7 +59,7 @@ export default function DocumentDetailPage() {
             <Icon className="size-[18px]" />
           </div>
           <div className="min-w-0">
-            <h1 className="truncate text-[18px] font-semibold tracking-tight text-ink">{document.name}</h1>
+            <h1 className="truncate t-title-2 font-semibold tracking-tight text-ink">{document.name}</h1>
             <div className="mt-1 flex flex-wrap items-center gap-1.5">
               {subject && <SubjectPill subject={subject} href={`/subjects/${subject.id}`} />}
               {document.status === "processing" ? (
@@ -68,7 +69,7 @@ export default function DocumentDetailPage() {
               ) : (
                 <Badge variant="success">Ready</Badge>
               )}
-              <span className="text-[11px] text-ink-3">
+              <span className="t-caption text-ink-3">
                 {document.pages ? `${document.pages} pages · ` : ""}
                 {formatBytes(document.sizeBytes)} · {formatDateShort(document.uploadDate)}
               </span>
@@ -89,9 +90,7 @@ export default function DocumentDetailPage() {
         {document.tags.map((t) => (
           <Badge key={t} variant="outline" className="gap-1">
             #{t}
-            <button onClick={() => updateDocument(document.id, { tags: document.tags.filter((x) => x !== t) })} className="hover:text-danger">
-              <X className="size-2.5" />
-            </button>
+            <RemoveChipButton label={t} onClick={() => updateDocument(document.id, { tags: document.tags.filter((x) => x !== t) })} />
           </Badge>
         ))}
         <Input
@@ -104,7 +103,7 @@ export default function DocumentDetailPage() {
             }
           }}
           placeholder="+ add tag"
-          className="h-6 w-24 border-none bg-transparent px-1 text-[11px]"
+          className="h-6 w-24 border-none bg-transparent px-1 t-caption"
         />
       </div>
 
@@ -113,12 +112,12 @@ export default function DocumentDetailPage() {
           {document.summary && (
             <div className="mb-5 rounded-xl border border-border bg-surface-2 p-3.5">
               <p className="mono-label mb-1.5">AI summary</p>
-              <p className="text-[13px] text-ink-2">{document.summary}</p>
+              <p className="t-callout text-ink-2">{document.summary}</p>
             </div>
           )}
-          <div className="whitespace-pre-wrap font-[450] text-[14px] leading-[1.75] text-ink-2">{document.content}</div>
+          <div className="whitespace-pre-wrap font-[450] t-body leading-[1.75] text-ink-2">{document.content}</div>
         </div>
-        <div className="w-full shrink-0 bg-[var(--bg-elevated)] lg:w-[400px]">
+        <div className="w-full shrink-0 bg-[var(--chrome)] lg:w-[400px]">
           <DocumentAIPanel document={document} />
         </div>
       </div>

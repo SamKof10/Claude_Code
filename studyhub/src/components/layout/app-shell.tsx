@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { useStudyStore } from "@/lib/store";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
@@ -39,6 +39,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const profile = useStudyStore((s) => s.profile);
   const touchStreak = useStudyStore((s) => s.touchStreak);
   const pathname = usePathname();
+  // HIG Accessibility: with Reduce Motion on, replace y-axis transitions with
+  // a plain fade rather than dropping the transition entirely.
+  const reduceMotion = useReducedMotion();
 
   React.useEffect(() => {
     if (hydrated && profile?.onboarded) touchStreak();
@@ -52,7 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex h-dvh w-full overflow-hidden">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:signal-gradient focus:px-4 focus:py-2 focus:text-[13px] focus:font-medium focus:text-white"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:signal-gradient focus:px-4 focus:py-2 focus:t-callout focus:font-medium focus:text-white"
       >
         Skip to content
       </a>
@@ -62,9 +65,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main id="main" className="flex-1 overflow-y-auto">
           <motion.div
             key={pathname}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
+            animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            transition={{ duration: reduceMotion ? 0.12 : 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="mx-auto w-full max-w-[1400px] px-4 py-5 md:px-7 md:py-7"
           >
             {children}

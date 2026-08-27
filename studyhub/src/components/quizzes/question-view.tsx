@@ -31,7 +31,7 @@ export function QuestionView({
         <Badge variant="outline">{question.topic}</Badge>
         <Badge variant="outline">{question.type.replace("-", " ")}</Badge>
       </div>
-      <h2 className="text-[17px] font-medium leading-snug text-ink text-pretty">{question.prompt}</h2>
+      <h2 className="t-title-2 font-medium leading-snug text-ink text-pretty">{question.prompt}</h2>
 
       <div className="mt-5 space-y-2">
         {(question.type === "mcq" || question.type === "true-false") &&
@@ -45,7 +45,7 @@ export function QuestionView({
                 onClick={() => !reveal && onAnswer(opt)}
                 disabled={reveal}
                 className={cn(
-                  "flex w-full items-center gap-2.5 rounded-xl border px-4 py-3 text-left text-[13.5px] transition-colors",
+                  "flex w-full items-center gap-2.5 rounded-xl border px-4 py-3 text-left t-body transition-colors",
                   selected && !reveal && "border-[var(--color-signal)] bg-[color-mix(in_srgb,var(--color-signal)_10%,transparent)] text-ink",
                   !selected && !reveal && "border-border bg-surface-2 text-ink-2 hover:border-border-strong",
                   showCorrect && "border-success bg-[color-mix(in_srgb,var(--success)_12%,transparent)] text-ink",
@@ -67,13 +67,13 @@ export function QuestionView({
         )}
 
         {reveal && (question.type === "short-answer" || question.type === "fill-blank") && (
-          <p className="text-[12.5px] text-ink-3">
+          <p className="t-callout text-ink-3">
             Model answer: <span className="text-ink">{question.correctAnswer}</span>
           </p>
         )}
       </div>
 
-      {reveal && <p className="mt-4 rounded-lg bg-surface-2 px-3.5 py-2.5 text-[12.5px] text-ink-2">{question.explanation}</p>}
+      {reveal && <p className="mt-4 rounded-lg bg-surface-2 px-3.5 py-2.5 t-callout text-ink-2">{question.explanation}</p>}
     </div>
   );
 }

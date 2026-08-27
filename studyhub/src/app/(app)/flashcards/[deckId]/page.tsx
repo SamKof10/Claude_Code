@@ -42,7 +42,7 @@ export default function DeckDetailPage() {
   if (!deck) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-        <p className="text-[14px] font-medium text-ink">Deck not found</p>
+        <p className="t-body font-medium text-ink">Deck not found</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
           <Link href="/flashcards">
             <ArrowLeft className="size-3.5" /> Back to flashcards
@@ -79,8 +79,8 @@ export default function DeckDetailPage() {
             </Link>
           </Button>
           <div>
-            <h1 className="text-[19px] font-semibold tracking-tight text-ink">{deck.name}</h1>
-            <p className="mt-0.5 text-[13px] text-ink-3">{deck.description}</p>
+            <h1 className="t-title-2 font-semibold tracking-tight text-ink">{deck.name}</h1>
+            <p className="mt-0.5 t-callout text-ink-3">{deck.description}</p>
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               {subject && <SubjectPill subject={subject} />}
               <Badge variant="outline">{cards.length} cards</Badge>
@@ -118,22 +118,22 @@ export default function DeckDetailPage() {
           {cards.map((card) => (
             <div key={card.id} className="group rounded-xl border border-border bg-surface p-4">
               <div className="flex items-start justify-between gap-2">
-                <p className="text-[13.5px] font-medium text-ink">{card.front}</p>
+                <p className="t-body font-medium text-ink">{card.front}</p>
                 <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                  <button onClick={() => setCardDialog({ open: true, card })} className="flex size-6 items-center justify-center rounded text-ink-3 hover:bg-surface-2 hover:text-ink">
+                  <button onClick={() => setCardDialog({ open: true, card })} className="flex size-7 items-center justify-center rounded-md text-ink-3 hover:bg-surface-2 hover:text-ink focus-visible:ring-2 focus-visible:ring-[var(--color-signal)] focus-visible:outline-none">
                     <Pencil className="size-3.5" />
                   </button>
-                  <button onClick={() => setConfirmDeleteCard(card)} className="flex size-6 items-center justify-center rounded text-ink-3 hover:bg-surface-2 hover:text-danger">
+                  <button onClick={() => setConfirmDeleteCard(card)} className="flex size-7 items-center justify-center rounded-md text-ink-3 hover:bg-surface-2 hover:text-danger-text focus-visible:ring-2 focus-visible:ring-[var(--color-signal)] focus-visible:outline-none">
                     <Trash2 className="size-3.5" />
                   </button>
                 </div>
               </div>
-              <p className="mt-1.5 text-[12.5px] text-ink-3">{card.back}</p>
+              <p className="mt-1.5 t-callout text-ink-3">{card.back}</p>
               <div className="mt-3 flex items-center gap-2">
                 <Progress value={confidence(card)} className="h-1 flex-1" />
-                <span className="shrink-0 text-[10.5px] text-ink-3">{confidence(card)}%</span>
+                <span className="shrink-0 t-caption text-ink-3">{confidence(card)}%</span>
               </div>
-              <p className="mt-1.5 text-[10.5px] text-ink-3">
+              <p className="mt-1.5 t-caption text-ink-3">
                 {card.lastReviewed ? `Reviewed · next ${formatDateShort(card.nextReview)}` : "Not reviewed yet"}
               </p>
             </div>

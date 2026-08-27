@@ -20,7 +20,7 @@ function SheetOverlay({ className, ...props }: React.ComponentProps<typeof Dialo
 }
 
 const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-[var(--bg-elevated)] border-border shadow-2xl flex flex-col",
+  "fixed z-50 gap-4 bg-[var(--surface-overlay)] border-border shadow-2xl flex flex-col",
   {
     variants: {
       side: {
@@ -61,7 +61,7 @@ function SheetTitle({ className, ...props }: React.ComponentProps<typeof DialogP
 }
 
 function SheetDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>) {
-  return <DialogPrimitive.Description className={cn("text-[13px] text-ink-3", className)} {...props} />;
+  return <DialogPrimitive.Description className={cn("t-callout text-ink-3", className)} {...props} />;
 }
 
 export { Sheet, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetDescription };
