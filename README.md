@@ -64,6 +64,10 @@ ableitet. Mit `ANTHROPIC_API_KEY` in `.env.local` schaltet die App auf ein
 echtes Modell um — der Schlüssel wird ausschließlich serverseitig gelesen.
 Details in [`studyhub/README.md`](studyhub/README.md).
 
+**Auf Vercel deployen.** Repo importieren und **Root Directory** auf `studyhub`
+setzen — ohne das baut Vercel das Repo-Root, findet dort keine `package.json`
+und liefert eine 404 statt der App. Der Rest läuft auf den Standardwerten.
+
 ## Die Next.js-Projekte lokal starten
 
 ```bash
