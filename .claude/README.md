@@ -12,6 +12,17 @@ extra step required beyond accepting that prompt.
 | **caveman** | [juliusbrussee/caveman](https://github.com/juliusbrussee/caveman) | Token-compression skills (`caveman`, `cavecrew`, `caveman-compress`, etc.) plus its bundled proxy/CLI (`proxy/`, `cli/`) since the plugin source is the whole repo. |
 | **marketing-skills** | [coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills) | 49 marketing skills (CRO, copywriting, SEO, paid ads, growth, ...). |
 
+## grill-me / grilling
+
+**`.claude/skills/grill-me/SKILL.md`** and **`.claude/skills/grilling/SKILL.md`**
+are copied verbatim (MIT licensed, notice included in each folder) from
+[mattpocock/skills](https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md).
+`grill-me` is a thin trigger that invokes `grilling`, a relentless
+round-by-round interview skill for stress-testing a plan or design before
+acting on it — both are installed together since `grill-me` doesn't work
+without `grilling`. Only these two skills were copied, not the rest of that
+author's collection (`mattpocock-skills`, engineering/TDD/spec skills, etc.).
+
 ## Custom skills (not marketplace plugins)
 
 `yt-dlp`, `ffmpeg`, and `OmniRoute` are standalone CLI tools / a standalone
