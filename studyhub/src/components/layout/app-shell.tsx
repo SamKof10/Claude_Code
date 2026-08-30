@@ -4,10 +4,13 @@ import * as React from "react";
 import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import { useStudyStore } from "@/lib/store";
+import { useAuthStore } from "@/lib/store/auth";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { CommandPalette, GlobalKeyboardShortcuts } from "@/components/layout/command-palette";
+import { FocusDriver } from "@/components/focus/focus-driver";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
+import { AuthScreen } from "@/components/auth/auth-screen";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function ShellSkeleton() {
@@ -35,6 +38,7 @@ function ShellSkeleton() {
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const authStatus = useAuthStore((s) => s.status);
   const hydrated = useStudyStore((s) => s.hydrated);
   const profile = useStudyStore((s) => s.profile);
   const touchStreak = useStudyStore((s) => s.touchStreak);
@@ -48,6 +52,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, profile?.onboarded]);
 
+  // Three gates, in the order they resolve: is there a session, has that
+  // account's data loaded, and has this account finished onboarding.
+  if (authStatus === "loading") return <ShellSkeleton />;
+  if (authStatus === "signed-out") return <AuthScreen />;
   if (!hydrated) return <ShellSkeleton />;
   if (!profile || !profile.onboarded) return <OnboardingFlow />;
 
@@ -76,6 +84,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       <CommandPalette />
       <GlobalKeyboardShortcuts />
+      <FocusDriver />
     </div>
   );
 }

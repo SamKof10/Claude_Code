@@ -14,11 +14,13 @@ import {
   NotebookPen,
   Settings,
   Sparkles,
+  Timer,
   TrendingUp,
   Upload,
 } from "lucide-react";
 import { useUIStore } from "@/lib/store/ui";
 import { useStudyStore } from "@/lib/store";
+import { useFocusStore } from "@/lib/store/focus";
 import { buildSearchIndex } from "@/lib/search";
 import type { SearchIndexEntry } from "@/lib/types";
 import {
@@ -71,6 +73,10 @@ export function CommandPalette() {
     return map;
   }, [index]);
 
+  const focusStatus = useFocusStore((s) => s.status);
+
+  const startFocus = useFocusStore((s) => s.start);
+
   const go = React.useCallback(
     (href: string) => {
       setOpen(false);
@@ -100,6 +106,15 @@ export function CommandPalette() {
           </CommandItem>
           <CommandItem onSelect={() => go("/flashcards?study=1")}>
             <Layers3 /> Study flashcards
+          </CommandItem>
+          <CommandItem
+            onSelect={() => {
+              // Opening the page mid-block should not restart the block.
+              if (focusStatus === "idle") startFocus();
+              go("/focus");
+            }}
+          >
+            <Timer /> {focusStatus === "idle" ? "Start a focus block" : "Open the focus timer"}
           </CommandItem>
           <CommandItem onSelect={() => go("/exams?new=1")}>
             <GraduationCap /> New exam

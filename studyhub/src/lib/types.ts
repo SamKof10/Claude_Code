@@ -174,7 +174,8 @@ export type StudySessionType =
   | "reading"
   | "notes"
   | "ai-tutor"
-  | "document";
+  | "document"
+  | "focus";
 
 export interface StudySession {
   id: string;

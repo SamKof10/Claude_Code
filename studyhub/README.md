@@ -23,11 +23,13 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
-That's the whole setup. On first load StudyHub seeds a realistic demo student
-(Alex Rivera, 11th grade) with four subjects, six documents, notes, four
-flashcard decks with real review history, graded quizzes, tasks, three exams
-with study plans, and eight weeks of study sessions — so every chart, streak
-and insight has something true to say.
+That's the whole setup. Create an account, and StudyHub opens **empty** — your
+subjects, your material, nothing invented. If you would rather see the app with
+something in it, the last line of onboarding (and Settings → Data) fills it with
+a realistic demo student: four subjects, six documents, notes, four flashcard
+decks with real review history, graded quizzes, tasks, three exams with study
+plans, and eight weeks of study sessions, so every chart, streak and insight has
+something to say.
 
 Other commands:
 
@@ -39,6 +41,29 @@ npm run check:contrast # colour-contrast gate (exits 1 on a failure)
 ```
 
 ---
+
+## Accounts
+
+StudyHub asks you to sign in, and each account keeps its own subjects, notes,
+decks and progress in its own `studyhub:data:<account id>` bucket. Signing out
+drops that data from memory; signing back in restores it. A second account on
+the same machine sees none of the first one's work.
+
+**Be clear about what this is.** Accounts are stored in *this browser*, by this
+browser, and no server is involved:
+
+- Passwords are never stored. What is stored is a PBKDF2-SHA-256 derivation
+  (210,000 iterations, random 16-byte salt per account) — so a readable password
+  never sits in localStorage. Anyone with access to the machine can still read
+  that derivation and attack it offline.
+- There is no password reset, because there is nothing to email.
+- Your work does not follow you to another browser or device. Settings → Data →
+  Export is the only copy that survives clearing site data.
+
+This is a real boundary between accounts on one machine, not a security control
+against someone who has the machine. `src/lib/auth/` is written against an
+`AuthProvider` interface for exactly that reason: replacing the local provider
+with Supabase Auth is one new file, with no changes to any component.
 
 ## Deploying to Vercel
 
@@ -105,10 +130,11 @@ Settings → **AI provider** shows live which mode you're in.
 | **Quizzes** | Generate from a topic, document or note — choose count, difficulty, question types (MCQ / true-false / short answer / fill-in-the-blank) and a time limit. Results break down mistakes, name your weak topics, and offer a one-click AI revision deck. |
 | **Exams** | Enter subject, date, topics, level and hours available; StudyHub generates a week-by-week plan on a checkable timeline with a live readiness score. |
 | **Tasks** | Drag-and-drop board across todo / in-progress / done, with priority, deadline, estimate, and recurring tasks that respawn on completion. Overdue is highlighted everywhere. |
+| **Focus** | A Pomodoro-style timer: focus blocks, short and long breaks, configurable lengths, optional auto-start and end-of-block chime. The countdown runs off a wall-clock deadline (so a background tab can't stall it) and appears in the topbar and the tab title. Every finished focus block is logged as a study session, which feeds Progress and the streak. |
 | **Calendar** | Day / week / month views merging exams, deadlines and study sessions; click any event for details. |
 | **Progress** | Study time, quiz trends, subject performance, flashcard retention, task completion and exam readiness — plus an on-demand AI weakness analysis per subject. |
 | **AI Tutor** | Streaming chat with six modes (Explain, Socratic, Exam, Simplify, Practice, Review), subject and document context, markdown + math rendering, conversation history and suggested questions. Every answer is labelled Live AI or Demo AI, carries a standing "AI can make mistakes" caveat, and can be rated up/down. |
-| **Settings** | Profile, subjects, theme, live AI-provider status, JSON export, demo reset, full wipe. |
+| **Settings** | Profile, subjects, theme, live AI-provider status, JSON export, opt-in demo data, full wipe. |
 | **⌘K everywhere** | Raycast-style palette searching documents, notes, subjects, decks, tasks, exams, quizzes and conversations, with quick actions. |
 
 **Keyboard:** `⌘K` / `⌘P` / `⌘F` palette · `⌘N` new note · `Space` flip card ·
@@ -251,8 +277,10 @@ metric is stored, so nothing can go stale or disagree with itself.
 
 The app is complete as a single-user local product. To ship it publicly:
 
-1. **Auth** — Supabase Auth (or similar). Today there's one implicit local
-   user; `profiles.id` already keys off `auth.users`.
+1. **Auth** — sign-in exists, but it is device-local (see *Accounts* above):
+   credentials never leave the browser, so nothing is actually enforced by a
+   server. Swap `src/lib/auth/index.ts` to a Supabase Auth provider;
+   `profiles.id` already keys off `auth.users`.
 2. **Database** — apply `supabase/schema.sql` (tables + RLS are written),
    then replace the `persist` middleware in `src/lib/store/index.ts` with
    Supabase queries. The action signatures don't need to change.

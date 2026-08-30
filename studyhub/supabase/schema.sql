@@ -197,7 +197,7 @@ create table if not exists study_sessions (
   date             timestamptz not null default now(),
   duration_minutes integer     not null default 0,
   type             text        not null
-                   check (type in ('flashcards','quiz','reading','notes','ai-tutor','document')),
+                   check (type in ('flashcards','quiz','reading','notes','ai-tutor','document','focus')),
   related_id       uuid
 );
 create index if not exists sessions_user_date_idx on study_sessions(user_id, date desc);

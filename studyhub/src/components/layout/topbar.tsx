@@ -3,10 +3,12 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, Moon, Plus, Search, Sparkles, Sun } from "lucide-react";
+import { LogOut, Menu, Moon, Plus, Search, Sparkles, Sun } from "lucide-react";
 import { useUIStore } from "@/lib/store/ui";
 import { useTheme } from "@/components/providers/theme-provider";
 import { useStudyStore } from "@/lib/store";
+import { useAuthStore } from "@/lib/store/auth";
+import { FocusIndicator } from "@/components/focus/focus-indicator";
 import { NAV_ITEMS } from "@/lib/nav";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -41,6 +43,8 @@ export function Topbar() {
   const { theme, toggleTheme } = useTheme();
   const profile = useStudyStore((s) => s.profile);
   const resetDemoData = useStudyStore((s) => s.resetDemoData);
+  const account = useAuthStore((s) => s.account);
+  const signOut = useAuthStore((s) => s.signOut);
 
   return (
     <>
@@ -73,6 +77,8 @@ export function Topbar() {
         </button>
 
         <div className="ml-auto hidden md:flex items-center gap-1.5">
+          <FocusIndicator />
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" className="gap-1.5">
@@ -112,12 +118,19 @@ export function Topbar() {
                 </Avatar>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuLabel>{profile?.name ?? "Student"}</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-60">
+              <DropdownMenuLabel className="pb-1">
+                <span className="block truncate text-ink">{profile?.name ?? "Student"}</span>
+                {account && <span className="block truncate t-caption font-normal text-ink-3">{account.email}</span>}
+              </DropdownMenuLabel>
               <DropdownMenuItem onSelect={() => router.push("/settings")}>Settings</DropdownMenuItem>
               <DropdownMenuItem onSelect={() => router.push("/progress")}>My progress</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => resetDemoData()}>Reset demo data</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => resetDemoData()}>Load demo data</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => void signOut()}>
+                <LogOut className="size-3.5" /> Sign out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

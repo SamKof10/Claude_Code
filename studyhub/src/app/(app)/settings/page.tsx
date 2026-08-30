@@ -282,14 +282,14 @@ export default function SettingsPage() {
             <CardTitle className="flex items-center gap-1.5">
               <Database className="size-4" /> Data
             </CardTitle>
-            <CardDescription>All StudyHub data lives in your browser (localStorage) until a backend is connected.</CardDescription>
+            <CardDescription>Everything in StudyHub is stored in this browser, under your account. It is not synced anywhere, so an export is the only copy that survives clearing site data.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
             <Button variant="secondary" size="sm" onClick={exportData}>
               <Download className="size-3.5" /> Export as JSON
             </Button>
             <Button variant="secondary" size="sm" onClick={() => setConfirmReset(true)}>
-              <RotateCcw className="size-3.5" /> Reset demo data
+              <RotateCcw className="size-3.5" /> Load demo data
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setConfirmClear(true)} className="text-danger-text hover:text-danger-text">
               <Trash2 className="size-3.5" /> Delete everything
@@ -316,12 +316,12 @@ export default function SettingsPage() {
       <ConfirmDialog
         open={confirmReset}
         onOpenChange={setConfirmReset}
-        title="Reset to demo data?"
-        description="This replaces everything currently in StudyHub with a fresh set of example subjects, documents, decks and progress."
-        confirmLabel="Reset"
+        title="Replace everything with demo data?"
+        description="Your subjects, documents, notes, decks and progress are replaced by a fictional example set. Export first if you want to keep what you have."
+        confirmLabel="Load demo data"
         onConfirm={() => {
           resetDemoData();
-          toast.success("Demo data restored");
+          toast.success("Demo data loaded");
         }}
       />
 
@@ -329,7 +329,7 @@ export default function SettingsPage() {
         open={confirmClear}
         onOpenChange={setConfirmClear}
         title="Delete all your data?"
-        description="Everything — subjects, documents, notes, decks, quizzes, tasks and progress — is permanently removed and you'll start from onboarding again. Export first if you want a copy."
+        description="Everything — subjects, documents, notes, decks, quizzes, tasks and progress — is permanently removed from this account and you'll start from onboarding again. Your sign-in still works. Export first if you want a copy."
         confirmLabel="Delete everything"
         confirmPhrase="DELETE"
         onConfirm={() => {

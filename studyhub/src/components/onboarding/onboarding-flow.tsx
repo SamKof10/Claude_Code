@@ -4,6 +4,7 @@ import * as React from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArrowLeft, ArrowRight, Moon, Plus, Sparkles, Sun, Sunrise, Sunset, X } from "lucide-react";
 import { useStudyStore } from "@/lib/store";
+import { useAuthStore } from "@/lib/store/auth";
 import type { StudyTime } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -55,12 +56,14 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 
 export function OnboardingFlow() {
   const completeOnboarding = useStudyStore((s) => s.completeOnboarding);
+  const resetDemoData = useStudyStore((s) => s.resetDemoData);
+  const account = useAuthStore((s) => s.account);
   // Steps slide horizontally by default; under Reduce Motion they cross-fade.
   const reduceMotion = useReducedMotion();
   const [step, setStep] = React.useState(0);
   const [customSubject, setCustomSubject] = React.useState("");
   const [form, setForm] = React.useState<FormState>({
-    name: "",
+    name: account?.name ?? "",
     school: "",
     grade: "",
     subjects: [],
@@ -84,6 +87,7 @@ export function OnboardingFlow() {
   function finish() {
     completeOnboarding({
       name: form.name.trim(),
+      email: account?.email ?? "",
       school: form.school.trim(),
       grade: form.grade.trim(),
       schoolYear: `${new Date().getFullYear()} / ${new Date().getFullYear() + 1}`,
@@ -276,6 +280,18 @@ export function OnboardingFlow() {
             )}
           </div>
         </div>
+
+        <p className="mt-5 text-center t-caption text-ink-3">
+          Just looking?{" "}
+          <button
+            type="button"
+            onClick={() => resetDemoData()}
+            className="font-medium text-ink-2 underline underline-offset-4 hover:text-ink"
+          >
+            Fill StudyHub with example data
+          </button>{" "}
+          instead — you can wipe it from Settings later.
+        </p>
       </div>
     </div>
   );

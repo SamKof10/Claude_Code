@@ -10,6 +10,7 @@ import {
   NotebookPen,
   Settings,
   Sparkles,
+  Timer,
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
@@ -29,6 +30,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/quizzes", label: "Quizzes", icon: ListChecks },
   { href: "/exams", label: "Exams", icon: GraduationCap },
   { href: "/tasks", label: "Tasks", icon: CheckSquare },
+  { href: "/focus", label: "Focus", icon: Timer },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/progress", label: "Progress", icon: TrendingUp },
   { href: "/ai-tutor", label: "AI Tutor", icon: Sparkles },

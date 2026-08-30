@@ -15,7 +15,7 @@ jedem Push, der `fpv-portfolio-react/` ändert
 | [`aurel/`](aurel) | AUREL — Premium-Store für eine zirkadiane Schreibtischleuchte | Next.js 16, React 19, Tailwind 4, Motion |
 | [`mudroom/`](mudroom) | MUDROOM — Premium-Store für eine automatische Bike-Waschbox | Next.js 16, React 19, Tailwind 4, Motion |
 | [`gym-tracker/`](gym-tracker) | Gym Tracker — PWA für einen 5-Tage-Split, mit echtem Background-Push | Vanilla JS PWA + Node/Express |
-| [`studyhub/`](studyhub) | StudyHub — KI-gestützte Lernplattform: Dokumente, Notizen, Karteikarten, Quizze, Prüfungspläne und ein AI-Tutor | Next.js 16, React 19, Tailwind 4, Zustand, Tiptap, Recharts |
+| [`studyhub/`](studyhub) | StudyHub — KI-gestützte Lernplattform: Anmeldung, Dokumente, Notizen, Karteikarten, Quizze, Prüfungspläne, Fokustimer und ein AI-Tutor | Next.js 16, React 19, Tailwind 4, Zustand, Tiptap, Recharts |
 
 ## Fertige Seiten ohne Build
 
@@ -56,9 +56,10 @@ npm install
 npm run dev     # http://localhost:3000
 ```
 
-Läuft ohne jede Konfiguration: Beim ersten Start legt StudyHub einen
-vollständigen Demo-Datensatz an (Fächer, Dokumente, Karteikarten, Quizze,
-Prüfungen, Lernstatistiken), und alle KI-Funktionen laufen über einen
+Läuft ohne jede Konfiguration: Konto anlegen — das liegt im Browser, kein
+Server ist beteiligt — und StudyHub startet leer. Auf Wunsch füllt es sich per
+Klick mit einem vollständigen Demo-Datensatz (Fächer, Dokumente, Karteikarten,
+Quizze, Prüfungen, Lernstatistiken). Alle KI-Funktionen laufen über einen
 eingebauten Demo-Generator, der aus den eigenen Dokumenten und Notizen
 ableitet. Mit `ANTHROPIC_API_KEY` in `.env.local` schaltet die App auf ein
 echtes Modell um — der Schlüssel wird ausschließlich serverseitig gelesen.

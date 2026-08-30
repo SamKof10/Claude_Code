@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider, THEME_INIT_SCRIPT } from "@/components/providers/theme-provider";
-import { StoreHydrator } from "@/components/providers/store-hydrator";
+import { AuthBootstrap } from "@/components/providers/auth-bootstrap";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
@@ -49,7 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <ThemeProvider>
           <TooltipProvider delayDuration={200}>
-            <StoreHydrator />
+            <AuthBootstrap />
             {children}
             <Toaster
               position="bottom-right"

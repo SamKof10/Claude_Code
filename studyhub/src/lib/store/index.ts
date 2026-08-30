@@ -90,6 +90,87 @@ export interface StudyState {
   addMessage: (conversationId: string, role: AIMessage["role"], content: string) => AIMessage;
 }
 
+/** Every data field at its blank value — one definition, so a new slice can't be forgotten in one place and not the other. */
+function emptyData() {
+  return {
+    profile: null,
+    subjects: [],
+    documents: [],
+    notes: [],
+    decks: [],
+    flashcards: [],
+    quizzes: [],
+    tasks: [],
+    exams: [],
+    sessions: [],
+    conversations: [],
+    messages: [],
+  } satisfies Partial<StudyState>;
+}
+
+/** Each account persists to its own bucket, so signing out never exposes the previous account's work. */
+export function dataKeyForAccount(accountId: string): string {
+  return `studyhub:data:${accountId}`;
+}
+
+// Where writes go while nobody is signed in. It is cleared immediately, and
+// exists only so persist has somewhere harmless to write during the reset.
+const SIGNED_OUT_KEY = "studyhub:data:signed-out";
+
+// Data written before accounts existed. The first account to sign in adopts it
+// once, so the app doesn't look wiped to anyone who was already using it.
+const LEGACY_KEY = "studyhub:data";
+const LEGACY_FLAG = "studyhub:legacy-adopted";
+
+function adoptLegacyData(targetKey: string): void {
+  try {
+    if (window.localStorage.getItem(LEGACY_FLAG)) return;
+    window.localStorage.setItem(LEGACY_FLAG, "1");
+    const legacy = window.localStorage.getItem(LEGACY_KEY);
+    if (legacy && !window.localStorage.getItem(targetKey)) window.localStorage.setItem(targetKey, legacy);
+  } catch {
+    // A blocked store just means there is nothing to adopt.
+  }
+}
+
+function readBucket(key: string): Partial<StudyState> | null {
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { state?: Partial<StudyState> };
+    return parsed.state ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Points persistence at this account's bucket and loads it.
+ *
+ * The bucket is read manually rather than through persist.rehydrate() because
+ * rehydrate leaves the current state untouched when a bucket is empty — which
+ * would hand a brand-new account the previous one's data.
+ */
+export function adoptAccountData(accountId: string): void {
+  const key = dataKeyForAccount(accountId);
+  adoptLegacyData(key);
+  const stored = readBucket(key);
+  // Repoint before the write below, so it lands in this account's bucket.
+  useStudyStore.persist.setOptions({ name: key });
+  useStudyStore.setState({ ...emptyData(), ...stored, hydrated: true });
+}
+
+/** Drops the signed-in account's data from memory without touching its bucket. */
+export function releaseAccountData(): void {
+  useStudyStore.persist.setOptions({ name: SIGNED_OUT_KEY });
+  useStudyStore.setState({ ...emptyData(), hydrated: false });
+  try {
+    window.localStorage.removeItem(SIGNED_OUT_KEY);
+  } catch {
+    // Nothing to clean up if the store is blocked.
+  }
+}
+
 function computeStreak(sessions: StudySession[]): number {
   const days = new Set(sessions.map((s) => s.date.slice(0, 10)));
   let streak = 0;
@@ -129,21 +210,7 @@ export const useStudyStore = create<StudyState>()(
         set({ ...demo, hydrated: true });
       },
 
-      clearAllData: () =>
-        set({
-          profile: null,
-          subjects: [],
-          documents: [],
-          notes: [],
-          decks: [],
-          flashcards: [],
-          quizzes: [],
-          tasks: [],
-          exams: [],
-          sessions: [],
-          conversations: [],
-          messages: [],
-        }),
+      clearAllData: () => set(emptyData()),
 
       completeOnboarding: ({ subjectNames, ...profilePatch }) => {
         const now = new Date().toISOString();
@@ -357,26 +424,14 @@ export const useStudyStore = create<StudyState>()(
       },
     }),
     {
-      name: "studyhub:data",
+      // Replaced with the account's own bucket on sign-in; see adoptAccountData.
+      name: SIGNED_OUT_KEY,
       skipHydration: true,
       // `hydrated` is runtime-only — persisting it would make a reload look
       // finished before localStorage has actually been read back.
       partialize: ({ hydrated, ...rest }) => {
         void hydrated;
         return rest;
-      },
-      onRehydrateStorage: () => () => {
-        // Runs after persisted state (if any) has been applied to the store.
-        // useStudyStore is referenced (not destructured set/get) because this
-        // callback fires after the module finishes evaluating, once the
-        // const below is assigned; calling .setState() (rather than mutating
-        // the callback's `state` argument) is what actually notifies
-        // subscribers.
-        if (!useStudyStore.getState().profile) {
-          useStudyStore.setState({ ...buildDemoData(), hydrated: true });
-        } else {
-          useStudyStore.setState({ hydrated: true });
-        }
       },
     }
   )
