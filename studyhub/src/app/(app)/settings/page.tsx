@@ -6,6 +6,7 @@ import { Check, Database, Download, Loader2, Monitor, Moon, Plus, RotateCcw, Spa
 import { useStudyStore } from "@/lib/store";
 import { useTheme, type ThemePreference } from "@/components/providers/theme-provider";
 import type { StudyTime, Subject } from "@/lib/types";
+import { SCHOOL_CLASSES, SCHOOL_CLASS_STAGE, schoolYearOptions, type SchoolClass } from "@/lib/school";
 import { PageHeader } from "@/components/shared/page-header";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { SubjectIcon } from "@/components/shared/subject-pill";
@@ -58,6 +59,10 @@ export default function SettingsPage() {
 
   if (!profile) return null;
 
+  // Keep whatever the profile already holds in the list, so a value from an
+  // earlier format stays visible and selected instead of silently blanking.
+  const yearOptions = [...new Set([...schoolYearOptions(), profile.schoolYear].filter(Boolean))].sort();
+
   function exportData() {
     const payload = {
       exportedAt: new Date().toISOString(),
@@ -95,7 +100,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Profile</CardTitle>
-            <CardDescription>How StudyHub addresses you and frames your school year.</CardDescription>
+            <CardDescription>How StudyHub addresses you, and where you are in the Oberschule.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
@@ -103,16 +108,38 @@ export default function SettingsPage() {
               <Input id="name" value={profile.name} onChange={(e) => updateProfile({ name: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="school">School</Label>
+              <Label htmlFor="school">Oberschule</Label>
               <Input id="school" value={profile.school} onChange={(e) => updateProfile({ school: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="grade">Grade / year</Label>
-              <Input id="grade" value={profile.grade} onChange={(e) => updateProfile({ grade: e.target.value })} />
+              <Label htmlFor="grade">Klasse</Label>
+              <Select value={profile.grade} onValueChange={(v) => updateProfile({ grade: v })}>
+                <SelectTrigger id="grade">
+                  <SelectValue placeholder="Pick a Klasse" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SCHOOL_CLASSES.map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {value} · {SCHOOL_CLASS_STAGE[value as SchoolClass]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="schoolYear">School year</Label>
-              <Input id="schoolYear" value={profile.schoolYear} onChange={(e) => updateProfile({ schoolYear: e.target.value })} />
+              <Select value={profile.schoolYear} onValueChange={(v) => updateProfile({ schoolYear: v })}>
+                <SelectTrigger id="schoolYear">
+                  <SelectValue placeholder="Pick a school year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearOptions.map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5 sm:col-span-2">
               <Label>Preferred study time</Label>

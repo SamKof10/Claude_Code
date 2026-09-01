@@ -1,5 +1,6 @@
 import { addDays, subDays, subHours, subMinutes } from "date-fns";
 import { uid } from "@/lib/utils";
+import { currentSchoolYear } from "@/lib/school";
 import type {
   AIConversation,
   AIMessage,
@@ -514,11 +515,13 @@ Consequences: Roughly 70–85 million deaths made it the deadliest conflict in h
   // ── Profile ────────────────────────────────────────────────────────
   const profile: Profile = {
     id: uid("user"),
-    name: "Alex Rivera",
-    email: "alex@example.com",
-    school: "Lincoln High School",
-    grade: "11th Grade",
-    schoolYear: "2025 / 2026",
+    name: "Lena Oberhofer",
+    email: "lena@example.com",
+    school: "Oberschulzentrum Südtirol",
+    grade: "3. Klasse",
+    // Derived, not written down: a hard-coded year would be wrong the moment
+    // the demo is loaded in a later school year.
+    schoolYear: currentSchoolYear(now),
     learningGoals: ["Improve physics problem-solving", "Keep a daily study streak", "Be exam-ready a week early"],
     preferredStudyTime: "evening",
     onboarded: true,

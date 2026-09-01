@@ -121,7 +121,9 @@ export function Sidebar({ className }: { className?: string }) {
           {!collapsed && (
             <div className="min-w-0 flex-1">
               <p className="truncate t-callout font-medium text-ink">{profile?.name ?? "Student"}</p>
-              <p className="truncate t-caption text-ink-3">{profile?.schoolYear ?? ""}</p>
+              <p className="truncate t-caption text-ink-3">
+                {[profile?.grade, profile?.schoolYear].filter(Boolean).join(" · ")}
+              </p>
             </div>
           )}
         </div>

@@ -6,6 +6,7 @@ import { isToday, isYesterday, parseISO } from "date-fns";
 import { uid } from "@/lib/utils";
 import { scheduleReview, type ReviewGrade } from "@/lib/srs";
 import { buildDemoData } from "@/lib/demo/seed";
+import { currentSchoolYear } from "@/lib/school";
 import type {
   AIConversation,
   AIMessage,
@@ -228,7 +229,7 @@ export const useStudyStore = create<StudyState>()(
             email: profilePatch.email ?? "",
             school: profilePatch.school ?? "",
             grade: profilePatch.grade ?? "",
-            schoolYear: profilePatch.schoolYear ?? `${new Date().getFullYear()} / ${new Date().getFullYear() + 1}`,
+            schoolYear: profilePatch.schoolYear ?? currentSchoolYear(),
             learningGoals: profilePatch.learningGoals ?? [],
             preferredStudyTime: profilePatch.preferredStudyTime ?? "evening",
             onboarded: true,

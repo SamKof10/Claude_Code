@@ -6,11 +6,17 @@ import { ArrowLeft, ArrowRight, Moon, Plus, Sparkles, Sun, Sunrise, Sunset, X } 
 import { useStudyStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/store/auth";
 import type { StudyTime } from "@/lib/types";
+import {
+  SCHOOL_CLASSES,
+  SCHOOL_CLASS_STAGE,
+  currentSchoolYear,
+  type SchoolClass,
+} from "@/lib/school";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const SUGGESTED_SUBJECTS = ["Mathematics", "English", "Physics", "History", "Italian", "Geography", "Construction", "Chemistry"];
+const SUGGESTED_SUBJECTS = ["German", "Italian", "English", "Mathematics", "Physics", "History", "Geography", "Chemistry", "Construction"];
 const SUGGESTED_GOALS = [
   "Improve my grades",
   "Prepare for exams",
@@ -29,13 +35,13 @@ const STUDY_TIMES: { value: StudyTime; label: string; hint: string; icon: React.
 interface FormState {
   name: string;
   school: string;
-  grade: string;
+  grade: SchoolClass | "";
   subjects: string[];
   goals: string[];
   studyTime: StudyTime;
 }
 
-const STEPS = ["Name", "School", "Grade", "Subjects", "Goals", "Study time"] as const;
+const STEPS = ["Name", "School", "Klasse", "Subjects", "Goals", "Study time"] as const;
 
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
@@ -75,7 +81,7 @@ export function OnboardingFlow() {
   const canContinue =
     (step === 0 && form.name.trim().length > 0) ||
     (step === 1 && form.school.trim().length > 0) ||
-    (step === 2 && form.grade.trim().length > 0) ||
+    (step === 2 && form.grade.length > 0) ||
     (step === 3 && form.subjects.length > 0) ||
     step === 4 ||
     step === 5;
@@ -89,8 +95,8 @@ export function OnboardingFlow() {
       name: form.name.trim(),
       email: account?.email ?? "",
       school: form.school.trim(),
-      grade: form.grade.trim(),
-      schoolYear: `${new Date().getFullYear()} / ${new Date().getFullYear() + 1}`,
+      grade: form.grade,
+      schoolYear: currentSchoolYear(),
       learningGoals: form.goals,
       preferredStudyTime: form.studyTime,
       subjectNames: form.subjects,
@@ -141,12 +147,12 @@ export function OnboardingFlow() {
               {step === 1 && (
                 <div className="space-y-4">
                   <div>
-                    <h2 className="text-lg font-semibold text-ink">Where do you study?</h2>
-                    <p className="mt-1 t-callout text-ink-3">Your school or institution.</p>
+                    <h2 className="text-lg font-semibold text-ink">Which Oberschule do you go to?</h2>
+                    <p className="mt-1 t-callout text-ink-3">The name of your school.</p>
                   </div>
                   <Input
                     autoFocus
-                    placeholder="School name"
+                    placeholder="e.g. Oberschulzentrum Bozen"
                     value={form.school}
                     onChange={(e) => setForm((f) => ({ ...f, school: e.target.value }))}
                     onKeyDown={(e) => e.key === "Enter" && canContinue && setStep(2)}
@@ -157,16 +163,28 @@ export function OnboardingFlow() {
               {step === 2 && (
                 <div className="space-y-4">
                   <div>
-                    <h2 className="text-lg font-semibold text-ink">What grade or year are you in?</h2>
-                    <p className="mt-1 t-callout text-ink-3">e.g. &ldquo;11th Grade&rdquo; or &ldquo;Year 12&rdquo;.</p>
+                    <h2 className="text-lg font-semibold text-ink">Which Klasse are you in?</h2>
+                    <p className="mt-1 t-callout text-ink-3">The Oberschule runs from the 1st to the 5th Klasse.</p>
                   </div>
-                  <Input
-                    autoFocus
-                    placeholder="Grade / year"
-                    value={form.grade}
-                    onChange={(e) => setForm((f) => ({ ...f, grade: e.target.value }))}
-                    onKeyDown={(e) => e.key === "Enter" && canContinue && setStep(3)}
-                  />
+                  <div className="space-y-2">
+                    {SCHOOL_CLASSES.map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        aria-pressed={form.grade === value}
+                        onClick={() => setForm((f) => ({ ...f, grade: value }))}
+                        className={cn(
+                          "flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors",
+                          form.grade === value
+                            ? "border-[var(--color-signal)] bg-[color-mix(in_srgb,var(--color-signal)_10%,transparent)]"
+                            : "border-border bg-surface-2 hover:border-border-strong"
+                        )}
+                      >
+                        <span className="t-body font-medium text-ink">{value}</span>
+                        <span className="t-caption text-ink-3">{SCHOOL_CLASS_STAGE[value]}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
 

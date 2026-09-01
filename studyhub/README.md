@@ -42,6 +42,23 @@ npm run check:contrast # colour-contrast gate (exits 1 on a failure)
 
 ---
 
+## School system
+
+StudyHub is built for **South Tyrol**, and `src/lib/school.ts` is the single
+place that says so:
+
+- School years are the **Oberschule**'s Klassen 1–5, not grades 9–13.
+  Onboarding and Settings both pick from that list, and each Klasse carries the
+  stage it belongs to — Biennium (1–2), Triennium (3–4), Maturajahr (5).
+- The school year is written `2026/27` and **turns over in September**.
+  Deriving it from the calendar year alone — which is what the app did before —
+  reports the wrong year from January to August, so `currentSchoolYear()` moves
+  the boundary to September and everything else reads it from there, the demo
+  profile included.
+
+Nothing else is locale-specific: the interface is in English, and subjects are
+whatever you name them.
+
 ## Accounts
 
 StudyHub asks you to sign in, and each account keeps its own subjects, notes,
