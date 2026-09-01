@@ -53,16 +53,16 @@ function CardFormBody({
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{initialFront ? "Edit card" : "New card"}</DialogTitle>
+        <DialogTitle>{initialFront ? "Karte bearbeiten" : "Neue Karte"}</DialogTitle>
       </DialogHeader>
       <div className="space-y-4">
         <div className="space-y-1.5">
-          <Label>Front</Label>
-          <Textarea autoFocus rows={2} placeholder="Question or prompt" value={front} onChange={(e) => setFront(e.target.value)} />
+          <Label>Vorderseite</Label>
+          <Textarea autoFocus rows={2} placeholder="Frage oder Stichwort" value={front} onChange={(e) => setFront(e.target.value)} />
         </div>
         <div className="space-y-1.5">
-          <Label>Back</Label>
-          <Textarea rows={3} placeholder="Answer" value={back} onChange={(e) => setBack(e.target.value)} />
+          <Label>Rückseite</Label>
+          <Textarea rows={3} placeholder="Antwort" value={back} onChange={(e) => setBack(e.target.value)} />
         </div>
       </div>
       <DialogFooter>

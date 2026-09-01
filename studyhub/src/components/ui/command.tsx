@@ -31,7 +31,7 @@ function CommandDialog({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[var(--overlay)] backdrop-blur-sm data-[state=open]:animate-fade-in" />
         <DialogPrimitive.Content className="fixed left-1/2 top-[12vh] z-50 w-[92vw] max-w-xl -translate-x-1/2 overflow-hidden rounded-2xl border border-border bg-[var(--surface-overlay)] shadow-2xl data-[state=open]:animate-scale-in">
-          <DialogPrimitive.Title className="sr-only">Command palette</DialogPrimitive.Title>
+          <DialogPrimitive.Title className="sr-only">Befehlspalette</DialogPrimitive.Title>
           <DialogPrimitive.Description className="sr-only">Search StudyHub or run a command</DialogPrimitive.Description>
           <Command shouldFilter loop>
             {children}

@@ -16,20 +16,20 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const SUGGESTED_SUBJECTS = ["German", "Italian", "English", "Mathematics", "Physics", "History", "Geography", "Chemistry", "Construction"];
+const SUGGESTED_SUBJECTS = ["Deutsch", "Italienisch", "Englisch", "Mathematik", "Physik", "Geschichte", "Erdkunde", "Chemie", "Bautechnik"];
 const SUGGESTED_GOALS = [
-  "Improve my grades",
-  "Prepare for exams",
-  "Build a daily study habit",
-  "Understand difficult topics",
-  "Catch up on missed material",
-  "Get more organized",
+  "Bessere Noten schreiben",
+  "Mich auf Prüfungen vorbereiten",
+  "Täglich eine Lernroutine aufbauen",
+  "Schwierigen Stoff verstehen",
+  "Verpasstes nachholen",
+  "Mich besser organisieren",
 ];
 const STUDY_TIMES: { value: StudyTime; label: string; hint: string; icon: React.ElementType }[] = [
-  { value: "morning", label: "Morning", hint: "6am – 11am", icon: Sunrise },
-  { value: "afternoon", label: "Afternoon", hint: "12pm – 5pm", icon: Sun },
-  { value: "evening", label: "Evening", hint: "6pm – 9pm", icon: Sunset },
-  { value: "night", label: "Night", hint: "9pm – late", icon: Moon },
+  { value: "morning", label: "Morgens", hint: "6 – 11 Uhr", icon: Sunrise },
+  { value: "afternoon", label: "Nachmittags", hint: "12 – 17 Uhr", icon: Sun },
+  { value: "evening", label: "Abends", hint: "18 – 21 Uhr", icon: Sunset },
+  { value: "night", label: "Nachts", hint: "ab 21 Uhr", icon: Moon },
 ];
 
 interface FormState {
@@ -41,7 +41,7 @@ interface FormState {
   studyTime: StudyTime;
 }
 
-const STEPS = ["Name", "School", "Klasse", "Subjects", "Goals", "Study time"] as const;
+const STEPS = ["Name", "Schule", "Klasse", "Fächer", "Ziele", "Lernzeit"] as const;
 
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
@@ -131,12 +131,12 @@ export function OnboardingFlow() {
               {step === 0 && (
                 <div className="space-y-4">
                   <div>
-                    <h2 className="text-lg font-semibold text-ink">What should we call you?</h2>
-                    <p className="mt-1 t-callout text-ink-3">Your name shows up across StudyHub.</p>
+                    <h2 className="text-lg font-semibold text-ink">Wie sollen wir dich nennen?</h2>
+                    <p className="mt-1 t-callout text-ink-3">Dein Name taucht überall in StudyHub auf.</p>
                   </div>
                   <Input
                     autoFocus
-                    placeholder="Your name"
+                    placeholder="Dein Name"
                     value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                     onKeyDown={(e) => e.key === "Enter" && canContinue && setStep(1)}
@@ -147,8 +147,8 @@ export function OnboardingFlow() {
               {step === 1 && (
                 <div className="space-y-4">
                   <div>
-                    <h2 className="text-lg font-semibold text-ink">Which Oberschule do you go to?</h2>
-                    <p className="mt-1 t-callout text-ink-3">The name of your school.</p>
+                    <h2 className="text-lg font-semibold text-ink">Auf welche Oberschule gehst du?</h2>
+                    <p className="mt-1 t-callout text-ink-3">Der Name deiner Schule.</p>
                   </div>
                   <Input
                     autoFocus
@@ -163,8 +163,8 @@ export function OnboardingFlow() {
               {step === 2 && (
                 <div className="space-y-4">
                   <div>
-                    <h2 className="text-lg font-semibold text-ink">Which Klasse are you in?</h2>
-                    <p className="mt-1 t-callout text-ink-3">The Oberschule runs from the 1st to the 5th Klasse.</p>
+                    <h2 className="text-lg font-semibold text-ink">In welcher Klasse bist du?</h2>
+                    <p className="mt-1 t-callout text-ink-3">Die Oberschule geht von der 1. bis zur 5. Klasse.</p>
                   </div>
                   <div className="space-y-2">
                     {SCHOOL_CLASSES.map((value) => (
@@ -191,8 +191,8 @@ export function OnboardingFlow() {
               {step === 3 && (
                 <div className="space-y-4">
                   <div>
-                    <h2 className="text-lg font-semibold text-ink">Which subjects are you taking?</h2>
-                    <p className="mt-1 t-callout text-ink-3">Pick as many as you like — you can add more later.</p>
+                    <h2 className="text-lg font-semibold text-ink">Welche Fächer hast du?</h2>
+                    <p className="mt-1 t-callout text-ink-3">Wähl so viele du willst — später kannst du jederzeit welche ergänzen.</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {SUGGESTED_SUBJECTS.map((s) => (
@@ -210,7 +210,7 @@ export function OnboardingFlow() {
                   </div>
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Add another subject…"
+                      placeholder="Weiteres Fach hinzufügen…"
                       value={customSubject}
                       onChange={(e) => setCustomSubject(e.target.value)}
                       onKeyDown={(e) => {
@@ -240,8 +240,8 @@ export function OnboardingFlow() {
               {step === 4 && (
                 <div className="space-y-4">
                   <div>
-                    <h2 className="text-lg font-semibold text-ink">What are you hoping to get out of StudyHub?</h2>
-                    <p className="mt-1 t-callout text-ink-3">Optional — helps us prioritize what to show you.</p>
+                    <h2 className="text-lg font-semibold text-ink">Was willst du mit StudyHub erreichen?</h2>
+                    <p className="mt-1 t-callout text-ink-3">Optional — hilft dabei, dir das Passende zuerst zu zeigen.</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {SUGGESTED_GOALS.map((g) => (
@@ -256,8 +256,8 @@ export function OnboardingFlow() {
               {step === 5 && (
                 <div className="space-y-4">
                   <div>
-                    <h2 className="text-lg font-semibold text-ink">When do you usually study?</h2>
-                    <p className="mt-1 t-callout text-ink-3">We&apos;ll time reminders and suggestions around this.</p>
+                    <h2 className="text-lg font-semibold text-ink">Wann lernst du normalerweise?</h2>
+                    <p className="mt-1 t-callout text-ink-3">Erinnerungen und Vorschläge richten sich danach.</p>
                   </div>
                   <div className="grid grid-cols-2 gap-2.5">
                     {STUDY_TIMES.map(({ value, label, hint, icon: Icon }) => (
@@ -285,30 +285,30 @@ export function OnboardingFlow() {
 
           <div className="mt-7 flex items-center justify-between">
             <Button variant="ghost" size="sm" onClick={() => setStep((s) => Math.max(0, s - 1))} className={cn(step === 0 && "invisible")}>
-              <ArrowLeft className="size-3.5" /> Back
+              <ArrowLeft className="size-3.5" /> Zurück
             </Button>
             {isLast ? (
               <Button size="sm" onClick={finish}>
-                Enter StudyHub <ArrowRight className="size-3.5" />
+                StudyHub öffnen <ArrowRight className="size-3.5" />
               </Button>
             ) : (
               <Button size="sm" disabled={!canContinue} onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}>
-                Continue <ArrowRight className="size-3.5" />
+                Weiter <ArrowRight className="size-3.5" />
               </Button>
             )}
           </div>
         </div>
 
         <p className="mt-5 text-center t-caption text-ink-3">
-          Just looking?{" "}
+          Nur zum Anschauen?{" "}
           <button
             type="button"
             onClick={() => resetDemoData()}
             className="font-medium text-ink-2 underline underline-offset-4 hover:text-ink"
           >
-            Fill StudyHub with example data
+            StudyHub mit Beispieldaten füllen
           </button>{" "}
-          instead — you can wipe it from Settings later.
+          — löschen kannst du sie später in den Einstellungen.
         </p>
       </div>
     </div>

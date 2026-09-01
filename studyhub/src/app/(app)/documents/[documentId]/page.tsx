@@ -34,10 +34,10 @@ export default function DocumentDetailPage() {
   if (!document) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-        <p className="t-body font-medium text-ink">Document not found</p>
+        <p className="t-body font-medium text-ink">Dokument nicht gefunden</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
           <Link href="/documents">
-            <ArrowLeft className="size-3.5" /> Back to documents
+            <ArrowLeft className="size-3.5" /> Zurück zu den Dokumenten
           </Link>
         </Button>
       </div>
@@ -64,13 +64,13 @@ export default function DocumentDetailPage() {
               {subject && <SubjectPill subject={subject} href={`/subjects/${subject.id}`} />}
               {document.status === "processing" ? (
                 <Badge variant="outline" className="gap-1">
-                  <Loader2 className="size-2.5 animate-spin" /> Processing
+                  <Loader2 className="size-2.5 animate-spin" /> Wird verarbeitet
                 </Badge>
               ) : (
-                <Badge variant="success">Ready</Badge>
+                <Badge variant="success">Bereit</Badge>
               )}
               <span className="t-caption text-ink-3">
-                {document.pages ? `${document.pages} pages · ` : ""}
+                {document.pages ? `${document.pages} Seiten · ` : ""}
                 {formatBytes(document.sizeBytes)} · {formatDateShort(document.uploadDate)}
               </span>
             </div>
@@ -102,7 +102,7 @@ export default function DocumentDetailPage() {
               setTagInput("");
             }
           }}
-          placeholder="+ add tag"
+          placeholder="+ Schlagwort"
           className="h-6 w-24 border-none bg-transparent px-1 t-caption"
         />
       </div>
@@ -111,7 +111,7 @@ export default function DocumentDetailPage() {
         <div className="flex-1 overflow-y-auto border-b border-border bg-surface p-6 lg:border-b-0 lg:border-r">
           {document.summary && (
             <div className="mb-5 rounded-xl border border-border bg-surface-2 p-3.5">
-              <p className="mono-label mb-1.5">AI summary</p>
+              <p className="mono-label mb-1.5">KI-Zusammenfassung</p>
               <p className="t-callout text-ink-2">{document.summary}</p>
             </div>
           )}
@@ -125,11 +125,11 @@ export default function DocumentDetailPage() {
       <ConfirmDialog
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
-        title={`Delete ${document.name}?`}
-        description="This can't be undone."
+        title={`${document.name} löschen?`}
+        description="Das lässt sich nicht rückgängig machen."
         onConfirm={() => {
           deleteDocument(document.id);
-          toast.success("Document deleted");
+          toast.success("Dokument gelöscht");
           router.push("/documents");
         }}
       />

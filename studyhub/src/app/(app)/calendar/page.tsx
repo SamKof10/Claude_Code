@@ -61,13 +61,13 @@ export default function CalendarPage() {
   return (
     <div>
       <PageHeader
-        title="Calendar"
-        description="Exams, deadlines and study sessions in one place."
+        title="Kalender"
+        description="Prüfungen, Abgaben und Lerneinheiten an einem Ort."
         actions={
           <ToggleGroup type="single" value={view} onValueChange={(v) => v && setView(v as ViewMode)}>
-            <ToggleGroupItem value="day">Day</ToggleGroupItem>
-            <ToggleGroupItem value="week">Week</ToggleGroupItem>
-            <ToggleGroupItem value="month">Month</ToggleGroupItem>
+            <ToggleGroupItem value="day">Tag</ToggleGroupItem>
+            <ToggleGroupItem value="week">Woche</ToggleGroupItem>
+            <ToggleGroupItem value="month">Monat</ToggleGroupItem>
           </ToggleGroup>
         }
       />
@@ -81,7 +81,7 @@ export default function CalendarPage() {
         </Button>
         <h2 className="t-headline font-semibold text-ink">{title}</h2>
         <Button variant="ghost" size="sm" onClick={() => setAnchor(new Date())} className="ml-auto">
-          Today
+          Heute
         </Button>
       </div>
 

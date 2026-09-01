@@ -27,11 +27,11 @@ export default function ExamsPage() {
   return (
     <div>
       <PageHeader
-        title="Exams"
-        description="Tell StudyHub what's coming up and it builds the prep plan for you."
+        title="Prüfungen"
+        description="Sag StudyHub, was ansteht — den Lernplan dazu baut es dir."
         actions={
           <Button onClick={() => setFormOpen(true)}>
-            <Plus className="size-3.5" /> New exam
+            <Plus className="size-3.5" /> Neue Prüfung
           </Button>
         }
       />
@@ -39,9 +39,9 @@ export default function ExamsPage() {
       {exams.length === 0 ? (
         <EmptyState
           icon={GraduationCap}
-          title="No exams scheduled"
-          description="Add an exam with its date and topics, and StudyHub generates a week-by-week study plan automatically."
-          action={<Button onClick={() => setFormOpen(true)}>Schedule your first exam</Button>}
+          title="Keine Prüfungen eingetragen"
+          description="Trag eine Prüfung mit Datum und Themen ein, und StudyHub erstellt automatisch einen Lernplan Woche für Woche."
+          action={<Button onClick={() => setFormOpen(true)}>Erste Prüfung eintragen</Button>}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -57,11 +57,11 @@ export default function ExamsPage() {
         <ConfirmDialog
           open={!!pendingDelete}
           onOpenChange={(o) => !o && setPendingDelete(null)}
-          title={`Delete "${pendingDelete.title}"?`}
-          description="This can't be undone."
+          title={`„${pendingDelete.title}“ löschen?`}
+          description="Das lässt sich nicht rückgängig machen."
           onConfirm={() => {
             deleteExam(pendingDelete.id);
-            toast.success("Exam deleted");
+            toast.success("Prüfung gelöscht");
           }}
         />
       )}

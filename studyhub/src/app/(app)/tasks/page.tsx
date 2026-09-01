@@ -18,9 +18,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 
 const COLUMNS: { status: TaskStatus; label: string }[] = [
-  { status: "todo", label: "To do" },
-  { status: "in-progress", label: "In progress" },
-  { status: "done", label: "Done" },
+  { status: "todo", label: "Offen" },
+  { status: "in-progress", label: "In Arbeit" },
+  { status: "done", label: "Erledigt" },
 ];
 
 export default function TasksPage() {
@@ -46,11 +46,11 @@ export default function TasksPage() {
   return (
     <div>
       <PageHeader
-        title="Tasks"
-        description="Homework and to-dos, organized by status."
+        title="Aufgaben"
+        description="Hausaufgaben und To-dos, nach Status sortiert."
         actions={
           <Button onClick={() => setFormState({ open: true })}>
-            <Plus className="size-3.5" /> New task
+            <Plus className="size-3.5" /> Neue Aufgabe
           </Button>
         }
       />
@@ -59,10 +59,10 @@ export default function TasksPage() {
         <div className="mb-5 flex flex-wrap items-center gap-2">
           <Select value={subjectFilter} onValueChange={setSubjectFilter}>
             <SelectTrigger className="w-44">
-              <SelectValue placeholder="All subjects" />
+              <SelectValue placeholder="Alle Fächer" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All subjects</SelectItem>
+              <SelectItem value="all">Alle Fächer</SelectItem>
               {subjects.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
                   {s.name}
@@ -81,9 +81,9 @@ export default function TasksPage() {
       {tasks.length === 0 ? (
         <EmptyState
           icon={CheckSquare}
-          title="No tasks yet"
-          description="Add homework, assignments and to-dos — overdue ones are automatically highlighted on your dashboard."
-          action={<Button onClick={() => setFormState({ open: true })}>Add your first task</Button>}
+          title="Noch keine Aufgaben"
+          description="Trag Hausaufgaben, Abgaben und To-dos ein — überfällige werden in der Übersicht automatisch hervorgehoben."
+          action={<Button onClick={() => setFormState({ open: true })}>Erste Aufgabe anlegen</Button>}
         />
       ) : (
         <div className="grid gap-4 lg:grid-cols-3">
@@ -121,7 +121,7 @@ export default function TasksPage() {
                       />
                     </div>
                   ))}
-                  {items.length === 0 && <p className="px-1 py-4 text-center t-caption text-ink-3">Nothing here</p>}
+                  {items.length === 0 && <p className="px-1 py-4 text-center t-caption text-ink-3">Nichts hier</p>}
                 </div>
               </div>
             );
@@ -135,11 +135,11 @@ export default function TasksPage() {
         <ConfirmDialog
           open={!!pendingDelete}
           onOpenChange={(o) => !o && setPendingDelete(null)}
-          title={`Delete "${pendingDelete.title}"?`}
-          description="This can't be undone."
+          title={`„${pendingDelete.title}“ löschen?`}
+          description="Das lässt sich nicht rückgängig machen."
           onConfirm={() => {
             deleteTask(pendingDelete.id);
-            toast.success("Task deleted");
+            toast.success("Aufgabe gelöscht");
           }}
         />
       )}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { File, FileText, FileType, Image as ImageIcon, Loader2, MoreHorizontal, Star, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 import type { Subject, StudyDocument } from "@/lib/types";
 import { formatBytes } from "@/lib/utils";
 import { SubjectPill } from "@/components/shared/subject-pill";
@@ -52,7 +53,7 @@ export function DocumentCard({
           <div className="min-w-0 flex-1 pr-10">
             <h3 className="truncate t-body font-semibold text-ink">{document.name}</h3>
             <p className="mt-0.5 t-caption text-ink-3">
-              {document.pages ? `${document.pages} pages · ` : ""}
+              {document.pages ? `${document.pages} Seiten · ` : ""}
               {formatBytes(document.sizeBytes)}
             </p>
           </div>
@@ -65,9 +66,9 @@ export function DocumentCard({
               <Loader2 className="size-2.5 animate-spin" /> Processing
             </Badge>
           ) : document.status === "error" ? (
-            <Badge variant="danger">Failed</Badge>
+            <Badge variant="danger">Fehlgeschlagen</Badge>
           ) : (
-            <Badge variant="success">Ready</Badge>
+            <Badge variant="success">Bereit</Badge>
           )}
         </div>
 
@@ -81,7 +82,7 @@ export function DocumentCard({
           </div>
         )}
 
-        <p className="mt-3 t-caption text-ink-3">Uploaded {formatDistanceToNow(new Date(document.uploadDate), { addSuffix: true })}</p>
+        <p className="mt-3 t-caption text-ink-3">Hochgeladen {formatDistanceToNow(new Date(document.uploadDate), { addSuffix: true, locale: de })}</p>
       </Link>
     </div>
   );

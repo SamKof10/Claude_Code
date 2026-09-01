@@ -24,7 +24,7 @@ interface AuthState {
 
 function messageFor(error: unknown): string {
   if (error instanceof AuthError) return error.message;
-  return "Something went wrong. Try again.";
+  return "Etwas ist schiefgelaufen. Versuch es nochmal.";
 }
 
 export const useAuthStore = create<AuthState>()((set) => ({

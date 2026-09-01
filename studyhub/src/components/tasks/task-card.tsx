@@ -42,7 +42,7 @@ export function TaskCard({
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={onEdit}>Edit</DropdownMenuItem>
+            <DropdownMenuItem onSelect={onEdit}>Bearbeiten</DropdownMenuItem>
             <DropdownMenuItem variant="destructive" onSelect={onDelete}>
               <Trash2 /> Delete
             </DropdownMenuItem>

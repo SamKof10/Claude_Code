@@ -25,9 +25,9 @@ export const DEFAULT_FOCUS_SETTINGS: FocusSettings = {
 };
 
 export const PHASE_LABEL: Record<FocusPhase, string> = {
-  focus: "Focus",
-  "short-break": "Short break",
-  "long-break": "Long break",
+  focus: "Fokus",
+  "short-break": "Kurze Pause",
+  "long-break": "Lange Pause",
 };
 
 /** What just ended, handed to the caller so the side effects stay outside the store. */

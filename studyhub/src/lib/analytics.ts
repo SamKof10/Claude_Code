@@ -1,4 +1,5 @@
 import { addDays, differenceInCalendarDays, format, isToday, startOfDay, subDays } from "date-fns";
+import { de } from "date-fns/locale";
 import type {
   Exam,
   Flashcard,
@@ -39,7 +40,7 @@ export function dailyStudyMinutes(sessions: StudySession[], days = 14) {
   });
   return [...buckets.entries()].map(([date, minutes]) => ({
     date,
-    label: format(new Date(date), "EEE"),
+    label: format(new Date(date), "EEEEEE", { locale: de }),
     minutes,
   }));
 }
@@ -57,7 +58,7 @@ export function weeklyStudyMinutes(sessions: StudySession[], weeks = 8) {
   return [...buckets.entries()]
     .sort((a, b) => b[0] - a[0])
     .map(([weeksAgo, minutes]) => ({
-      label: weeksAgo === 0 ? "This wk" : `-${weeksAgo}w`,
+      label: weeksAgo === 0 ? "Diese W" : `-${weeksAgo} W`,
       minutes,
       hours: Math.round((minutes / 60) * 10) / 10,
     }));
@@ -224,7 +225,7 @@ export function generateInsights(state: StoreSlice): Insight[] {
   const weakest = weakestSubject(state);
 
   if (strongest) {
-    insights.push({ id: "strongest", tone: "positive", text: `You're strongest in ${strongest.subject.name} — keep the momentum with a quick review this week.` });
+    insights.push({ id: "strongest", tone: "positive", text: `Am stärksten bist du in ${strongest.subject.name} — halt den Schwung mit einer kurzen Wiederholung diese Woche.` });
   }
 
   if (weakest && (!strongest || weakest.subject.id !== strongest.subject.id)) {
@@ -232,7 +233,7 @@ export function generateInsights(state: StoreSlice): Insight[] {
     insights.push({
       id: "weakest",
       tone: "warning",
-      text: `${weakest.subject.name} is your weakest subject right now, averaging ${pct}% across recent quizzes and flashcards.`,
+      text: `${weakest.subject.name} ist gerade dein schwächstes Fach — im Schnitt ${pct}% über die letzten Quiz und Karteikarten.`,
     });
   }
 
@@ -256,7 +257,7 @@ export function generateInsights(state: StoreSlice): Insight[] {
       insights.push({
         id: `trend-${subjectId}`,
         tone: delta > 0 ? "positive" : "warning",
-        text: `Your ${subject.name} quiz performance ${delta > 0 ? "improved" : "dropped"} ${Math.abs(delta)}% since your first attempt.`,
+        text: `Deine Quiz-Leistung in ${subject.name} ist seit dem ersten Versuch um ${Math.abs(delta)}% ${delta > 0 ? "gestiegen" : "gefallen"}.`,
       });
     }
   }
@@ -272,7 +273,7 @@ export function generateInsights(state: StoreSlice): Insight[] {
       insights.push({
         id: `stale-${deck.id}`,
         tone: "warning",
-        text: `You haven't reviewed "${deck.name}"${subject ? ` (${subject.name})` : ""} in ${daysSince} days.`,
+        text: `„${deck.name}“${subject ? ` (${subject.name})` : ""} hast du seit ${daysSince} Tagen nicht mehr wiederholt.`,
       });
     }
   });
@@ -286,7 +287,7 @@ export function generateInsights(state: StoreSlice): Insight[] {
       insights.push({
         id: `exam-${exam.id}`,
         tone: "warning",
-        text: `You have "${exam.title}"${subject ? ` (${subject.name})` : ""} in ${daysLeft} day${daysLeft === 1 ? "" : "s"} and are only ${readiness}% ready.`,
+        text: `„${exam.title}“${subject ? ` (${subject.name})` : ""} ist in ${daysLeft} ${daysLeft === 1 ? "Tag" : "Tagen"}, und du bist erst zu ${readiness}% bereit.`,
       });
     }
   });
@@ -297,7 +298,7 @@ export function generateInsights(state: StoreSlice): Insight[] {
     insights.push({
       id: "today-focus",
       tone: "neutral",
-      text: `Based on your recent performance, spend about ${Math.min(75, suggestedMinutes)} minutes on ${weakest.subject.name} today.`,
+      text: `Nach deiner letzten Leistung: heute etwa ${Math.min(75, suggestedMinutes)} Minuten in ${weakest.subject.name} stecken.`,
     });
   }
 

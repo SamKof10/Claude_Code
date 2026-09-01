@@ -1,4 +1,15 @@
 import type { StoreSlice } from "@/lib/analytics";
+import type { StudySessionType } from "@/lib/types";
+
+const SESSION_LABEL: Record<StudySessionType, string> = {
+  flashcards: "Karteikarten",
+  quiz: "Quiz",
+  reading: "Lesen",
+  notes: "Notizen",
+  "ai-tutor": "KI-Tutor",
+  document: "Dokument",
+  focus: "Fokusblock",
+};
 
 export type CalendarEventKind = "exam" | "task" | "session";
 
@@ -38,11 +49,11 @@ export function buildCalendarEvents(state: StoreSlice): CalendarEvent[] {
     events.push({
       id: `session-${s.id}`,
       kind: "session",
-      title: `Studied ${s.type.replace("-", " ")}`,
+      title: `Gelernt: ${SESSION_LABEL[s.type]}`,
       date: s.date,
       subjectId: s.subjectId,
       href: "/progress",
-      meta: `${s.durationMinutes}m`,
+      meta: `${s.durationMinutes} Min`,
     });
   });
 

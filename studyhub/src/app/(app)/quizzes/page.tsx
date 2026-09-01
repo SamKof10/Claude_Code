@@ -26,12 +26,12 @@ export default function QuizzesPage() {
   return (
     <div>
       <PageHeader
-        title="Quizzes"
-        description="Test yourself and see exactly what to review next."
+        title="Quiz"
+        description="Teste dich und sieh genau, was du als Nächstes wiederholen solltest."
         actions={
           <Button asChild>
             <Link href="/quizzes/new">
-              <Plus className="size-3.5" /> Generate quiz
+              <Plus className="size-3.5" /> Quiz erstellen
             </Link>
           </Button>
         }
@@ -56,11 +56,11 @@ export default function QuizzesPage() {
       {quizzes.length === 0 ? (
         <EmptyState
           icon={ListChecks}
-          title="No quizzes yet"
-          description="Generate a quiz from a document, note, subject or topic — StudyHub will grade it and tell you exactly what to revise."
+          title="Noch keine Quiz"
+          description="Erstell ein Quiz aus einem Dokument, einer Notiz, einem Fach oder Thema — StudyHub wertet es aus und sagt dir, was du wiederholen musst."
           action={
             <Button asChild>
-              <Link href="/quizzes/new">Generate your first quiz</Link>
+              <Link href="/quizzes/new">Erstes Quiz erstellen</Link>
             </Button>
           }
         />
@@ -76,11 +76,11 @@ export default function QuizzesPage() {
         <ConfirmDialog
           open={!!pendingDelete}
           onOpenChange={(o) => !o && setPendingDelete(null)}
-          title={`Delete "${pendingDelete.title}"?`}
-          description="This can't be undone."
+          title={`„${pendingDelete.title}“ löschen?`}
+          description="Das lässt sich nicht rückgängig machen."
           onConfirm={() => {
             deleteQuiz(pendingDelete.id);
-            toast.success("Quiz deleted");
+            toast.success("Quiz gelöscht");
           }}
         />
       )}

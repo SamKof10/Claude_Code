@@ -40,13 +40,13 @@ export function ExamCard({ exam, subject, onDelete }: { exam: Exam; subject: Sub
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {subject && <SubjectPill subject={subject} />}
           <Badge variant={daysLeft <= 3 ? "danger" : daysLeft <= 7 ? "warning" : "outline"}>
-            {daysLeft < 0 ? "Past" : daysLeft === 0 ? "Today" : `${daysLeft}d left`}
+            {daysLeft < 0 ? "Vorbei" : daysLeft === 0 ? "Heute" : `noch ${daysLeft} T`}
           </Badge>
         </div>
 
         <div className="mt-3">
           <div className="mb-1.5 flex items-center justify-between t-caption">
-            <span className="text-ink-3">Readiness</span>
+            <span className="text-ink-3">Bereitschaft</span>
             <span className="font-medium text-ink">{readiness}%</span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-2">

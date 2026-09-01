@@ -70,26 +70,26 @@ function TaskFormBody({ task, defaultSubjectId, onClose }: { task?: StudyTask; d
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{task ? "Edit task" : "New task"}</DialogTitle>
+        <DialogTitle>{task ? "Aufgabe bearbeiten" : "Neue Aufgabe"}</DialogTitle>
       </DialogHeader>
       <div className="space-y-4">
         <div className="space-y-1.5">
-          <Label>Title</Label>
-          <Input autoFocus placeholder="What needs to get done?" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <Label>Titel</Label>
+          <Input autoFocus placeholder="Was ist zu tun?" value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
         <div className="space-y-1.5">
-          <Label>Description</Label>
-          <Textarea rows={2} placeholder="Optional details" value={description} onChange={(e) => setDescription(e.target.value)} />
+          <Label>Beschreibung</Label>
+          <Textarea rows={2} placeholder="Optionale Details" value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label>Subject</Label>
+            <Label>Fach</Label>
             <Select value={subjectId} onValueChange={setSubjectId}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">No subject</SelectItem>
+                <SelectItem value="none">Kein Fach</SelectItem>
                 {subjects.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
                     {s.name}
@@ -99,50 +99,50 @@ function TaskFormBody({ task, defaultSubjectId, onClose }: { task?: StudyTask; d
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label>Priority</Label>
+            <Label>Priorität</Label>
             <Select value={priority} onValueChange={(v) => setPriority(v as TaskPriority)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="low">Niedrig</SelectItem>
+                <SelectItem value="medium">Mittel</SelectItem>
+                <SelectItem value="high">Hoch</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label>Deadline</Label>
+            <Label>Frist</Label>
             <Input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label>Est. duration (min)</Label>
+            <Label>Dauer ca. (Min)</Label>
             <Input type="number" min={5} step={5} value={estimated} onChange={(e) => setEstimated(e.target.value)} />
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label>Repeat</Label>
+          <Label>Wiederholung</Label>
           <Select value={recurring} onValueChange={setRecurring}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">Doesn&apos;t repeat</SelectItem>
-              <SelectItem value="daily">Daily</SelectItem>
-              <SelectItem value="weekly">Weekly</SelectItem>
-              <SelectItem value="monthly">Monthly</SelectItem>
+              <SelectItem value="none">Wiederholt sich nicht</SelectItem>
+              <SelectItem value="daily">Täglich</SelectItem>
+              <SelectItem value="weekly">Wöchentlich</SelectItem>
+              <SelectItem value="monthly">Monatlich</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
       <DialogFooter>
         <Button variant="ghost" onClick={onClose}>
-          Cancel
+          Abbrechen
         </Button>
         <Button onClick={submit} disabled={!title.trim()}>
-          {task ? "Save changes" : "Create task"}
+          {task ? "Änderungen speichern" : "Aufgabe anlegen"}
         </Button>
       </DialogFooter>
     </>

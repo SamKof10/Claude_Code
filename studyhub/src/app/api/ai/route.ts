@@ -22,11 +22,11 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiger Anfrageinhalt." }, { status: 400 });
   }
 
   if (!body || typeof body !== "object" || !("action" in body)) {
-    return NextResponse.json({ error: "Missing action." }, { status: 400 });
+    return NextResponse.json({ error: "Aktion fehlt." }, { status: 400 });
   }
 
   try {
@@ -96,10 +96,10 @@ export async function POST(request: Request) {
       }
 
       default:
-        return NextResponse.json({ error: "Unknown action." }, { status: 400 });
+        return NextResponse.json({ error: "Unbekannte Aktion." }, { status: 400 });
     }
   } catch (err) {
     console.error("[api/ai]", err);
-    return NextResponse.json({ error: "The AI service is temporarily unavailable. Please try again." }, { status: 500 });
+    return NextResponse.json({ error: "Der KI-Dienst ist gerade nicht erreichbar. Versuch es bitte nochmal." }, { status: 500 });
   }
 }

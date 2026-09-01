@@ -2,23 +2,23 @@ import { BookOpenCheck, Dumbbell, GraduationCap, MessageCircleQuestion, Sparkles
 import type { TutorMode } from "@/lib/types";
 
 export const TUTOR_MODES: { value: TutorMode; label: string; description: string; icon: LucideIcon }[] = [
-  { value: "explain", label: "Explain", description: "Clear, structured explanations", icon: Sparkles },
-  { value: "socratic", label: "Socratic", description: "Guides you with questions", icon: MessageCircleQuestion },
-  { value: "exam", label: "Exam", description: "Acts like an examiner", icon: GraduationCap },
-  { value: "simplify", label: "Simplify", description: "Plain language, no jargon", icon: Wand2 },
-  { value: "practice", label: "Practice", description: "Generates exercises", icon: Dumbbell },
-  { value: "review", label: "Review", description: "Finds your knowledge gaps", icon: BookOpenCheck },
+  { value: "explain", label: "Erklären", description: "Klare, strukturierte Erklärungen", icon: Sparkles },
+  { value: "socratic", label: "Sokratisch", description: "Führt dich mit Fragen hin", icon: MessageCircleQuestion },
+  { value: "exam", label: "Prüfung", description: "Verhält sich wie ein Prüfer", icon: GraduationCap },
+  { value: "simplify", label: "Vereinfachen", description: "Einfache Sprache, kein Fachjargon", icon: Wand2 },
+  { value: "practice", label: "Üben", description: "Erzeugt Übungsaufgaben", icon: Dumbbell },
+  { value: "review", label: "Wiederholen", description: "Findet deine Wissenslücken", icon: BookOpenCheck },
 ];
 
 export function suggestedQuestions(mode: TutorMode, subjectName?: string): string[] {
-  const subj = subjectName ?? "this subject";
+  const subj = subjectName ?? "diesem Fach";
   const byMode: Record<TutorMode, string[]> = {
-    explain: [`Explain the most important concept in ${subj} right now`, "What's a topic I keep struggling with?", "Break down a tricky formula step by step"],
-    socratic: [`Quiz me with questions about ${subj}`, "Help me work through a problem without giving the answer", "Ask me to justify what I just said"],
-    exam: [`Give me an exam-style question on ${subj}`, "Grade my answer to a practice question", "What would lose me marks on this topic?"],
-    simplify: [`Explain ${subj} like I'm 15`, "Use a real-world analogy for this concept", "What's the one-sentence version of this idea?"],
-    practice: [`Give me a practice problem for ${subj}`, "Make it harder", "Give me a problem similar to one I got wrong"],
-    review: ["What don't I understand well yet?", "Test whether I actually know this topic", "Summarize my weak spots this week"],
+    explain: [`Erklär mir das wichtigste Konzept in ${subj}`, "Womit tue ich mir immer wieder schwer?", "Zerleg eine schwierige Formel Schritt für Schritt"],
+    socratic: [`Frag mich zu ${subj} ab`, "Hilf mir durch eine Aufgabe, ohne die Lösung zu verraten", "Lass mich begründen, was ich gerade gesagt habe"],
+    exam: [`Gib mir eine Prüfungsfrage zu ${subj}`, "Bewerte meine Antwort auf eine Übungsfrage", "Wo würde ich bei diesem Thema Punkte verlieren?"],
+    simplify: [`Erklär mir ${subj}, als wäre ich 15`, "Nimm einen Vergleich aus dem Alltag für dieses Konzept", "Was ist die Ein-Satz-Version davon?"],
+    practice: [`Gib mir eine Übungsaufgabe zu ${subj}`, "Mach es schwerer", "Gib mir eine Aufgabe wie die, die ich falsch hatte"],
+    review: ["Was verstehe ich noch nicht richtig?", "Prüf, ob ich dieses Thema wirklich kann", "Fass meine Schwachstellen dieser Woche zusammen"],
   };
   return byMode[mode];
 }

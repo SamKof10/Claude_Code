@@ -16,17 +16,17 @@ export function ScoreLineChart({
   const delta = last - first;
   const trend =
     data.length < 2
-      ? "not enough attempts to show a trend yet"
+      ? "noch zu wenige Versuche für einen Trend"
       : delta > 0
-        ? `up ${delta} points since the first attempt`
+        ? `${delta} Punkte mehr als beim ersten Versuch`
         : delta < 0
-          ? `down ${Math.abs(delta)} points since the first attempt`
-          : "flat since the first attempt";
+          ? `${Math.abs(delta)} Punkte weniger als beim ersten Versuch`
+          : "unverändert seit dem ersten Versuch";
 
   return (
     <AccessibleChart
-      summary={`Quiz scores across ${data.length} completed ${data.length === 1 ? "quiz" : "quizzes"}, most recently ${last}% — ${trend}.`}
-      columns={["Quiz", "Score"]}
+      summary={`Quiz-Ergebnisse aus ${data.length} abgeschlossenen Quiz, zuletzt ${last}% — ${trend}.`}
+      columns={["Quiz", "Ergebnis"]}
       rows={data.map((d) => ({ label: d.title ?? d.label, value: `${d.score}%` }))}
     >
       <ResponsiveContainer width="100%" height={height}>

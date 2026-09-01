@@ -18,10 +18,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const QUESTION_TYPES: { value: QuizQuestionType; label: string }[] = [
-  { value: "mcq", label: "Multiple choice" },
-  { value: "true-false", label: "True / False" },
-  { value: "short-answer", label: "Short answer" },
-  { value: "fill-blank", label: "Fill in the blank" },
+  { value: "mcq", label: "Multiple Choice" },
+  { value: "true-false", label: "Wahr / Falsch" },
+  { value: "short-answer", label: "Kurzantwort" },
+  { value: "fill-blank", label: "Lückentext" },
 ];
 
 export default function NewQuizPage() {
@@ -75,7 +75,7 @@ export default function NewQuizPage() {
     }
 
     if (types.length === 0) {
-      toast.error("Pick at least one question type.");
+      toast.error("Wähl mindestens einen Fragetyp.");
       return;
     }
 
@@ -103,7 +103,7 @@ export default function NewQuizPage() {
       spendAICredits(3);
       router.push(`/quizzes/${quiz.id}`);
     } catch (err) {
-      toast.error(err instanceof AIClientError ? err.message : "Couldn't generate the quiz. Try again.");
+      toast.error(err instanceof AIClientError ? err.message : "Das Quiz konnte nicht erstellt werden. Versuch es nochmal.");
     } finally {
       setLoading(false);
     }
@@ -111,15 +111,15 @@ export default function NewQuizPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <PageHeader title="Generate a quiz" description="Choose what to be quizzed on, and how." />
+      <PageHeader title="Quiz erstellen" description="Wähl aus, worüber du abgefragt wirst — und wie." />
 
       <Card>
         <CardContent className="space-y-5 pt-5">
           <div className="space-y-1.5">
-            <Label>Subject</Label>
+            <Label>Fach</Label>
             <Select value={subjectId} onValueChange={(v) => { setSubjectId(v); setSourceId(""); }}>
               <SelectTrigger>
-                <SelectValue placeholder="Choose a subject" />
+                <SelectValue placeholder="Fach wählen" />
               </SelectTrigger>
               <SelectContent>
                 {subjects.map((s) => (
@@ -132,7 +132,7 @@ export default function NewQuizPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Quiz me on</Label>
+            <Label>Frag mich ab über</Label>
             <ToggleGroup type="single" value={sourceKind} onValueChange={(v) => v && setSourceKind(v as never)} className="w-full">
               <ToggleGroupItem value="topic" className="flex-1">
                 A topic
@@ -149,7 +149,7 @@ export default function NewQuizPage() {
           {sourceKind === "topic" && (
             <>
               <div className="space-y-1.5">
-                <Label>Topic</Label>
+                <Label>Thema</Label>
                 <Input placeholder="e.g. The Krebs cycle" value={topic} onChange={(e) => setTopic(e.target.value)} />
               </div>
               <div className="space-y-1.5">
@@ -161,10 +161,10 @@ export default function NewQuizPage() {
 
           {sourceKind === "document" && (
             <div className="space-y-1.5">
-              <Label>Document</Label>
+              <Label>Dokument</Label>
               <Select value={sourceId} onValueChange={setSourceId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a document" />
+                  <SelectValue placeholder="Dokument wählen" />
                 </SelectTrigger>
                 <SelectContent>
                   {subjectDocs.map((d) => (
@@ -179,10 +179,10 @@ export default function NewQuizPage() {
 
           {sourceKind === "note" && (
             <div className="space-y-1.5">
-              <Label>Note</Label>
+              <Label>Notiz</Label>
               <Select value={sourceId} onValueChange={setSourceId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a note" />
+                  <SelectValue placeholder="Notiz wählen" />
                 </SelectTrigger>
                 <SelectContent>
                   {subjectNotes.map((n) => (
@@ -197,7 +197,7 @@ export default function NewQuizPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label>Number of questions</Label>
+              <Label>Anzahl der Fragen</Label>
               <Select value={count} onValueChange={setCount}>
                 <SelectTrigger>
                   <SelectValue />
@@ -212,7 +212,7 @@ export default function NewQuizPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Difficulty</Label>
+              <Label>Schwierigkeit</Label>
               <Select value={difficulty} onValueChange={(v) => setDifficulty(v as Difficulty)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -227,7 +227,7 @@ export default function NewQuizPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Question types</Label>
+            <Label>Fragetypen</Label>
             <div className="grid grid-cols-2 gap-2">
               {QUESTION_TYPES.map((t) => (
                 <label key={t.value} className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 t-callout text-ink-2">
@@ -239,13 +239,13 @@ export default function NewQuizPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Time limit (minutes, optional)</Label>
+            <Label>Zeitlimit (Minuten, optional)</Label>
             <Input type="number" min={0} placeholder="No limit" value={timeLimit} onChange={(e) => setTimeLimit(e.target.value)} className="w-32" />
           </div>
 
           <Button className="w-full" onClick={generate} disabled={loading || !subjectId}>
             {loading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-            {loading ? "Generating…" : "Generate quiz"}
+            {loading ? "Wird erstellt…" : "Quiz erstellen"}
           </Button>
         </CardContent>
       </Card>

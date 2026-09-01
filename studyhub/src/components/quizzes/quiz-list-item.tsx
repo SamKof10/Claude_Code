@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 import { CircleDot, ListChecks, MoreHorizontal, Trash2 } from "lucide-react";
 import type { Quiz, Subject } from "@/lib/types";
 import { SubjectPill } from "@/components/shared/subject-pill";
@@ -27,12 +28,12 @@ export function QuizListItem({ quiz, subject, onDelete }: { quiz: Quiz; subject:
           <Badge variant="outline">{quiz.questions.length} questions</Badge>
           <Badge variant="outline">{quiz.difficulty}</Badge>
           {quiz.status === "completed" && typeof quiz.score === "number" && <Badge variant={scoreTone(quiz.score)}>{quiz.score}%</Badge>}
-          {quiz.status === "in-progress" && <Badge variant="signal">In progress</Badge>}
-          {quiz.status === "draft" && <Badge variant="outline">Not started</Badge>}
+          {quiz.status === "in-progress" && <Badge variant="signal">Läuft</Badge>}
+          {quiz.status === "draft" && <Badge variant="outline">Nicht gestartet</Badge>}
         </div>
       </Link>
       <span className="hidden shrink-0 t-caption text-ink-3 sm:block">
-        {formatDistanceToNow(new Date(quiz.completedAt ?? quiz.createdAt), { addSuffix: true })}
+        {formatDistanceToNow(new Date(quiz.completedAt ?? quiz.createdAt), { addSuffix: true, locale: de })}
       </span>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

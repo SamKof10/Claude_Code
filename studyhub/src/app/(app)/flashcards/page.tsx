@@ -39,11 +39,11 @@ export default function FlashcardsPage() {
   return (
     <div>
       <PageHeader
-        title="Flashcards"
-        description="Spaced repetition that adapts to what you actually know."
+        title="Karteikarten"
+        description="Verteiltes Wiederholen, das sich an deinem Wissensstand ausrichtet."
         actions={
           <Button onClick={() => setFormOpen(true)}>
-            <Plus className="size-3.5" /> New deck
+            <Plus className="size-3.5" /> Neuer Stapel
           </Button>
         }
       />
@@ -51,9 +51,9 @@ export default function FlashcardsPage() {
       {decks.length === 0 ? (
         <EmptyState
           icon={Layers3}
-          title="No decks yet"
-          description="Create a deck by hand, or generate one instantly from a document or topic with AI."
-          action={<Button onClick={() => setFormOpen(true)}>Create your first deck</Button>}
+          title="Noch keine Stapel"
+          description="Leg einen Stapel selbst an — oder lass die KI sofort einen aus einem Dokument oder Thema erzeugen."
+          action={<Button onClick={() => setFormOpen(true)}>Ersten Stapel anlegen</Button>}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -83,11 +83,11 @@ export default function FlashcardsPage() {
         <ConfirmDialog
           open={!!pendingDelete}
           onOpenChange={(o) => !o && setPendingDelete(null)}
-          title={`Delete "${pendingDelete.name}"?`}
-          description="This deletes all of its cards too. This can't be undone."
+          title={`„${pendingDelete.name}“ löschen?`}
+          description="Damit verschwinden auch alle Karten darin. Das lässt sich nicht rückgängig machen."
           onConfirm={() => {
             deleteDeck(pendingDelete.id);
-            toast.success("Deck deleted");
+            toast.success("Stapel gelöscht");
           }}
         />
       )}

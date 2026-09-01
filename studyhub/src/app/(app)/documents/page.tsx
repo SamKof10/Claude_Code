@@ -40,8 +40,8 @@ export default function DocumentsPage() {
   return (
     <div>
       <PageHeader
-        title="Documents"
-        description="Every PDF, doc, image and note you've uploaded — with AI ready to explain any of it."
+        title="Dokumente"
+        description="Jedes PDF, Dokument und Bild, das du hochgeladen hast — die KI erklärt dir jedes davon."
         actions={
           <Button
             onClick={() => {
@@ -49,7 +49,7 @@ export default function DocumentsPage() {
               router.replace("/documents");
             }}
           >
-            <Plus className="size-3.5" /> Upload document
+            <Plus className="size-3.5" /> Dokument hochladen
           </Button>
         }
       />
@@ -58,14 +58,14 @@ export default function DocumentsPage() {
         <div className="mb-5 flex flex-wrap gap-2">
           <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-ink-3" />
-            <Input placeholder="Search documents…" value={query} onChange={(e) => setQuery(e.target.value)} className="pl-8" />
+            <Input placeholder="Dokumente durchsuchen…" value={query} onChange={(e) => setQuery(e.target.value)} className="pl-8" />
           </div>
           <Select value={subjectFilter} onValueChange={setSubjectFilter}>
             <SelectTrigger className="w-44">
-              <SelectValue placeholder="All subjects" />
+              <SelectValue placeholder="Alle Fächer" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All subjects</SelectItem>
+              <SelectItem value="all">Alle Fächer</SelectItem>
               {subjects.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
                   {s.name}
@@ -79,12 +79,12 @@ export default function DocumentsPage() {
       {documents.length === 0 ? (
         <EmptyState
           icon={FileText}
-          title="No documents yet"
-          description="Upload a PDF, Word doc, image or text file and StudyHub's AI can summarize it, explain it, or turn it into flashcards and quizzes."
-          action={<Button onClick={() => setUploadOpen(true)}>Upload your first document</Button>}
+          title="Noch keine Dokumente"
+          description="Lade ein PDF, Word-Dokument, Bild oder eine Textdatei hoch — die KI fasst zusammen, erklärt oder macht Karteikarten und Quiz daraus."
+          action={<Button onClick={() => setUploadOpen(true)}>Erstes Dokument hochladen</Button>}
         />
       ) : sorted.length === 0 ? (
-        <EmptyState icon={Search} title="No matching documents" description="Try a different search term or subject filter." />
+        <EmptyState icon={Search} title="Keine passenden Dokumente" description="Versuch einen anderen Suchbegriff oder ein anderes Fach." />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {sorted.map((doc) => (
@@ -105,11 +105,11 @@ export default function DocumentsPage() {
         <ConfirmDialog
           open={!!pendingDelete}
           onOpenChange={(o) => !o && setPendingDelete(null)}
-          title={`Delete ${pendingDelete.name}?`}
-          description="This can't be undone."
+          title={`${pendingDelete.name} löschen?`}
+          description="Das lässt sich nicht rückgängig machen."
           onConfirm={() => {
             deleteDocument(pendingDelete.id);
-            toast.success("Document deleted");
+            toast.success("Dokument gelöscht");
           }}
         />
       )}

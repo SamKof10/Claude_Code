@@ -1,5 +1,14 @@
 import type { TutorMode } from "@/lib/types";
 
+/**
+ * The interface is German, so every answer has to be. This is stated as its
+ * own rule rather than by writing the instructions in German, because the
+ * instructions are for the model and the output is for the student — mixing
+ * the two makes it easy to lose one when the other is edited.
+ */
+export const GERMAN_OUTPUT_RULE =
+  "Antworte immer auf Deutsch, unabhängig von der Sprache der Frage oder des Materials. Sprich die Schülerin oder den Schüler mit „du“ an. Fachbegriffe dürfen in der Originalsprache stehen, wenn es die übliche Schreibweise ist.";
+
 const MODE_INSTRUCTIONS: Record<TutorMode, string> = {
   explain:
     "Explain the topic clearly and thoroughly, like a great teacher. Use structure (short headings, lists) where it helps. Check understanding by ending with one short follow-up question.",
@@ -20,6 +29,7 @@ export function tutorSystemPrompt(opts: { mode: TutorMode; subjectName?: string;
     "You are the AI Tutor inside StudyHub, a study platform for school students. Be warm, precise and genuinely helpful — never condescending.",
     `Teaching mode: ${opts.mode}. ${MODE_INSTRUCTIONS[opts.mode]}`,
     "Format with Markdown (short headings, bullet lists, **bold** for key terms). Use LaTeX ($...$ or $$...$$) for any mathematical notation. Keep responses focused — avoid padding.",
+    GERMAN_OUTPUT_RULE,
   ];
   if (opts.subjectName) parts.push(`Current subject: ${opts.subjectName}.`);
   if (opts.studentLevel) parts.push(`Student's self-reported level: ${opts.studentLevel}.`);
@@ -32,4 +42,7 @@ export function tutorSystemPrompt(opts: { mode: TutorMode; subjectName?: string;
 }
 
 export const JSON_ONLY_SUFFIX =
-  "\n\nRespond with ONLY valid JSON matching the requested shape. No prose, no markdown code fences, no commentary before or after.";
+  "\n\nRespond with ONLY valid JSON matching the requested shape. No prose, no markdown code fences, no commentary before or after." +
+  // Structure in English, content in German: the keys are read by code, the
+  // values are read by the student.
+  `\n\nJede Zeichenkette im JSON — Fragen, Antworten, Erklärungen, Titel, Themen — ist auf Deutsch. Die JSON-Schlüssel bleiben unverändert.\n${GERMAN_OUTPUT_RULE}`;

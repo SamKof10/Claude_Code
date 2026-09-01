@@ -25,8 +25,8 @@ export default function SubjectsPage() {
   return (
     <div>
       <PageHeader
-        title="Subjects"
-        description="Every subject gets its own workspace — documents, notes, flashcards, quizzes and progress."
+        title="Fächer"
+        description="Jedes Fach bekommt seinen eigenen Bereich — Dokumente, Notizen, Karteikarten, Quiz und Fortschritt."
         actions={
           <Button
             onClick={() => {
@@ -34,7 +34,7 @@ export default function SubjectsPage() {
               setFormOpen(true);
             }}
           >
-            <Plus className="size-3.5" /> New subject
+            <Plus className="size-3.5" /> Neues Fach
           </Button>
         }
       />
@@ -42,9 +42,9 @@ export default function SubjectsPage() {
       {perf.length === 0 ? (
         <EmptyState
           icon={Layers}
-          title="No subjects yet"
-          description="Add your first subject to start organizing documents, notes and study plans."
-          action={<Button onClick={() => setFormOpen(true)}>Add your first subject</Button>}
+          title="Noch keine Fächer"
+          description="Leg dein erstes Fach an, um Dokumente, Notizen und Lernpläne zu ordnen."
+          action={<Button onClick={() => setFormOpen(true)}>Erstes Fach anlegen</Button>}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -70,11 +70,11 @@ export default function SubjectsPage() {
         <ConfirmDialog
           open={!!pendingDelete}
           onOpenChange={(o) => !o && setPendingDelete(null)}
-          title={`Delete ${pendingDelete.name}?`}
-          description="This removes the subject. Its documents, decks and exams are deleted too; notes and tasks are kept but unassigned."
+          title={`${pendingDelete.name} löschen?`}
+          description="Das Fach wird entfernt. Seine Dokumente, Stapel und Prüfungen verschwinden mit; Notizen und Aufgaben bleiben, aber ohne Fach."
           onConfirm={() => {
             deleteSubject(pendingDelete.id);
-            toast.success(`${pendingDelete.name} deleted`);
+            toast.success(`${pendingDelete.name} gelöscht`);
           }}
         />
       )}

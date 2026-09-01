@@ -50,7 +50,7 @@ function SubjectFormBody({ subject, onClose }: { subject?: Subject; onClose: () 
     if (!name.trim()) return;
     if (subject) {
       updateSubject(subject.id, { name: name.trim(), icon, color });
-      toast.success("Subject updated");
+      toast.success("Fach aktualisiert");
       onClose();
     } else {
       const created = addSubject({ name: name.trim(), icon, color });
@@ -63,8 +63,8 @@ function SubjectFormBody({ subject, onClose }: { subject?: Subject; onClose: () 
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{subject ? "Edit subject" : "New subject"}</DialogTitle>
-        <DialogDescription>Give it a name, an icon and an accent color.</DialogDescription>
+        <DialogTitle>{subject ? "Fach bearbeiten" : "Neues Fach"}</DialogTitle>
+        <DialogDescription>Gib ihm einen Namen, ein Symbol und eine Farbe.</DialogDescription>
       </DialogHeader>
 
       <div className="space-y-4">
@@ -81,7 +81,7 @@ function SubjectFormBody({ subject, onClose }: { subject?: Subject; onClose: () 
         </div>
 
         <div className="space-y-1.5">
-          <Label>Color</Label>
+          <Label>Farbe</Label>
           <div className="flex flex-wrap gap-2">
             {COLORS.map((c) => (
               <button
@@ -98,7 +98,7 @@ function SubjectFormBody({ subject, onClose }: { subject?: Subject; onClose: () 
         </div>
 
         <div className="space-y-1.5">
-          <Label>Icon</Label>
+          <Label>Symbol</Label>
           <div className="grid grid-cols-8 gap-1.5">
             {SUBJECT_ICON_NAMES.map((iconName) => {
               const Icon = getSubjectIcon(iconName);
@@ -129,7 +129,7 @@ function SubjectFormBody({ subject, onClose }: { subject?: Subject; onClose: () 
           Cancel
         </Button>
         <Button onClick={submit} disabled={!name.trim()}>
-          {subject ? "Save changes" : "Create subject"}
+          {subject ? "Änderungen speichern" : "Fach anlegen"}
         </Button>
       </DialogFooter>
     </>

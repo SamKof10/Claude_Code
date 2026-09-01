@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import type { SubjectPerformance } from "@/lib/analytics";
 import { subjectColorVar } from "@/lib/icon-map";
@@ -63,7 +64,7 @@ export function SubjectCard({
 
         <div className="mt-4">
           <div className="mb-1.5 flex items-center justify-between t-caption">
-            <span className="text-ink-3">Progress</span>
+            <span className="text-ink-3">Fortschritt</span>
             <span className="font-medium text-ink">{progress}%</span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
@@ -76,7 +77,7 @@ export function SubjectCard({
 
         <div className="mt-4 grid grid-cols-2 gap-3 t-caption">
           <div>
-            <p className="text-ink-3">Quiz average</p>
+            <p className="text-ink-3">Quiz-Schnitt</p>
             <p className="font-medium text-ink">{quizAverage != null ? `${quizAverage}%` : "—"}</p>
           </div>
           <div>
@@ -104,7 +105,7 @@ export function SubjectCard({
         )}
 
         <p className="mt-3 t-caption text-ink-3">
-          {lastActivity ? `Active ${formatDistanceToNow(new Date(lastActivity), { addSuffix: true })}` : "No activity yet"}
+          {lastActivity ? `Aktiv ${formatDistanceToNow(new Date(lastActivity), { addSuffix: true, locale: de })}` : "Noch keine Aktivität"}
         </p>
       </Link>
     </div>

@@ -17,7 +17,7 @@ function subtle(): SubtleCrypto {
   if (!c?.subtle) {
     throw new AuthError(
       "unavailable",
-      "This browser can't hash passwords here. Accounts need a secure connection (https or localhost)."
+      "Dieser Browser kann hier keine Passwörter verschlüsseln. Konten brauchen eine sichere Verbindung (https oder localhost)."
     );
   }
   return c.subtle;

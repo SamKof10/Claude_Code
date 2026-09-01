@@ -46,14 +46,14 @@ const KIND_ICON: Record<SearchIndexEntry["kind"], React.ElementType> = {
 };
 
 const KIND_LABEL: Record<SearchIndexEntry["kind"], string> = {
-  subject: "Subjects",
-  document: "Documents",
-  note: "Notes",
-  "flashcard-deck": "Flashcard decks",
-  task: "Tasks",
-  exam: "Exams",
-  quiz: "Quizzes",
-  conversation: "AI conversations",
+  subject: "Fächer",
+  document: "Dokumente",
+  note: "Notizen",
+  "flashcard-deck": "Kartenstapel",
+  task: "Aufgaben",
+  exam: "Prüfungen",
+  quiz: "Quiz",
+  conversation: "KI-Gespräche",
 };
 
 export function CommandPalette() {
@@ -87,25 +87,25 @@ export function CommandPalette() {
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Search StudyHub, or type a command…" />
+      <CommandInput placeholder="StudyHub durchsuchen oder Befehl eingeben…" />
       <CommandList>
-        <CommandEmpty>No results. Try a different search.</CommandEmpty>
+        <CommandEmpty>Nichts gefunden. Versuch einen anderen Suchbegriff.</CommandEmpty>
 
-        <CommandGroup heading="Quick actions">
+        <CommandGroup heading="Schnellaktionen">
           <CommandItem onSelect={() => go("/notes?new=1")}>
-            <NotebookPen /> New note
+            <NotebookPen /> Neue Notiz
           </CommandItem>
           <CommandItem onSelect={() => go("/documents?upload=1")}>
-            <Upload /> Upload document
+            <Upload /> Dokument hochladen
           </CommandItem>
           <CommandItem onSelect={() => go("/tasks?new=1")}>
-            <CheckSquare /> Create task
+            <CheckSquare /> Aufgabe anlegen
           </CommandItem>
           <CommandItem onSelect={() => go("/quizzes/new")}>
-            <ListChecks /> Start a quiz
+            <ListChecks /> Quiz starten
           </CommandItem>
           <CommandItem onSelect={() => go("/flashcards?study=1")}>
-            <Layers3 /> Study flashcards
+            <Layers3 /> Karteikarten lernen
           </CommandItem>
           <CommandItem
             onSelect={() => {
@@ -114,30 +114,30 @@ export function CommandPalette() {
               go("/focus");
             }}
           >
-            <Timer /> {focusStatus === "idle" ? "Start a focus block" : "Open the focus timer"}
+            <Timer /> {focusStatus === "idle" ? "Fokusblock starten" : "Fokustimer öffnen"}
           </CommandItem>
           <CommandItem onSelect={() => go("/exams?new=1")}>
-            <GraduationCap /> New exam
+            <GraduationCap /> Neue Prüfung
           </CommandItem>
           <CommandItem onSelect={() => go("/ai-tutor")}>
-            <Sparkles /> Ask AI Tutor
+            <Sparkles /> KI-Tutor fragen
           </CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
 
-        <CommandGroup heading="Go to">
+        <CommandGroup heading="Gehe zu">
           <CommandItem onSelect={() => go("/dashboard")}>
-            <LayoutGrid /> Dashboard
+            <LayoutGrid /> Übersicht
           </CommandItem>
           <CommandItem onSelect={() => go("/calendar")}>
-            <CalendarDays /> Calendar
+            <CalendarDays /> Kalender
           </CommandItem>
           <CommandItem onSelect={() => go("/progress")}>
-            <TrendingUp /> Progress
+            <TrendingUp /> Fortschritt
           </CommandItem>
           <CommandItem onSelect={() => go("/settings")}>
-            <Settings /> Settings
+            <Settings /> Einstellungen
           </CommandItem>
         </CommandGroup>
 

@@ -58,7 +58,7 @@ export function FocusRing({
           {formatClock(msLeft)}
         </p>
         <p className="mt-2 t-caption text-ink-3">
-          {status === "running" ? "In progress" : status === "paused" ? "Paused" : "Ready"}
+          {status === "running" ? "Läuft" : status === "paused" ? "Pausiert" : "Bereit"}
         </p>
       </div>
     </div>

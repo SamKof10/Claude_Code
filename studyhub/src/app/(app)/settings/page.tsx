@@ -23,15 +23,15 @@ import { RemoveChipButton } from "@/components/shared/remove-chip-button";
 
 const APPEARANCES: { value: ThemePreference; label: string; icon: React.ElementType }[] = [
   { value: "system", label: "System", icon: Monitor },
-  { value: "light", label: "Light", icon: Sun },
-  { value: "dark", label: "Dark", icon: Moon },
+  { value: "light", label: "Hell", icon: Sun },
+  { value: "dark", label: "Dunkel", icon: Moon },
 ];
 
 const STUDY_TIMES: { value: StudyTime; label: string }[] = [
-  { value: "morning", label: "Morning" },
-  { value: "afternoon", label: "Afternoon" },
-  { value: "evening", label: "Evening" },
-  { value: "night", label: "Night" },
+  { value: "morning", label: "Morgens" },
+  { value: "afternoon", label: "Nachmittags" },
+  { value: "evening", label: "Abends" },
+  { value: "night", label: "Nachts" },
 ];
 
 export default function SettingsPage() {
@@ -86,21 +86,21 @@ export default function SettingsPage() {
     a.download = `studyhub-export-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Data exported");
+    toast.success("Daten exportiert");
   }
 
   const usagePct = Math.round((profile.aiUsage.used / Math.max(1, profile.aiUsage.limit)) * 100);
 
   return (
     <div className="mx-auto max-w-3xl">
-      <PageHeader title="Settings" description="Your profile, subjects, appearance and data." />
+      <PageHeader title="Einstellungen" description="Dein Profil, deine Fächer, das Erscheinungsbild und deine Daten." />
 
       <div className="space-y-5">
         {/* ── Profile ────────────────────────────────────────────── */}
         <Card>
           <CardHeader>
-            <CardTitle>Profile</CardTitle>
-            <CardDescription>How StudyHub addresses you, and where you are in the Oberschule.</CardDescription>
+            <CardTitle>Profil</CardTitle>
+            <CardDescription>Wie StudyHub dich anspricht — und wo du in der Oberschule stehst.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
@@ -115,7 +115,7 @@ export default function SettingsPage() {
               <Label htmlFor="grade">Klasse</Label>
               <Select value={profile.grade} onValueChange={(v) => updateProfile({ grade: v })}>
                 <SelectTrigger id="grade">
-                  <SelectValue placeholder="Pick a Klasse" />
+                  <SelectValue placeholder="Klasse wählen" />
                 </SelectTrigger>
                 <SelectContent>
                   {SCHOOL_CLASSES.map((value) => (
@@ -127,10 +127,10 @@ export default function SettingsPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="schoolYear">School year</Label>
+              <Label htmlFor="schoolYear">Schuljahr</Label>
               <Select value={profile.schoolYear} onValueChange={(v) => updateProfile({ schoolYear: v })}>
                 <SelectTrigger id="schoolYear">
-                  <SelectValue placeholder="Pick a school year" />
+                  <SelectValue placeholder="Schuljahr wählen" />
                 </SelectTrigger>
                 <SelectContent>
                   {yearOptions.map((value) => (
@@ -142,7 +142,7 @@ export default function SettingsPage() {
               </Select>
             </div>
             <div className="space-y-1.5 sm:col-span-2">
-              <Label>Preferred study time</Label>
+              <Label>Bevorzugte Lernzeit</Label>
               <Select value={profile.preferredStudyTime} onValueChange={(v) => updateProfile({ preferredStudyTime: v as StudyTime })}>
                 <SelectTrigger className="sm:w-56">
                   <SelectValue />
@@ -157,7 +157,7 @@ export default function SettingsPage() {
               </Select>
             </div>
             <div className="space-y-1.5 sm:col-span-2">
-              <Label>Learning goals</Label>
+              <Label>Lernziele</Label>
               <div className="flex flex-wrap gap-1.5">
                 {profile.learningGoals.map((g) => (
                   <Badge key={g} variant="outline" className="gap-1">
@@ -167,7 +167,7 @@ export default function SettingsPage() {
                 ))}
               </div>
               <Input
-                placeholder="Add a goal and press Enter…"
+                placeholder="Ziel eingeben und Enter drücken…"
                 value={goalInput}
                 onChange={(e) => setGoalInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -185,8 +185,8 @@ export default function SettingsPage() {
         <Card>
           <CardHeader className="flex-row items-center justify-between">
             <div>
-              <CardTitle>Subjects</CardTitle>
-              <CardDescription>Add, rename or remove the subjects you&apos;re taking.</CardDescription>
+              <CardTitle>Fächer</CardTitle>
+              <CardDescription>Fächer hinzufügen, umbenennen oder entfernen.</CardDescription>
             </div>
             <Button size="sm" variant="secondary" onClick={() => setSubjectDialog({ open: true })}>
               <Plus className="size-3.5" /> Add
@@ -217,16 +217,16 @@ export default function SettingsPage() {
         {/* ── Appearance ─────────────────────────────────────────── */}
         <Card>
           <CardHeader>
-            <CardTitle>Appearance</CardTitle>
+            <CardTitle>Erscheinungsbild</CardTitle>
             <CardDescription>
-              StudyHub follows your system appearance by default, so it changes with everything else on your
-              device. Pick Light or Dark to override it just here.
+              StudyHub folgt standardmäßig dem Erscheinungsbild deines Systems, wechselt also mit allem
+              anderen auf deinem Gerät mit. Wähl Hell oder Dunkel, um das nur hier zu überschreiben.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div
               role="radiogroup"
-              aria-label="Appearance"
+              aria-label="Erscheinungsbild"
               className="grid max-w-md grid-cols-1 gap-2.5 sm:grid-cols-3"
             >
               {APPEARANCES.map(({ value, label, icon: Icon }) => {
@@ -253,7 +253,7 @@ export default function SettingsPage() {
             </div>
             {preference === "system" && (
               <p className="mt-2.5 t-caption text-ink-3">
-                Your system is currently set to {theme}.
+                Dein System steht gerade auf {theme === "dark" ? "dunkel" : "hell"}.
               </p>
             )}
           </CardContent>
@@ -265,7 +265,7 @@ export default function SettingsPage() {
             <CardTitle className="flex items-center gap-1.5">
               <Sparkles className="size-4 text-[var(--color-signal-2)]" /> AI provider
             </CardTitle>
-            <CardDescription>Where StudyHub&apos;s summaries, flashcards, quizzes and tutor answers come from.</CardDescription>
+            <CardDescription>Woher StudyHubs Zusammenfassungen, Karteikarten, Quiz und Tutor-Antworten kommen.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-2">
@@ -274,26 +274,26 @@ export default function SettingsPage() {
                   <Loader2 className="size-2.5 animate-spin" /> Checking…
                 </Badge>
               ) : aiStatus === "live" ? (
-                <Badge variant="success">Live AI connected</Badge>
+                <Badge variant="success">Echte KI verbunden</Badge>
               ) : (
-                <Badge variant="outline">Demo AI</Badge>
+                <Badge variant="outline">Demo-KI</Badge>
               )}
             </div>
             <p className="t-callout leading-relaxed text-ink-3">
               {aiStatus === "live" ? (
                 <>
-                  <code className="rounded bg-surface-2 px-1 py-0.5">ANTHROPIC_API_KEY</code> is configured on the server, so every AI action calls the real model. The key is read server-side only and is never sent to the browser.
+                  <code className="rounded bg-surface-2 px-1 py-0.5">ANTHROPIC_API_KEY</code> ist auf dem Server hinterlegt, jede KI-Aktion ruft also das echte Modell auf. Der Schlüssel wird nur serverseitig gelesen und nie an den Browser geschickt.
                 </>
               ) : (
                 <>
-                  No API key is configured, so StudyHub runs its built-in demo generator — every response is derived from your own documents and notes rather than canned text. To switch to a real model, set{" "}
-                  <code className="rounded bg-surface-2 px-1 py-0.5">ANTHROPIC_API_KEY</code> in <code className="rounded bg-surface-2 px-1 py-0.5">.env.local</code> and restart the server.
+                  Es ist kein API-Schlüssel hinterlegt, StudyHub nutzt also seinen eingebauten Demo-Generator — jede Antwort wird aus deinen eigenen Dokumenten und Notizen abgeleitet, nicht aus Konserven. Für ein echtes Modell trag{" "}
+                  <code className="rounded bg-surface-2 px-1 py-0.5">ANTHROPIC_API_KEY</code> in <code className="rounded bg-surface-2 px-1 py-0.5">.env.local</code> ein und starte den Server neu.
                 </>
               )}
             </p>
             <div>
               <div className="mb-1.5 flex items-center justify-between t-caption">
-                <span className="text-ink-3">AI usage this month</span>
+                <span className="text-ink-3">KI-Nutzung diesen Monat</span>
                 <span className="text-ink">
                   {profile.aiUsage.used} / {profile.aiUsage.limit}
                 </span>
@@ -307,19 +307,19 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-1.5">
-              <Database className="size-4" /> Data
+              <Database className="size-4" /> Daten
             </CardTitle>
-            <CardDescription>Everything in StudyHub is stored in this browser, under your account. It is not synced anywhere, so an export is the only copy that survives clearing site data.</CardDescription>
+            <CardDescription>Alles in StudyHub liegt in diesem Browser, unter deinem Konto. Es wird nirgendwohin synchronisiert — ein Export ist die einzige Kopie, die das Löschen der Websitedaten übersteht.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
             <Button variant="secondary" size="sm" onClick={exportData}>
-              <Download className="size-3.5" /> Export as JSON
+              <Download className="size-3.5" /> Als JSON exportieren
             </Button>
             <Button variant="secondary" size="sm" onClick={() => setConfirmReset(true)}>
-              <RotateCcw className="size-3.5" /> Load demo data
+              <RotateCcw className="size-3.5" /> Demodaten laden
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setConfirmClear(true)} className="text-danger-text hover:text-danger-text">
-              <Trash2 className="size-3.5" /> Delete everything
+              <Trash2 className="size-3.5" /> Alles löschen
             </Button>
           </CardContent>
         </Card>
@@ -331,11 +331,11 @@ export default function SettingsPage() {
         <ConfirmDialog
           open={!!pendingDeleteSubject}
           onOpenChange={(o) => !o && setPendingDeleteSubject(null)}
-          title={`Delete ${pendingDeleteSubject.name}?`}
-          description="Its documents, decks and exams are deleted too; notes and tasks are kept but unassigned."
+          title={`${pendingDeleteSubject.name} löschen?`}
+          description="Seine Dokumente, Stapel und Prüfungen verschwinden mit; Notizen und Aufgaben bleiben, aber ohne Fach."
           onConfirm={() => {
             deleteSubject(pendingDeleteSubject.id);
-            toast.success(`${pendingDeleteSubject.name} deleted`);
+            toast.success(`${pendingDeleteSubject.name} gelöscht`);
           }}
         />
       )}
@@ -343,25 +343,25 @@ export default function SettingsPage() {
       <ConfirmDialog
         open={confirmReset}
         onOpenChange={setConfirmReset}
-        title="Replace everything with demo data?"
-        description="Your subjects, documents, notes, decks and progress are replaced by a fictional example set. Export first if you want to keep what you have."
-        confirmLabel="Load demo data"
+        title="Alles durch Demodaten ersetzen?"
+        description="Deine Fächer, Dokumente, Notizen, Stapel und dein Fortschritt werden durch einen erfundenen Beispieldatensatz ersetzt. Exportiere vorher, wenn du behalten willst, was du hast."
+        confirmLabel="Demodaten laden"
         onConfirm={() => {
           resetDemoData();
-          toast.success("Demo data loaded");
+          toast.success("Demodaten geladen");
         }}
       />
 
       <ConfirmDialog
         open={confirmClear}
         onOpenChange={setConfirmClear}
-        title="Delete all your data?"
-        description="Everything — subjects, documents, notes, decks, quizzes, tasks and progress — is permanently removed from this account and you'll start from onboarding again. Your sign-in still works. Export first if you want a copy."
-        confirmLabel="Delete everything"
+        title="Alle deine Daten löschen?"
+        description="Alles — Fächer, Dokumente, Notizen, Stapel, Quiz, Aufgaben und Fortschritt — wird endgültig aus diesem Konto entfernt, und du startest wieder beim Onboarding. Deine Anmeldung bleibt bestehen. Exportiere vorher, wenn du eine Kopie willst."
+        confirmLabel="Alles löschen"
         confirmPhrase="DELETE"
         onConfirm={() => {
           clearAllData();
-          toast.success("All data deleted");
+          toast.success("Alle Daten gelöscht");
         }}
       />
     </div>

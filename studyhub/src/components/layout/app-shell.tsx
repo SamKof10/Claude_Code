@@ -65,7 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:signal-gradient focus:px-4 focus:py-2 focus:t-callout focus:font-medium focus:text-white"
       >
-        Skip to content
+        Zum Inhalt springen
       </a>
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">

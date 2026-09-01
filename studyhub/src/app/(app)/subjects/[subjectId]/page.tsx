@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 import {
   ArrowLeft,
   CheckSquare,
@@ -100,7 +101,7 @@ export default function SubjectWorkspacePage() {
           <div>
             <h1 className="t-title font-semibold tracking-tight text-ink">{subject.name}</h1>
             <p className="mt-0.5 t-callout text-ink-3">
-              {lastActivity ? `Last active ${formatDistanceToNow(new Date(lastActivity), { addSuffix: true })}` : "No activity yet"}
+              {lastActivity ? `Zuletzt aktiv ${formatDistanceToNow(new Date(lastActivity), { addSuffix: true, locale: de })}` : "Noch keine Aktivität"}
             </p>
           </div>
         </div>
@@ -117,22 +118,22 @@ export default function SubjectWorkspacePage() {
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard icon={TrendingUp} label="Progress" value={`${perf.progress}%`} hint="Quizzes, cards, tasks" />
-        <StatCard icon={ListChecks} label="Quiz average" value={perf.quizAverage != null ? `${perf.quizAverage}%` : "—"} hint={`${quizzes.filter((q) => q.status === "completed").length} completed`} />
-        <StatCard icon={Layers3} label="Cards due" value={dueCards} hint={`${cards.length} total`} tone={dueCards > 0 ? "warning" : "default"} />
-        <StatCard icon={GraduationCap} label="Next exam" value={perf.nextExam ? formatDueLabel(perf.nextExam.date) : "—"} hint={perf.nextExam?.title ?? "Nothing scheduled"} />
+        <StatCard icon={TrendingUp} label="Fortschritt" value={`${perf.progress}%`} hint="Quiz, Karten, Aufgaben" />
+        <StatCard icon={ListChecks} label="Quiz-Schnitt" value={perf.quizAverage != null ? `${perf.quizAverage}%` : "—"} hint={`${quizzes.filter((q) => q.status === "completed").length} abgeschlossen`} />
+        <StatCard icon={Layers3} label="Karten fällig" value={dueCards} hint={`${cards.length} insgesamt`} tone={dueCards > 0 ? "warning" : "default"} />
+        <StatCard icon={GraduationCap} label="Nächste Prüfung" value={perf.nextExam ? formatDueLabel(perf.nextExam.date) : "—"} hint={perf.nextExam?.title ?? "Nichts geplant"} />
       </div>
 
       <Tabs defaultValue="overview">
         <TabsList className="flex-wrap h-auto">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="documents">Documents ({documents.length})</TabsTrigger>
-          <TabsTrigger value="notes">Notes ({notes.length})</TabsTrigger>
-          <TabsTrigger value="flashcards">Flashcards ({decks.length})</TabsTrigger>
-          <TabsTrigger value="quizzes">Quizzes ({quizzes.length})</TabsTrigger>
-          <TabsTrigger value="tasks">Tasks ({tasks.filter((t) => t.status !== "done").length})</TabsTrigger>
-          <TabsTrigger value="exams">Exams ({exams.length})</TabsTrigger>
-          <TabsTrigger value="progress">Progress</TabsTrigger>
+          <TabsTrigger value="overview">Überblick</TabsTrigger>
+          <TabsTrigger value="documents">Dokumente ({documents.length})</TabsTrigger>
+          <TabsTrigger value="notes">Notizen ({notes.length})</TabsTrigger>
+          <TabsTrigger value="flashcards">Karteikarten ({decks.length})</TabsTrigger>
+          <TabsTrigger value="quizzes">Quiz ({quizzes.length})</TabsTrigger>
+          <TabsTrigger value="tasks">Aufgaben ({tasks.filter((t) => t.status !== "done").length})</TabsTrigger>
+          <TabsTrigger value="exams">Prüfungen ({exams.length})</TabsTrigger>
+          <TabsTrigger value="progress">Fortschritt</TabsTrigger>
         </TabsList>
 
         {/* ── Overview ────────────────────────────────────────────── */}
@@ -141,15 +142,15 @@ export default function SubjectWorkspacePage() {
             <div className="space-y-5 lg:col-span-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Recent activity</CardTitle>
+                  <CardTitle>Letzte Aktivität</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {documents.length + notes.length === 0 ? (
                     <EmptyState
                       icon={FileText}
-                      title="Nothing here yet"
-                      description={`Upload a document or write a note for ${subject.name} to get started.`}
-                      action={<Button size="sm" onClick={() => setUploadOpen(true)}>Upload a document</Button>}
+                      title="Hier ist noch nichts"
+                      description={`Lade ein Dokument hoch oder schreib eine Notiz zu ${subject.name}.`}
+                      action={<Button size="sm" onClick={() => setUploadOpen(true)}>Dokument hochladen</Button>}
                     />
                   ) : (
                     <ul className="divide-y divide-border">
@@ -166,7 +167,7 @@ export default function SubjectWorkspacePage() {
                                 <item.icon className="size-4" />
                               </div>
                               <span className="min-w-0 flex-1 truncate t-callout text-ink">{item.title}</span>
-                              <span className="shrink-0 t-caption text-ink-3">{formatDistanceToNow(new Date(item.date), { addSuffix: true })}</span>
+                              <span className="shrink-0 t-caption text-ink-3">{formatDistanceToNow(new Date(item.date), { addSuffix: true, locale: de })}</span>
                             </Link>
                           </li>
                         ))}
@@ -177,7 +178,7 @@ export default function SubjectWorkspacePage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Study time, last 14 days</CardTitle>
+                  <CardTitle>Lernzeit, letzte 14 Tage</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <MinutesBarChart data={dailyStudyMinutes(sessions, 14).map((d) => ({ label: d.label, minutes: d.minutes }))} />
@@ -188,7 +189,7 @@ export default function SubjectWorkspacePage() {
             <div className="space-y-5">
               <Card>
                 <CardHeader>
-                  <CardTitle>Weak topics</CardTitle>
+                  <CardTitle>Schwache Themen</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {weakTopics.length === 0 ? (
@@ -207,15 +208,15 @@ export default function SubjectWorkspacePage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Study statistics</CardTitle>
+                  <CardTitle>Lernstatistik</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2.5 t-callout">
-                  <Row label="Time studied (30d)" value={formatMinutes(subjectStudyMinutes(sessions, subject.id, 30))} />
-                  <Row label="Study sessions" value={String(sessions.length)} />
-                  <Row label="Flashcard retention" value={perf.retention != null ? `${perf.retention}%` : "—"} />
-                  <Row label="Documents" value={String(documents.length)} />
-                  <Row label="Notes" value={String(notes.length)} />
-                  <Row label="Open tasks" value={String(tasks.filter((t) => t.status !== "done").length)} />
+                  <Row label="Gelernt (30 Tage)" value={formatMinutes(subjectStudyMinutes(sessions, subject.id, 30))} />
+                  <Row label="Lerneinheiten" value={String(sessions.length)} />
+                  <Row label="Behaltensquote" value={perf.retention != null ? `${perf.retention}%` : "—"} />
+                  <Row label="Dokumente" value={String(documents.length)} />
+                  <Row label="Notizen" value={String(notes.length)} />
+                  <Row label="Offene Aufgaben" value={String(tasks.filter((t) => t.status !== "done").length)} />
                 </CardContent>
               </Card>
             </div>
@@ -230,11 +231,11 @@ export default function SubjectWorkspacePage() {
             </Button>
           </SectionActions>
           {documents.length === 0 ? (
-            <EmptyState icon={FileText} title="No documents" description={`Upload ${subject.name} material and let AI explain, summarize or quiz you on it.`} action={<Button size="sm" onClick={() => setUploadOpen(true)}>Upload your first document</Button>} />
+            <EmptyState icon={FileText} title="Keine Dokumente" description={`Lade Material zu ${subject.name} hoch und lass es dir von der KI erklären, zusammenfassen oder abfragen.`} action={<Button size="sm" onClick={() => setUploadOpen(true)}>Erstes Dokument hochladen</Button>} />
           ) : (
             <ListGrid>
               {documents.map((d) => (
-                <LinkTile key={d.id} href={`/documents/${d.id}`} icon={FileText} title={d.name} subtitle={`${d.pages ? `${d.pages} pages · ` : ""}${formatDateShort(d.uploadDate)}`} />
+                <LinkTile key={d.id} href={`/documents/${d.id}`} icon={FileText} title={d.name} subtitle={`${d.pages ? `${d.pages} Seiten · ` : ""}${formatDateShort(d.uploadDate)}`} />
               ))}
             </ListGrid>
           )}
@@ -243,16 +244,16 @@ export default function SubjectWorkspacePage() {
         {/* ── Notes ───────────────────────────────────────────────── */}
         <TabsContent value="notes">
           <SectionActions>
-            <Button size="sm" onClick={() => router.push(`/notes/${addNote({ title: "Untitled note", subjectId: subject.id }).id}`)}>
+            <Button size="sm" onClick={() => router.push(`/notes/${addNote({ title: "Neue Notiz", subjectId: subject.id }).id}`)}>
               <Plus className="size-3.5" /> New note
             </Button>
           </SectionActions>
           {notes.length === 0 ? (
-            <EmptyState icon={NotebookPen} title="No notes" description={`Write down what you're learning in ${subject.name}.`} action={<Button size="sm" onClick={() => router.push(`/notes/${addNote({ title: "Untitled note", subjectId: subject.id }).id}`)}>Write your first note</Button>} />
+            <EmptyState icon={NotebookPen} title="Keine Notizen" description={`Halt fest, was du in ${subject.name} lernst.`} action={<Button size="sm" onClick={() => router.push(`/notes/${addNote({ title: "Neue Notiz", subjectId: subject.id }).id}`)}>Erste Notiz schreiben</Button>} />
           ) : (
             <ListGrid>
               {notes.map((n) => (
-                <LinkTile key={n.id} href={`/notes/${n.id}`} icon={NotebookPen} title={n.title || "Untitled note"} subtitle={`Edited ${formatDistanceToNow(new Date(n.updatedAt), { addSuffix: true })}`} />
+                <LinkTile key={n.id} href={`/notes/${n.id}`} icon={NotebookPen} title={n.title || "Neue Notiz"} subtitle={`Bearbeitet ${formatDistanceToNow(new Date(n.updatedAt), { addSuffix: true, locale: de })}`} />
               ))}
             </ListGrid>
           )}
@@ -266,7 +267,7 @@ export default function SubjectWorkspacePage() {
             </Button>
           </SectionActions>
           {decks.length === 0 ? (
-            <EmptyState icon={Layers3} title="No decks" description={`Generate a ${subject.name} deck with AI, or build one card by card.`} action={<Button size="sm" onClick={() => setDeckOpen(true)}>Create a deck</Button>} />
+            <EmptyState icon={Layers3} title="Keine Stapel" description={`Lass die KI einen ${subject.name}-Stapel erzeugen — oder bau ihn Karte für Karte.`} action={<Button size="sm" onClick={() => setDeckOpen(true)}>Stapel anlegen</Button>} />
           ) : (
             <ListGrid>
               {decks.map((deck) => {
@@ -279,7 +280,7 @@ export default function SubjectWorkspacePage() {
                     href={`/flashcards/${deck.id}`}
                     icon={Layers3}
                     title={deck.name}
-                    subtitle={`${deckCards.length} cards · ${mastered}% mastered`}
+                    subtitle={`${deckCards.length} Karten · ${mastered}% sitzen`}
                     badge={deckCards.filter((c) => isDue(c)).length > 0 ? `${deckCards.filter((c) => isDue(c)).length} due` : undefined}
                   />
                 );
@@ -307,8 +308,8 @@ export default function SubjectWorkspacePage() {
                   href={`/quizzes/${q.id}`}
                   icon={ListChecks}
                   title={q.title}
-                  subtitle={`${q.questions.length} questions · ${q.difficulty}`}
-                  badge={q.status === "completed" ? `${q.score}%` : q.status === "in-progress" ? "In progress" : "Not started"}
+                  subtitle={`${q.questions.length} Fragen · ${q.difficulty}`}
+                  badge={q.status === "completed" ? `${q.score}%` : q.status === "in-progress" ? "Läuft" : "Nicht gestartet"}
                 />
               ))}
             </ListGrid>
@@ -323,7 +324,7 @@ export default function SubjectWorkspacePage() {
             </Button>
           </SectionActions>
           {tasks.length === 0 ? (
-            <EmptyState icon={CheckSquare} title="No tasks" description={`Add homework and to-dos for ${subject.name}.`} action={<Button size="sm" onClick={() => setTaskOpen(true)}>Add a task</Button>} />
+            <EmptyState icon={CheckSquare} title="Keine Aufgaben" description={`Trag Hausaufgaben und To-dos für ${subject.name} ein.`} action={<Button size="sm" onClick={() => setTaskOpen(true)}>Aufgabe anlegen</Button>} />
           ) : (
             <ListGrid>
               {tasks.map((t) => (
@@ -332,7 +333,7 @@ export default function SubjectWorkspacePage() {
                   href="/tasks"
                   icon={CheckSquare}
                   title={t.title}
-                  subtitle={t.deadline ? formatDueLabel(t.deadline) : "No deadline"}
+                  subtitle={t.deadline ? formatDueLabel(t.deadline) : "Keine Frist"}
                   badge={t.status === "done" ? "Done" : t.priority}
                 />
               ))}
@@ -348,7 +349,7 @@ export default function SubjectWorkspacePage() {
             </Button>
           </SectionActions>
           {exams.length === 0 ? (
-            <EmptyState icon={GraduationCap} title="No exams" description={`Add a ${subject.name} exam and StudyHub builds the prep plan.`} action={<Button size="sm" onClick={() => setExamOpen(true)}>Schedule an exam</Button>} />
+            <EmptyState icon={GraduationCap} title="Keine Prüfungen" description={`Trag eine ${subject.name}-Prüfung ein, StudyHub baut den Lernplan dazu.`} action={<Button size="sm" onClick={() => setExamOpen(true)}>Prüfung eintragen</Button>} />
           ) : (
             <ListGrid>
               {exams.map((e) => (
@@ -363,7 +364,7 @@ export default function SubjectWorkspacePage() {
           <div className="grid gap-5 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Quiz scores</CardTitle>
+                <CardTitle>Quiz-Ergebnisse</CardTitle>
               </CardHeader>
               <CardContent>
                 {quizScoreSeries(quizzes, subject.id).length === 0 ? (
@@ -375,7 +376,7 @@ export default function SubjectWorkspacePage() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Study time</CardTitle>
+                <CardTitle>Lernzeit</CardTitle>
               </CardHeader>
               <CardContent>
                 <MinutesBarChart data={dailyStudyMinutes(sessions, 14).map((d) => ({ label: d.label, minutes: d.minutes }))} />
@@ -383,15 +384,15 @@ export default function SubjectWorkspacePage() {
             </Card>
             <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle>Where you stand</CardTitle>
+                <CardTitle>Wo du stehst</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2.5 t-callout">
-                <Row label="Overall progress" value={`${perf.progress}%`} />
-                <Row label="Quiz average" value={perf.quizAverage != null ? `${perf.quizAverage}%` : "—"} />
-                <Row label="Flashcard retention" value={perf.retention != null ? `${perf.retention}%` : "—"} />
-                <Row label="Cards due now" value={String(dueCards)} />
-                <Row label="Time studied (30d)" value={formatMinutes(subjectStudyMinutes(sessions, subject.id, 30))} />
-                <Row label="Tasks completed" value={`${tasks.filter((t) => t.status === "done").length}/${tasks.length}`} />
+                <Row label="Gesamtfortschritt" value={`${perf.progress}%`} />
+                <Row label="Quiz-Schnitt" value={perf.quizAverage != null ? `${perf.quizAverage}%` : "—"} />
+                <Row label="Behaltensquote" value={perf.retention != null ? `${perf.retention}%` : "—"} />
+                <Row label="Karten jetzt fällig" value={String(dueCards)} />
+                <Row label="Gelernt (30 Tage)" value={formatMinutes(subjectStudyMinutes(sessions, subject.id, 30))} />
+                <Row label="Aufgaben erledigt" value={`${tasks.filter((t) => t.status === "done").length}/${tasks.length}`} />
               </CardContent>
             </Card>
           </div>

@@ -21,9 +21,9 @@ export function clamp(value: number, min: number, max: number) {
 export function formatMinutes(total: number) {
   const h = Math.floor(total / 60);
   const m = Math.round(total % 60);
-  if (h === 0) return `${m}m`;
-  if (m === 0) return `${h}h`;
-  return `${h}h ${m}m`;
+  if (h === 0) return `${m} Min`;
+  if (m === 0) return `${h} Std`;
+  return `${h} Std ${m} Min`;
 }
 
 /** mm:ss for the focus timer. Rounds up, so a fresh 25-minute block reads 25:00 rather than 24:59. */

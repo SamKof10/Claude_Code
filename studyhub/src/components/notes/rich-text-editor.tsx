@@ -62,19 +62,19 @@ function ToolbarButton({
 function Toolbar({ editor }: { editor: Editor }) {
   return (
     <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-2 py-1.5">
-      <ToolbarButton icon={Bold} label="Bold" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()} />
-      <ToolbarButton icon={Italic} label="Italic" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()} />
-      <ToolbarButton icon={Strikethrough} label="Strikethrough" active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()} />
+      <ToolbarButton icon={Bold} label="Fett" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()} />
+      <ToolbarButton icon={Italic} label="Kursiv" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()} />
+      <ToolbarButton icon={Strikethrough} label="Durchgestrichen" active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()} />
       <div className="mx-1 h-4 w-px bg-border" />
-      <ToolbarButton icon={Heading1} label="Heading" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} />
-      <ToolbarButton icon={Heading2} label="Subheading" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} />
+      <ToolbarButton icon={Heading1} label="Überschrift" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} />
+      <ToolbarButton icon={Heading2} label="Unterüberschrift" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} />
       <div className="mx-1 h-4 w-px bg-border" />
-      <ToolbarButton icon={List} label="Bullet list" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()} />
-      <ToolbarButton icon={ListOrdered} label="Numbered list" active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()} />
-      <ToolbarButton icon={ListTodo} label="Task list" active={editor.isActive("taskList")} onClick={() => editor.chain().focus().toggleTaskList().run()} />
+      <ToolbarButton icon={List} label="Aufzählung" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()} />
+      <ToolbarButton icon={ListOrdered} label="Nummerierte Liste" active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()} />
+      <ToolbarButton icon={ListTodo} label="Aufgabenliste" active={editor.isActive("taskList")} onClick={() => editor.chain().focus().toggleTaskList().run()} />
       <div className="mx-1 h-4 w-px bg-border" />
-      <ToolbarButton icon={Quote} label="Quote" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()} />
-      <ToolbarButton icon={Code} label="Code block" active={editor.isActive("codeBlock")} onClick={() => editor.chain().focus().toggleCodeBlock().run()} />
+      <ToolbarButton icon={Quote} label="Zitat" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()} />
+      <ToolbarButton icon={Code} label="Codeblock" active={editor.isActive("codeBlock")} onClick={() => editor.chain().focus().toggleCodeBlock().run()} />
       <ToolbarButton
         icon={LinkIcon}
         label="Link"
@@ -88,23 +88,23 @@ function Toolbar({ editor }: { editor: Editor }) {
       />
       <ToolbarButton
         icon={ImageIcon}
-        label="Image"
+        label="Bild"
         onClick={() => {
-          const url = window.prompt("Image URL");
+          const url = window.prompt("Bild-URL");
           if (url) editor.chain().focus().setImage({ src: url }).run();
         }}
       />
       <ToolbarButton
         icon={Sigma}
-        label="Math"
+        label="Formel"
         onClick={() => {
           const latex = window.prompt("LaTeX", "x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}");
           if (latex) editor.chain().focus().insertContent({ type: "mathInline", attrs: { latex } }).run();
         }}
       />
       <div className="mx-1 h-4 w-px bg-border" />
-      <ToolbarButton icon={Undo2} label="Undo" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} />
-      <ToolbarButton icon={Redo2} label="Redo" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} />
+      <ToolbarButton icon={Undo2} label="Rückgängig" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} />
+      <ToolbarButton icon={Redo2} label="Wiederholen" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} />
     </div>
   );
 }

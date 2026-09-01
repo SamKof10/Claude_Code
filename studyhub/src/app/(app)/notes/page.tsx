@@ -31,7 +31,7 @@ export default function NotesPage() {
   React.useEffect(() => {
     if (searchParams.get("new") === "1" && !createdRef.current) {
       createdRef.current = true;
-      const created = addNote({ title: "Untitled note", subjectId: subjectFilter !== "all" ? subjectFilter : null });
+      const created = addNote({ title: "Neue Notiz", subjectId: subjectFilter !== "all" ? subjectFilter : null });
       router.replace(`/notes/${created.id}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -48,11 +48,11 @@ export default function NotesPage() {
   return (
     <div>
       <PageHeader
-        title="Notes"
-        description="Write, organize and let AI help you fill the gaps."
+        title="Notizen"
+        description="Schreiben, ordnen — und die KI schließt die Lücken."
         actions={
-          <Button onClick={() => router.push(`/notes/${addNote({ title: "Untitled note", subjectId: subjectFilter !== "all" ? subjectFilter : null }).id}`)}>
-            <Plus className="size-3.5" /> New note
+          <Button onClick={() => router.push(`/notes/${addNote({ title: "Neue Notiz", subjectId: subjectFilter !== "all" ? subjectFilter : null }).id}`)}>
+            <Plus className="size-3.5" /> Neue Notiz
           </Button>
         }
       />
@@ -61,14 +61,14 @@ export default function NotesPage() {
         <div className="mb-5 flex flex-wrap gap-2">
           <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-ink-3" />
-            <Input placeholder="Search notes…" value={query} onChange={(e) => setQuery(e.target.value)} className="pl-8" />
+            <Input placeholder="Notizen durchsuchen…" value={query} onChange={(e) => setQuery(e.target.value)} className="pl-8" />
           </div>
           <Select value={subjectFilter} onValueChange={setSubjectFilter}>
             <SelectTrigger className="w-44">
-              <SelectValue placeholder="All subjects" />
+              <SelectValue placeholder="Alle Fächer" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All subjects</SelectItem>
+              <SelectItem value="all">Alle Fächer</SelectItem>
               {subjects.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
                   {s.name}
@@ -82,12 +82,12 @@ export default function NotesPage() {
       {notes.length === 0 ? (
         <EmptyState
           icon={NotebookPen}
-          title="No notes yet"
-          description="Capture what you're learning — headings, lists, math, links — and let AI turn it into flashcards or a quiz."
-          action={<Button onClick={() => router.push(`/notes/${addNote({ title: "Untitled note", subjectId: null }).id}`)}>Write your first note</Button>}
+          title="Noch keine Notizen"
+          description="Halt fest, was du lernst — Überschriften, Listen, Formeln, Links — und lass die KI Karteikarten oder ein Quiz daraus machen."
+          action={<Button onClick={() => router.push(`/notes/${addNote({ title: "Neue Notiz", subjectId: null }).id}`)}>Erste Notiz schreiben</Button>}
         />
       ) : sorted.length === 0 ? (
-        <EmptyState icon={Search} title="No matching notes" description="Try a different search term or subject filter." />
+        <EmptyState icon={Search} title="Keine passenden Notizen" description="Versuch einen anderen Suchbegriff oder ein anderes Fach." />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {sorted.map((note) => (
@@ -106,11 +106,11 @@ export default function NotesPage() {
         <ConfirmDialog
           open={!!pendingDelete}
           onOpenChange={(o) => !o && setPendingDelete(null)}
-          title={`Delete "${pendingDelete.title || "Untitled note"}"?`}
-          description="This can't be undone."
+          title={`„${pendingDelete.title || "Neue Notiz"}“ löschen?`}
+          description="Das lässt sich nicht rückgängig machen."
           onConfirm={() => {
             deleteNote(pendingDelete.id);
-            toast.success("Note deleted");
+            toast.success("Notiz gelöscht");
           }}
         />
       )}

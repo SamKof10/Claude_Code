@@ -47,15 +47,15 @@ export function demoSummarize(content: string, sourceName: string): SummarizeRes
     .filter(Boolean);
 
   return {
-    summary: `${lead}${sentences.length > 3 ? " " + sentences.slice(3, 5).join(" ") : ""}`.trim() || `A concise overview of "${sourceName}".`,
-    keyPoints: keyPoints.length > 0 ? keyPoints : [`"${sourceName}" doesn't have enough extractable text yet — try re-uploading or add a note.`],
+    summary: `${lead}${sentences.length > 3 ? " " + sentences.slice(3, 5).join(" ") : ""}`.trim() || `Ein kurzer Überblick über „${sourceName}“.`,
+    keyPoints: keyPoints.length > 0 ? keyPoints : [`„${sourceName}“ enthält noch zu wenig auslesbaren Text — lade es neu hoch oder ergänze eine Notiz.`],
   };
 }
 
 const STYLE_OPENERS: Record<ExplainRequestStyle, string> = {
-  simple: "Let's break this down in plain, everyday language",
-  normal: "Here's a clear explanation",
-  advanced: "Here's a more rigorous treatment",
+  simple: "Zerlegen wir das in ganz einfache Alltagssprache",
+  normal: "Hier eine klare Erklärung",
+  advanced: "Hier die genauere Fassung",
 };
 type ExplainRequestStyle = "simple" | "normal" | "advanced";
 
@@ -63,26 +63,28 @@ export function demoExplain(topic: string, context: string | undefined, style: E
   const facts = context ? splitSentences(context).slice(0, 3) : [];
   const opener = STYLE_OPENERS[style] ?? STYLE_OPENERS.normal;
   const bulletBlock = facts.length
-    ? `\n\nFrom your material:\n${facts.map((f) => `- ${f}`).join("\n")}`
+    ? `\n\nAus deinem Material:\n${facts.map((f) => `- ${f}`).join("\n")}`
     : "";
 
   const analogy =
     style === "simple"
-      ? `\n\nThink of it like this: if you already understand something familiar, ${topic.toLowerCase()} works on a similar idea — the details differ, but the underlying pattern (cause leads predictably to effect) is the same one you already use every day.`
+      ? `\n\nStell es dir so vor: ${topic} funktioniert nach einer Idee, die du aus dem Alltag schon kennst — die Details sind andere, aber das Muster dahinter (aus einer Ursache folgt verlässlich eine Wirkung) ist dasselbe.`
       : "";
 
   return {
     explanation:
-      `${opener} of **${topic}**.${bulletBlock}\n\n` +
-      `The core idea is that ${topic.toLowerCase()} follows a small number of rules, and once you can state those rules in your own words, most exam questions on this topic become a matter of applying them carefully rather than memorizing new facts.${analogy}\n\n` +
-      `Quick check: could you explain ${topic.toLowerCase()} to a classmate in two sentences? If not, that's the part worth reviewing again.`,
+      `${opener} zu **${topic}**.${bulletBlock}\n\n` +
+      `Der Kern: ${topic} folgt wenigen Regeln. Sobald du diese Regeln in eigenen Worten sagen kannst, sind die meisten Prüfungsfragen dazu eine Frage des sorgfältigen Anwendens — nicht des Auswendiglernens.${analogy}\n\n` +
+      `Kurzer Test: Könntest du ${topic} einer Mitschülerin in zwei Sätzen erklären? Wenn nicht, ist genau das die Stelle zum Wiederholen.`,
   };
 }
 
 export function demoConcepts(content: string): ConceptsResult {
   const sentences = splitSentences(content);
   const concepts: { term: string; definition: string }[] = [];
-  const definitionPattern = /^([A-Z][A-Za-z0-9 '-]{2,40}?)\s+(?:is|are|refers to|means)\s+(.+)$/;
+  // German first, since the material usually is; the English copulas stay so
+  // that English-language sources (an English textbook, say) still work.
+  const definitionPattern = /^([A-ZÄÖÜ][A-Za-zÄÖÜäöüß0-9 '-]{2,40}?)\s+(?:ist|sind|bezeichnet|bedeutet|meint|is|are|refers to|means)\s+(.+)$/;
 
   for (const s of sentences) {
     const match = s.match(definitionPattern);
@@ -98,7 +100,7 @@ export function demoConcepts(content: string): ConceptsResult {
   if (concepts.length < 3) {
     splitSentences(content)
       .slice(0, 6 - concepts.length)
-      .forEach((s, i) => concepts.push({ term: `Key idea ${concepts.length + i + 1}`, definition: s }));
+      .forEach((s, i) => concepts.push({ term: `Kernidee ${concepts.length + i + 1}`, definition: s }));
   }
 
   return { concepts: concepts.slice(0, 6) };
@@ -106,13 +108,13 @@ export function demoConcepts(content: string): ConceptsResult {
 
 export function demoFlashcards(content: string, sourceName: string, count: number): FlashcardsResult {
   const sentences = splitSentences(content);
-  const definitionPattern = /^([A-Z][A-Za-z0-9 '-]{2,40}?)\s+(?:is|are|refers to|means|equals?)\s+(.+)$/;
+  const definitionPattern = /^([A-ZÄÖÜ][A-Za-zÄÖÜäöüß0-9 '-]{2,40}?)\s+(?:ist|sind|bezeichnet|bedeutet|meint|is|are|refers to|means|equals?)\s+(.+)$/;
   const cards: { front: string; back: string }[] = [];
 
   for (const s of sentences) {
     const match = s.match(definitionPattern);
     if (match) {
-      cards.push({ front: `What ${/s$/.test(match[1].trim()) ? "are" : "is"} ${titleCaseTerm(match[1].trim())}?`, back: s });
+      cards.push({ front: `Was versteht man unter ${titleCaseTerm(match[1].trim())}?`, back: s });
     } else if (s.includes(":")) {
       const [left, right] = s.split(":");
       if (left.length < 60 && right.length > 10) {
@@ -126,13 +128,13 @@ export function demoFlashcards(content: string, sourceName: string, count: numbe
   while (cards.length < count && i < sentences.length) {
     const s = sentences[i];
     if (!cards.some((c) => c.back === s)) {
-      cards.push({ front: `Fill in the key idea: what does this cover — "${s.slice(0, 46)}${s.length > 46 ? "…" : ""}"?`, back: s });
+      cards.push({ front: `Worum geht es hier — „${s.slice(0, 46)}${s.length > 46 ? "…" : ""}“?`, back: s });
     }
     i++;
   }
 
   if (cards.length === 0) {
-    cards.push({ front: `What is "${sourceName}" mainly about?`, back: content.slice(0, 200) || "Add more content to generate richer flashcards." });
+    cards.push({ front: `Worum geht es in „${sourceName}“ hauptsächlich?`, back: content.slice(0, 200) || "Ergänze mehr Inhalt, dann werden die Karteikarten ergiebiger." });
   }
 
   return { cards: cards.slice(0, count) };
@@ -156,7 +158,7 @@ export function demoQuiz(
   questionTypes: QuizQuestionType[]
 ): QuizResult {
   const sentences = splitSentences(content);
-  const definitionPattern = /^([A-Z][A-Za-z0-9 '-]{2,40}?)\s+(?:is|are|refers to|means|equals?)\s+(.+)$/;
+  const definitionPattern = /^([A-ZÄÖÜ][A-Za-zÄÖÜäöüß0-9 '-]{2,40}?)\s+(?:ist|sind|bezeichnet|bedeutet|meint|is|are|refers to|means|equals?)\s+(.+)$/;
   const defs = sentences.map((s) => ({ sentence: s, match: s.match(definitionPattern) })).filter((d) => d.match);
   const types = questionTypes.length > 0 ? questionTypes : (["mcq", "true-false", "short-answer"] as QuizQuestionType[]);
   const topicFor = (i: number) => topics[i % Math.max(1, topics.length)] ?? sourceName;
@@ -176,12 +178,12 @@ export function demoQuiz(
     if (type === "mcq" && term) {
       const distractorPool = defs.filter((d) => d.match && d.match[1].trim() !== term).map((d) => d.match![2].trim());
       const distractors = shuffle(distractorPool).slice(0, 3);
-      while (distractors.length < 3) distractors.push(`Not related to ${term.toLowerCase()}`);
+      while (distractors.length < 3) distractors.push(`Hat mit ${term} nichts zu tun`);
       const options = shuffle([definition, ...distractors]);
       questions.push({
         id: uid("q"),
         type: "mcq",
-        prompt: `What ${/s$/.test(term) ? "are" : "is"} ${term}?`,
+        prompt: `Was versteht man unter ${term}?`,
         options,
         correctAnswer: definition,
         explanation: source.sentence,
@@ -190,13 +192,15 @@ export function demoQuiz(
       });
     } else if (type === "true-false") {
       const flip = i % 2 === 1;
-      const statement = flip ? `${source.sentence.replace(/\b(is|are)\b/, (m) => (m === "is" ? "is not" : "are not"))}` : source.sentence;
+      const statement = flip
+        ? source.sentence.replace(/\b(ist|sind|is|are)\b/, (m) => ({ ist: "ist nicht", sind: "sind nicht", is: "is not", are: "are not" })[m] ?? m)
+        : source.sentence;
       questions.push({
         id: uid("q"),
         type: "true-false",
         prompt: statement,
-        options: ["True", "False"],
-        correctAnswer: flip ? "False" : "True",
+        options: ["Wahr", "Falsch"],
+        correctAnswer: flip ? "Falsch" : "Wahr",
         explanation: source.sentence,
         topic,
         difficulty,
@@ -215,7 +219,7 @@ export function demoQuiz(
       questions.push({
         id: uid("q"),
         type: "short-answer",
-        prompt: term ? `Briefly explain: what ${/s$/.test(term) ? "are" : "is"} ${term}?` : `Briefly explain the key idea: "${source.sentence.slice(0, 60)}${source.sentence.length > 60 ? "…" : ""}"`,
+        prompt: term ? `Erklär kurz: Was versteht man unter ${term}?` : `Erklär kurz den Kerngedanken: „${source.sentence.slice(0, 60)}${source.sentence.length > 60 ? "…" : ""}“`,
         correctAnswer: definition,
         explanation: source.sentence,
         topic,
@@ -240,7 +244,7 @@ export function demoStudyPlan(opts: {
   const end = new Date(opts.examDate);
   const totalDays = Math.max(7, Math.round((end.getTime() - start.getTime()) / 86_400_000));
   const totalWeeks = Math.max(1, Math.min(6, Math.round(totalDays / 7)));
-  const topics = opts.topics.length > 0 ? opts.topics : [`${opts.subjectName} fundamentals`];
+  const topics = opts.topics.length > 0 ? opts.topics : [`Grundlagen ${opts.subjectName}`];
 
   const weeks: StudyPlanWeek[] = [];
   const contentWeeks = Math.max(1, totalWeeks - 1);
@@ -249,27 +253,27 @@ export function demoStudyPlan(opts: {
     const weekTopics = topics.filter((_, idx) => idx % contentWeeks === w);
     weeks.push({
       weekNumber: w + 1,
-      label: `Week ${w + 1}`,
+      label: `Woche ${w + 1}`,
       startDate: weekStart.toISOString(),
       endDate: new Date(weekStart.getTime() + 6 * 86_400_000).toISOString(),
       topics: weekTopics.length > 0 ? weekTopics : [topics[w % topics.length]],
       focus:
         opts.currentLevel === "beginner"
-          ? "Build the fundamentals from scratch — go slow, take notes, don't skip ahead."
+          ? "Grundlagen von Grund auf aufbauen — langsam vorgehen, mitschreiben, nichts überspringen."
           : opts.currentLevel === "advanced"
-            ? "Deepen and stress-test your understanding with harder problems."
-            : "Reinforce what you know and close specific gaps.",
+            ? "Verständnis vertiefen und mit schwereren Aufgaben auf die Probe stellen."
+            : "Festigen, was sitzt, und gezielt die Lücken schließen.",
       done: false,
     });
   }
   const lastWeekStart = new Date(start.getTime() + contentWeeks * 7 * 86_400_000);
   weeks.push({
     weekNumber: totalWeeks,
-    label: `Week ${totalWeeks}`,
+    label: `Woche ${totalWeeks}`,
     startDate: lastWeekStart.toISOString(),
     endDate: opts.examDate,
-    topics: ["Practice exams", "Weak-topic review"],
-    focus: `Simulate the real exam under time pressure, then spend the remaining time only on what you got wrong. With ~${opts.availableHoursPerWeek}h/week available, prioritize ruthlessly.`,
+    topics: ["Probeprüfungen", "Schwache Themen wiederholen"],
+    focus: `Die Prüfung unter Zeitdruck simulieren und die restliche Zeit nur noch in das stecken, was falsch war. Bei rund ${opts.availableHoursPerWeek} Stunden pro Woche heißt das: konsequent priorisieren.`,
     done: false,
   });
 
@@ -291,46 +295,46 @@ export function demoWeaknesses(opts: {
     : null;
 
   const bits: string[] = [];
-  if (avgScore != null) bits.push(`Your average quiz score in ${opts.subjectName} is ${avgScore}%.`);
-  if (weakTopics.length) bits.push(`You consistently lose points on ${weakTopics.slice(0, 2).join(" and ")}.`);
-  if (opts.flashcardRetention != null && opts.flashcardRetention < 70) bits.push(`Flashcard retention is ${opts.flashcardRetention}%, lower than it should be — increase review frequency.`);
-  if (opts.taskCompletionRate != null && opts.taskCompletionRate < 60) bits.push(`Only ${opts.taskCompletionRate}% of ${opts.subjectName} tasks are completed, which is likely compounding the gap.`);
+  if (avgScore != null) bits.push(`Dein Quiz-Schnitt in ${opts.subjectName} liegt bei ${avgScore}%.`);
+  if (weakTopics.length) bits.push(`Punkte verlierst du regelmäßig bei ${weakTopics.slice(0, 2).join(" und ")}.`);
+  if (opts.flashcardRetention != null && opts.flashcardRetention < 70) bits.push(`Die Behaltensquote liegt bei ${opts.flashcardRetention}% — zu niedrig. Wiederhol öfter.`);
+  if (opts.taskCompletionRate != null && opts.taskCompletionRate < 60) bits.push(`Nur ${opts.taskCompletionRate}% der Aufgaben in ${opts.subjectName} sind erledigt — das vergrößert den Rückstand zusätzlich.`);
   bits.push(
     weakTopics.length
-      ? `Focus your next study session on ${weakTopics[0]} specifically, with active recall rather than re-reading.`
-      : `Keep practicing with mixed-topic quizzes to surface any remaining gaps.`
+      ? `Nimm dir in der nächsten Lerneinheit gezielt ${weakTopics[0]} vor — aktiv abfragen statt nochmal durchlesen.`
+      : `Üb weiter mit gemischten Quiz, damit übrige Lücken sichtbar werden.`
   );
 
   return { weakTopics, recommendation: bits.join(" ") };
 }
 
 const MODE_OPENERS: Record<string, string[]> = {
-  explain: ["Here's how to think about it:", "Let's walk through this step by step."],
-  socratic: ["Before I answer — what do *you* think happens first, and why?", "Good question. What's the first rule you'd reach for here?"],
-  exam: ["Examiner mode: answer this precisely before I confirm.", "Let's treat this like a real exam question."],
-  simplify: ["Simple version:", "In plain terms:"],
-  practice: ["Try this one:", "Here's a quick exercise:"],
-  review: ["Let's check what's solid and what's shaky — explain it back to me first.", "Tell me in your own words, then I'll fill the gaps."],
+  explain: ["So kannst du es dir denken:", "Gehen wir das Schritt für Schritt durch."],
+  socratic: ["Bevor ich antworte — was passiert *deiner Meinung nach* zuerst, und warum?", "Gute Frage. Zu welcher Regel würdest du hier als Erstes greifen?"],
+  exam: ["Prüfungsmodus: Antworte präzise, bevor ich bestätige.", "Behandeln wir das wie eine echte Prüfungsfrage."],
+  simplify: ["Die einfache Version:", "Ganz schlicht gesagt:"],
+  practice: ["Probier die hier:", "Eine kurze Übung:"],
+  review: ["Schauen wir, was sitzt und was wackelt — erklär es mir zuerst selbst.", "Sag es in eigenen Worten, dann fülle ich die Lücken."],
 };
 
 export function demoChatReply(messages: ChatTurn[], mode: string, subjectName: string | undefined, documentContext: string | undefined): string {
-  const lastUser = [...messages].reverse().find((m) => m.role === "user")?.content ?? "your question";
+  const lastUser = [...messages].reverse().find((m) => m.role === "user")?.content ?? "deine Frage";
   const openers = MODE_OPENERS[mode] ?? MODE_OPENERS.explain;
   const opener = openers[messages.length % openers.length];
   const contextLine = documentContext
-    ? `\n\nBased on the document you have open: ${splitSentences(documentContext).slice(0, 2).join(" ")}`
+    ? `\n\nAus dem Dokument, das du offen hast: ${splitSentences(documentContext).slice(0, 2).join(" ")}`
     : "";
   const subjectLine = subjectName ? ` in ${subjectName}` : "";
 
   if (mode === "socratic") {
-    return `${opener}\n\nThink about "${lastUser}"${subjectLine} — what's the very first step or definition you'd need before anything else makes sense? Try answering that, and we'll build up from there together.${contextLine}`;
+    return `${opener}\n\nDenk an „${lastUser}“${subjectLine} — welcher erste Schritt oder welche Definition muss sitzen, bevor der Rest Sinn ergibt? Beantworte das, dann bauen wir von dort aus weiter.${contextLine}`;
   }
   if (mode === "exam") {
-    return `${opener}\n\n**Question:** ${lastUser}\n\nGive your best full answer. I'll grade it for accuracy and completeness, and tell you exactly what's missing.${contextLine}`;
+    return `${opener}\n\n**Frage:** ${lastUser}\n\nGib deine beste vollständige Antwort. Ich bewerte sie auf Richtigkeit und Vollständigkeit und sage dir genau, was fehlt.${contextLine}`;
   }
   if (mode === "practice") {
-    return `${opener}\n\nUsing what you just asked about ("${lastUser}"), try to solve a related problem${subjectLine} on your own first. Write out your steps — I'll check your reasoning, not just the final answer.${contextLine}`;
+    return `${opener}\n\nNimm das, wonach du gerade gefragt hast („${lastUser}“), und löse zuerst selbst eine passende Aufgabe${subjectLine}. Schreib deine Schritte auf — ich prüfe deinen Weg, nicht nur das Ergebnis.${contextLine}`;
   }
 
-  return `${opener}\n\nOn "${lastUser}"${subjectLine}: the key is to identify the underlying rule and apply it consistently rather than memorizing the specific example.${contextLine}\n\nWant me to go deeper, give you a practice question, or turn this into flashcards?`;
+  return `${opener}\n\nZu „${lastUser}“${subjectLine}: Entscheidend ist, die dahinterliegende Regel zu erkennen und konsequent anzuwenden — nicht das einzelne Beispiel auswendig zu lernen.${contextLine}\n\nSoll ich tiefer gehen, dir eine Übungsfrage geben oder Karteikarten daraus machen?`;
 }

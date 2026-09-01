@@ -11,7 +11,7 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Delete",
+  confirmLabel = "Löschen",
   destructive = true,
   /**
    * For actions there is no coming back from, require the word to be typed.
@@ -85,7 +85,7 @@ function ConfirmBody({
       {confirmPhrase && (
         <div className="space-y-1.5">
           <Label htmlFor={inputId}>
-            Type <span className="font-mono font-semibold text-ink">{confirmPhrase}</span> to confirm
+            Tipp <span className="font-mono font-semibold text-ink">{confirmPhrase}</span> zur Bestätigung
           </Label>
           <Input
             id={inputId}
@@ -101,7 +101,7 @@ function ConfirmBody({
 
       <DialogFooter>
         <Button variant="ghost" onClick={onClose}>
-          Cancel
+          Abbrechen
         </Button>
         <Button variant={destructive ? "destructive" : "default"} onClick={confirm} disabled={!unlocked}>
           {confirmLabel}

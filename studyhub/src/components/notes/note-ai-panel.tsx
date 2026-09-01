@@ -28,12 +28,12 @@ interface Turn {
 }
 
 const ACTIONS: { kind: Kind; label: string; icon: React.ElementType }[] = [
-  { kind: "improve", label: "Improve notes", icon: Wand2 },
-  { kind: "summarize", label: "Summarize", icon: Sparkles },
-  { kind: "explain", label: "Explain", icon: FileSearch },
-  { kind: "flashcards", label: "Create flashcards", icon: Layers3 },
-  { kind: "quiz", label: "Generate quiz", icon: ListChecks },
-  { kind: "missing", label: "Find missing info", icon: FileSearch },
+  { kind: "improve", label: "Notizen verbessern", icon: Wand2 },
+  { kind: "summarize", label: "Zusammenfassen", icon: Sparkles },
+  { kind: "explain", label: "Erklären", icon: FileSearch },
+  { kind: "flashcards", label: "Karteikarten anlegen", icon: Layers3 },
+  { kind: "quiz", label: "Quiz erzeugen", icon: ListChecks },
+  { kind: "missing", label: "Lücken finden", icon: FileSearch },
 ];
 
 export function NoteAIPanel({ note }: { note: Note }) {
@@ -52,7 +52,7 @@ export function NoteAIPanel({ note }: { note: Note }) {
   async function run(kind: Kind) {
     const plainText = htmlToText(note.contentHTML);
     if (!plainText) {
-      toast.error("Write a bit of content first — there's nothing for AI to work with yet.");
+      toast.error("Schreib zuerst ein bisschen was — die KI hat sonst nichts zum Arbeiten.");
       return;
     }
     const id = uid("turn");
@@ -95,14 +95,14 @@ export function NoteAIPanel({ note }: { note: Note }) {
       }
       spendAICredits(kind === "flashcards" || kind === "quiz" ? 3 : 1);
     } catch (err) {
-      patch(id, { status: "error", errorMessage: err instanceof AIClientError ? err.message : "Something went wrong. Please try again." });
+      patch(id, { status: "error", errorMessage: err instanceof AIClientError ? err.message : "Etwas ist schiefgelaufen. Versuch es bitte nochmal." });
     }
   }
 
   function saveFlashcards(cards: { front: string; back: string }[]) {
     const deck = addDeck({ subjectId: note.subjectId, name: `${note.title} — flashcards`, description: `Generated from note "${note.title}"`, sourceNoteId: note.id });
     cards.forEach((c) => addFlashcard({ deckId: deck.id, front: c.front, back: c.back }));
-    toast.success(`Saved ${cards.length} flashcards`, { action: { label: "Study now", onClick: () => router.push(`/flashcards/${deck.id}/study`) } });
+    toast.success(`${cards.length} Karteikarten gespeichert`, { action: { label: "Jetzt lernen", onClick: () => router.push(`/flashcards/${deck.id}/study`) } });
   }
 
   function saveQuiz(questions: QuizQuestion[] | undefined) {
@@ -116,7 +116,7 @@ export function NoteAIPanel({ note }: { note: Note }) {
       timeLimitMinutes: null,
       questions,
     });
-    toast.success("Quiz saved", { action: { label: "Start quiz", onClick: () => router.push(`/quizzes/${quiz.id}`) } });
+    toast.success("Quiz gespeichert", { action: { label: "Quiz starten", onClick: () => router.push(`/quizzes/${quiz.id}`) } });
   }
 
   return (

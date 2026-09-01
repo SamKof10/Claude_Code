@@ -4,10 +4,11 @@ import * as React from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { differenceInCalendarDays, format } from "date-fns";
+import { differenceInCalendarDays } from "date-fns";
 import { ArrowLeft, Check, GraduationCap, Trash2 } from "lucide-react";
 import { useStudyStore } from "@/lib/store";
 import { examReadiness } from "@/lib/analytics";
+import { formatDateLong, formatDateShort } from "@/lib/date-format";
 import { SubjectPill } from "@/components/shared/subject-pill";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -29,10 +30,10 @@ export default function ExamDetailPage() {
   if (!exam) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-        <p className="t-body font-medium text-ink">Exam not found</p>
+        <p className="t-body font-medium text-ink">Prüfung nicht gefunden</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
           <Link href="/exams">
-            <ArrowLeft className="size-3.5" /> Back to exams
+            <ArrowLeft className="size-3.5" /> Zurück zu den Prüfungen
           </Link>
         </Button>
       </div>
@@ -53,11 +54,11 @@ export default function ExamDetailPage() {
           </Button>
           <div>
             <h1 className="t-title-2 font-semibold tracking-tight text-ink">{exam.title}</h1>
-            <p className="mt-0.5 t-callout text-ink-3">{format(new Date(exam.date), "EEEE, MMMM d, yyyy")}</p>
+            <p className="mt-0.5 t-callout text-ink-3">{formatDateLong(exam.date)}</p>
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               {subject && <SubjectPill subject={subject} />}
               <Badge variant={daysLeft <= 3 ? "danger" : daysLeft <= 7 ? "warning" : "outline"}>
-                {daysLeft < 0 ? "Past" : daysLeft === 0 ? "Today" : `${daysLeft} days left`}
+                {daysLeft < 0 ? "Vorbei" : daysLeft === 0 ? "Heute" : `noch ${daysLeft} Tage`}
               </Badge>
               <Badge variant="outline" className="capitalize">
                 {exam.currentLevel}
@@ -72,7 +73,7 @@ export default function ExamDetailPage() {
 
       <div className="mb-6 rounded-2xl border border-border bg-surface p-5">
         <div className="mb-2 flex items-center justify-between">
-          <span className="mono-label">Readiness</span>
+          <span className="mono-label">Bereitschaft</span>
           <span className="t-callout font-semibold text-ink">{readiness}%</span>
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-surface-2">
@@ -89,7 +90,7 @@ export default function ExamDetailPage() {
         )}
       </div>
 
-      <h2 className="mb-4 t-headline font-semibold text-ink">Study plan</h2>
+      <h2 className="mb-4 t-headline font-semibold text-ink">Lernplan</h2>
       <div className="relative space-y-6 pl-8">
         <div className="absolute left-[15px] top-2 bottom-2 w-px bg-border" />
         {exam.studyPlan.map((week) => (
@@ -107,7 +108,7 @@ export default function ExamDetailPage() {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="t-body font-semibold text-ink">{week.label}</p>
                 <span className="t-caption text-ink-3">
-                  {format(new Date(week.startDate), "MMM d")} – {format(new Date(week.endDate), "MMM d")}
+                  {formatDateShort(week.startDate)} – {formatDateShort(week.endDate)}
                 </span>
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -125,18 +126,18 @@ export default function ExamDetailPage() {
           <div className="absolute -left-8 top-0.5 flex size-6 items-center justify-center rounded-full border-2 border-border-strong bg-surface text-ink-3">
             <GraduationCap className="size-3.5" />
           </div>
-          <div className="rounded-xl border border-dashed border-border p-4 t-callout text-ink-3">Exam day — {format(new Date(exam.date), "EEEE, MMMM d")}</div>
+          <div className="rounded-xl border border-dashed border-border p-4 t-callout text-ink-3">Prüfungstag — {formatDateLong(exam.date)}</div>
         </div>
       </div>
 
       <ConfirmDialog
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
-        title={`Delete "${exam.title}"?`}
-        description="This can't be undone."
+        title={`„${exam.title}“ löschen?`}
+        description="Das lässt sich nicht rückgängig machen."
         onConfirm={() => {
           deleteExam(exam.id);
-          toast.success("Exam deleted");
+          toast.success("Prüfung gelöscht");
           router.push("/exams");
         }}
       />

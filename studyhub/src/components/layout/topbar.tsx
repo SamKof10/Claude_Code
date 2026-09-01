@@ -52,7 +52,7 @@ export function Topbar() {
         <button
           className="md:hidden flex size-8 items-center justify-center rounded-md text-ink-2 hover:bg-surface-2"
           onClick={() => setMobileNavOpen(true)}
-          aria-label="Open navigation"
+          aria-label="Navigation öffnen"
         >
           <Menu className="size-[18px]" />
         </button>
@@ -64,14 +64,14 @@ export function Topbar() {
           className="hidden md:flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 h-8 t-callout text-ink-3 transition-colors hover:border-border-strong hover:text-ink w-64 lg:w-80"
         >
           <Search className="size-[15px]" />
-          <span className="flex-1 text-left">Search StudyHub…</span>
+          <span className="flex-1 text-left">StudyHub durchsuchen…</span>
           <kbd className="rounded border border-border bg-surface px-1.5 py-0.5 t-caption font-mono text-ink-3">⌘K</kbd>
         </button>
 
         <button
           onClick={() => setCommandPaletteOpen(true)}
           className="md:hidden ml-auto flex size-8 items-center justify-center rounded-md text-ink-2 hover:bg-surface-2"
-          aria-label="Search"
+          aria-label="Suchen"
         >
           <Search className="size-[17px]" />
         </button>
@@ -83,19 +83,19 @@ export function Topbar() {
             <DropdownMenuTrigger asChild>
               <Button size="sm" className="gap-1.5">
                 <Plus className="size-3.5" />
-                New
+                Neu
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onSelect={() => router.push("/notes?new=1")}>New note</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => router.push("/documents?upload=1")}>Upload document</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => router.push("/tasks?new=1")}>New task</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => router.push("/flashcards?new=1")}>New flashcard deck</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => router.push("/quizzes/new")}>Generate quiz</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => router.push("/exams?new=1")}>New exam</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => router.push("/notes?new=1")}>Neue Notiz</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => router.push("/documents?upload=1")}>Dokument hochladen</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => router.push("/tasks?new=1")}>Neue Aufgabe</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => router.push("/flashcards?new=1")}>Neuer Kartenstapel</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => router.push("/quizzes/new")}>Quiz erstellen</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => router.push("/exams?new=1")}>Neue Prüfung</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => router.push("/ai-tutor")}>
-                <Sparkles className="size-3.5" /> Ask AI Tutor
+                <Sparkles className="size-3.5" /> KI-Tutor fragen
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -104,8 +104,8 @@ export function Topbar() {
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
-            aria-label={theme === "dark" ? "Switch to light appearance" : "Switch to dark appearance"}
-            title="Appearance — set it back to System in Settings"
+            aria-label={theme === "dark" ? "Zu hellem Erscheinungsbild wechseln" : "Zu dunklem Erscheinungsbild wechseln"}
+            title="Erscheinungsbild — in den Einstellungen wieder auf System stellen"
           >
             {theme === "dark" ? <Sun className="size-[17px]" /> : <Moon className="size-[17px]" />}
           </Button>
@@ -120,16 +120,16 @@ export function Topbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-60">
               <DropdownMenuLabel className="pb-1">
-                <span className="block truncate text-ink">{profile?.name ?? "Student"}</span>
+                <span className="block truncate text-ink">{profile?.name ?? "Schüler:in"}</span>
                 {account && <span className="block truncate t-caption font-normal text-ink-3">{account.email}</span>}
               </DropdownMenuLabel>
-              <DropdownMenuItem onSelect={() => router.push("/settings")}>Settings</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => router.push("/progress")}>My progress</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => router.push("/settings")}>Einstellungen</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => router.push("/progress")}>Mein Fortschritt</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => resetDemoData()}>Load demo data</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => resetDemoData()}>Demodaten laden</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => void signOut()}>
-                <LogOut className="size-3.5" /> Sign out
+                <LogOut className="size-3.5" /> Abmelden
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

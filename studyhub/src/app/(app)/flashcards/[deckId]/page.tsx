@@ -42,10 +42,10 @@ export default function DeckDetailPage() {
   if (!deck) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-        <p className="t-body font-medium text-ink">Deck not found</p>
+        <p className="t-body font-medium text-ink">Stapel nicht gefunden</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
           <Link href="/flashcards">
-            <ArrowLeft className="size-3.5" /> Back to flashcards
+            <ArrowLeft className="size-3.5" /> Zurück zu den Karteikarten
           </Link>
         </Button>
       </div>
@@ -59,9 +59,9 @@ export default function DeckDetailPage() {
       const { data } = await aiFlashcards(seed, deck!.name, 5);
       data.cards.forEach((c) => addFlashcard({ deckId: deck!.id, front: c.front, back: c.back }));
       spendAICredits(3);
-      toast.success(`Added ${data.cards.length} cards`);
+      toast.success(`${data.cards.length} Karten hinzugefügt`);
     } catch (err) {
-      toast.error(err instanceof AIClientError ? err.message : "Couldn't generate cards. Try again.");
+      toast.error(err instanceof AIClientError ? err.message : "Karten konnten nicht erzeugt werden. Versuch es nochmal.");
     } finally {
       setGenerating(false);
     }
@@ -93,14 +93,14 @@ export default function DeckDetailPage() {
             <Trash2 className="size-4" />
           </Button>
           <Button variant="secondary" onClick={generateMore} disabled={generating}>
-            {generating ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />} Generate more
+            {generating ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />} Mehr erzeugen
           </Button>
           <Button variant="secondary" onClick={() => setCardDialog({ open: true })}>
-            <Plus className="size-3.5" /> Add card
+            <Plus className="size-3.5" /> Karte hinzufügen
           </Button>
           <Button disabled={cards.length === 0} asChild>
             <Link href={`/flashcards/${deck.id}/study`}>
-              <Play className="size-3.5" /> Study
+              <Play className="size-3.5" /> Lernen
             </Link>
           </Button>
         </div>
@@ -109,9 +109,9 @@ export default function DeckDetailPage() {
       {cards.length === 0 ? (
         <EmptyState
           icon={Sparkles}
-          title="No cards yet"
-          description="Add a card manually, or generate a first batch with AI."
-          action={<Button onClick={() => setCardDialog({ open: true })}>Add your first card</Button>}
+          title="Noch keine Karten"
+          description="Leg eine Karte selbst an — oder lass die KI einen ersten Satz erzeugen."
+          action={<Button onClick={() => setCardDialog({ open: true })}>Erste Karte anlegen</Button>}
         />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
@@ -134,7 +134,7 @@ export default function DeckDetailPage() {
                 <span className="shrink-0 t-caption text-ink-3">{confidence(card)}%</span>
               </div>
               <p className="mt-1.5 t-caption text-ink-3">
-                {card.lastReviewed ? `Reviewed · next ${formatDateShort(card.nextReview)}` : "Not reviewed yet"}
+                {card.lastReviewed ? `Wiederholt · nächste ${formatDateShort(card.nextReview)}` : "Noch nicht wiederholt"}
               </p>
             </div>
           ))}
@@ -156,11 +156,11 @@ export default function DeckDetailPage() {
         <ConfirmDialog
           open={!!confirmDeleteCard}
           onOpenChange={(o) => !o && setConfirmDeleteCard(null)}
-          title="Delete this card?"
-          description="This can't be undone."
+          title="Diese Karte löschen?"
+          description="Das lässt sich nicht rückgängig machen."
           onConfirm={() => {
             deleteFlashcard(confirmDeleteCard.id);
-            toast.success("Card deleted");
+            toast.success("Karte gelöscht");
           }}
         />
       )}
@@ -168,11 +168,11 @@ export default function DeckDetailPage() {
       <ConfirmDialog
         open={confirmDeleteDeck}
         onOpenChange={setConfirmDeleteDeck}
-        title={`Delete "${deck.name}"?`}
-        description="This deletes all of its cards too. This can't be undone."
+        title={`„${deck.name}“ löschen?`}
+        description="Damit verschwinden auch alle Karten darin. Das lässt sich nicht rückgängig machen."
         onConfirm={() => {
           deleteDeck(deck.id);
-          toast.success("Deck deleted");
+          toast.success("Stapel gelöscht");
           router.push("/flashcards");
         }}
       />

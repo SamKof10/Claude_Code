@@ -107,7 +107,7 @@ export default function AITutorPage() {
       }
       setStreamingText(null);
       if (err instanceof DOMException && err.name === "AbortError") return;
-      toast.error(err instanceof AIClientError ? err.message : "The AI Tutor is temporarily unavailable.");
+      toast.error(err instanceof AIClientError ? err.message : "Der KI-Tutor ist gerade nicht erreichbar.");
     }
   }
 
@@ -167,10 +167,10 @@ export default function AITutorPage() {
           <div className="ml-auto flex items-center gap-2">
             <Select value={effectiveSubjectId ?? "none"} onValueChange={(v) => setSubjectId(v)} disabled={!!active}>
               <SelectTrigger className="w-36">
-                <SelectValue placeholder="No subject" />
+                <SelectValue placeholder="Kein Fach" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">No subject</SelectItem>
+                <SelectItem value="none">Kein Fach</SelectItem>
                 {subjects.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
                     {s.name}
@@ -180,10 +180,10 @@ export default function AITutorPage() {
             </Select>
             <Select value={effectiveDocumentId ?? "none"} onValueChange={(v) => setDocumentId(v)} disabled={!!active || !subjectDocs.length}>
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="No document" />
+                <SelectValue placeholder="Kein Dokument" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">No document</SelectItem>
+                <SelectItem value="none">Kein Dokument</SelectItem>
                 {subjectDocs.map((d) => (
                   <SelectItem key={d.id} value={d.id}>
                     {d.name}
@@ -200,7 +200,7 @@ export default function AITutorPage() {
               <div className="mb-3 flex size-12 items-center justify-center rounded-2xl signal-gradient">
                 {React.createElement(TUTOR_MODES.find((m) => m.value === effectiveMode)!.icon, { className: "size-6 text-white" })}
               </div>
-              <h2 className="t-headline font-semibold text-ink">Ask your AI Tutor anything</h2>
+              <h2 className="t-headline font-semibold text-ink">Frag deinen KI-Tutor alles</h2>
               <p className="mt-1 t-callout text-ink-3">
                 {TUTOR_MODES.find((m) => m.value === effectiveMode)!.description}
                 {subject ? ` · ${subject.name}` : ""}
@@ -239,7 +239,7 @@ export default function AITutorPage() {
                   send(input);
                 }
               }}
-              placeholder="Ask anything…"
+              placeholder="Frag irgendetwas…"
               rows={1}
               className="min-h-10 resize-none py-2.5"
             />
@@ -261,7 +261,7 @@ export default function AITutorPage() {
                 <Badge variant="outline" className="mr-1">
                   {TUTOR_MODES.find((m) => m.value === effectiveMode)!.label}
                 </Badge>
-                mode is fixed for this conversation — start a new one to change subject or document.
+                ist für dieses Gespräch festgelegt — starte ein neues, um Fach oder Dokument zu wechseln.
               </p>
             )}
           </div>

@@ -57,7 +57,7 @@ function ExamFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
   async function submit() {
     const subject = subjects.find((s) => s.id === subjectId);
     if (!subject || !date) return;
-    const examTitle = title.trim() || `${subject.name} Exam`;
+    const examTitle = title.trim() || `Prüfung ${subject.name}`;
     setLoading(true);
     try {
       const createdAt = new Date().toISOString();
@@ -79,11 +79,11 @@ function ExamFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
         availableHoursPerWeek: Number(hours) || 3,
         studyPlan: data.weeks,
       });
-      toast.success("Study plan ready");
+      toast.success("Lernplan steht");
       onClose();
       router.push(`/exams/${exam.id}`);
     } catch (err) {
-      toast.error(err instanceof AIClientError ? err.message : "Couldn't build a study plan. Try again.");
+      toast.error(err instanceof AIClientError ? err.message : "Der Lernplan konnte nicht erstellt werden. Versuch es nochmal.");
     } finally {
       setLoading(false);
     }
@@ -92,16 +92,16 @@ function ExamFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
   return (
     <>
       <DialogHeader>
-        <DialogTitle>New exam</DialogTitle>
-        <DialogDescription>StudyHub will build a week-by-week prep plan automatically.</DialogDescription>
+        <DialogTitle>Neue Prüfung</DialogTitle>
+        <DialogDescription>StudyHub baut dir automatisch einen Lernplan Woche für Woche.</DialogDescription>
       </DialogHeader>
 
       <div className="space-y-4">
         <div className="space-y-1.5">
-          <Label>Subject</Label>
+          <Label>Fach</Label>
           <Select value={subjectId} onValueChange={setSubjectId}>
             <SelectTrigger>
-              <SelectValue placeholder="Choose a subject" />
+              <SelectValue placeholder="Fach wählen" />
             </SelectTrigger>
             <SelectContent>
               {subjects.map((s) => (
@@ -114,37 +114,37 @@ function ExamFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
         </div>
 
         <div className="space-y-1.5">
-          <Label>Exam title</Label>
-          <Input placeholder="e.g. Midterm exam" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <Label>Titel der Prüfung</Label>
+          <Input placeholder="z. B. Schularbeit Nr. 1" value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label>Exam date</Label>
+            <Label>Prüfungsdatum</Label>
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} min={inNDays(1)} />
           </div>
           <div className="space-y-1.5">
-            <Label>Hours/week available</Label>
+            <Label>Stunden pro Woche</Label>
             <Input type="number" min={1} max={40} value={hours} onChange={(e) => setHours(e.target.value)} />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <Label>Current knowledge level</Label>
+          <Label>Aktueller Wissensstand</Label>
           <Select value={level} onValueChange={(v) => setLevel(v as KnowledgeLevel)}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="beginner">Beginner — starting from scratch</SelectItem>
-              <SelectItem value="intermediate">Intermediate — know the basics</SelectItem>
-              <SelectItem value="advanced">Advanced — need to sharpen up</SelectItem>
+              <SelectItem value="beginner">Anfang — bei null anfangen</SelectItem>
+              <SelectItem value="intermediate">Mittel — Grundlagen sitzen</SelectItem>
+              <SelectItem value="advanced">Fortgeschritten — nur noch feilen</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-1.5">
-          <Label>Topics to cover</Label>
+          <Label>Themen</Label>
           <div className="flex flex-wrap gap-1.5">
             {topics.map((t) => (
               <Badge key={t} variant="outline" className="gap-1">
@@ -154,7 +154,7 @@ function ExamFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
             ))}
           </div>
           <Input
-            placeholder="Type a topic and press Enter…"
+            placeholder="Thema eingeben und Enter drücken…"
             value={topicInput}
             onChange={(e) => setTopicInput(e.target.value)}
             onKeyDown={(e) => {
@@ -170,10 +170,10 @@ function ExamFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
 
       <DialogFooter>
         <Button variant="ghost" onClick={onClose}>
-          Cancel
+          Abbrechen
         </Button>
         <Button onClick={submit} disabled={loading || !subjectId || !date}>
-          {loading && <Loader2 className="size-3.5 animate-spin" />} Create study plan
+          {loading && <Loader2 className="size-3.5 animate-spin" />} Lernplan erstellen
         </Button>
       </DialogFooter>
     </>

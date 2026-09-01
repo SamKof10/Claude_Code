@@ -8,7 +8,7 @@ import { formatMinutes } from "@/lib/utils";
 export function MinutesBarChart({
   data,
   height = 180,
-  label = "Study time",
+  label = "Lernzeit",
 }: {
   data: { label: string; minutes: number }[];
   height?: number;
@@ -21,10 +21,10 @@ export function MinutesBarChart({
     <AccessibleChart
       summary={
         total > 0
-          ? `${label} across ${data.length} periods: ${formatMinutes(total)} in total, with the most (${formatMinutes(best.minutes)}) on ${best.label}.`
-          : `${label}: no study time recorded yet.`
+          ? `${label} über ${data.length} Zeiträume: insgesamt ${formatMinutes(total)}, am meisten (${formatMinutes(best.minutes)}) am ${best.label}.`
+          : `${label}: noch keine Lernzeit erfasst.`
       }
-      columns={["Period", "Study time"]}
+      columns={["Zeitraum", "Lernzeit"]}
       rows={data.map((d) => ({ label: d.label, value: formatMinutes(d.minutes) }))}
     >
       <ResponsiveContainer width="100%" height={height}>

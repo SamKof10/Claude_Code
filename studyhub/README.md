@@ -42,6 +42,26 @@ npm run check:contrast # colour-contrast gate (exits 1 on a failure)
 
 ---
 
+## Language
+
+The interface is **German**, and the AI answers in German in both modes:
+
+- `src/lib/ai/prompts.ts` carries one `GERMAN_OUTPUT_RULE` that the tutor
+  prompt and the JSON-only suffix both include, so a live model answers in
+  German and the JSON it returns has German values under unchanged English
+  keys.
+- The demo generator's templates are German too, and its definition patterns
+  now match `ist`, `sind`, `bezeichnet` and `bedeutet` alongside the English
+  copulas — without that it would find no definitions in German material and
+  fall back to generic cards.
+- Dates go through `src/lib/date-format.ts`, which applies date-fns' `de`
+  locale once, so weekdays, months and relative labels are German and times
+  are 24-hour.
+
+There is no language switcher: the app is German, not multilingual. Adding one
+would mean lifting every string into a message catalogue, which is a different
+piece of work.
+
 ## School system
 
 StudyHub is built for **South Tyrol**, and `src/lib/school.ts` is the single

@@ -5,7 +5,7 @@
 import type { Difficulty, QuizQuestionType } from "@/lib/types";
 import { anthropicComplete, anthropicStream, isLiveAIConfigured } from "./anthropic-provider";
 import * as demo from "./demo-provider";
-import { JSON_ONLY_SUFFIX, tutorSystemPrompt } from "./prompts";
+import { GERMAN_OUTPUT_RULE, JSON_ONLY_SUFFIX, tutorSystemPrompt } from "./prompts";
 import type {
   ChatTurn,
   ConceptsResult,
@@ -69,7 +69,7 @@ export async function explainTopic(topic: string, context: string | undefined, s
             content: `Explain "${topic}" to a school student.${style === "simple" ? " Use very simple language and an everyday analogy, as if they're 15." : style === "advanced" ? " Go into real depth and precision." : ""} Use Markdown formatting.${context ? `\n\nRelevant material:\n${context.slice(0, 6000)}` : ""}`,
           },
         ],
-        { system: "You are a patient, precise study tutor.", maxTokens: 900 }
+        { system: `You are a patient, precise study tutor.\n\n${GERMAN_OUTPUT_RULE}`, maxTokens: 900 }
       );
       return { data: { explanation: text }, source: "live" };
     } catch {
@@ -180,7 +180,7 @@ export async function answerDocumentQuestion(question: string, documentContent: 
     try {
       const text = await anthropicComplete(
         [{ role: "user", content: `Document "${documentName}":\n"""${documentContent.slice(0, 12000)}"""\n\nQuestion: ${question}` }],
-        { system: "Answer the student's question using the provided document as ground truth. If the document doesn't cover it, say so explicitly before adding outside knowledge. Use Markdown.", maxTokens: 900 }
+        { system: `Answer the student's question using the provided document as ground truth. If the document doesn't cover it, say so explicitly before adding outside knowledge. Use Markdown.\n\n${GERMAN_OUTPUT_RULE}`, maxTokens: 900 }
       );
       return { data: { answer: text }, source: "live" };
     } catch {

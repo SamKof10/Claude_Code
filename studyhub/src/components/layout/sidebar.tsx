@@ -84,7 +84,7 @@ export function Sidebar({ className }: { className?: string }) {
         {!collapsed && <span className="t-headline font-semibold tracking-tight text-ink">StudyHub</span>}
       </div>
 
-      <nav aria-label="Main" className="flex-1 overflow-y-auto no-scrollbar px-3 py-2 space-y-0.5">
+      <nav aria-label="Hauptnavigation" className="flex-1 overflow-y-auto no-scrollbar px-3 py-2 space-y-0.5">
         {NAV_ITEMS.map((item) => (
           <NavLink key={item.href} {...item} collapsed={collapsed} />
         ))}
@@ -94,7 +94,7 @@ export function Sidebar({ className }: { className?: string }) {
         {!collapsed ? (
           <div className="rounded-xl border border-border bg-surface p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="mono-label">AI usage</span>
+              <span className="mono-label">KI-Nutzung</span>
               <span className="t-caption text-ink-3">
                 {profile?.aiUsage.used ?? 0}/{profile?.aiUsage.limit ?? 0}
               </span>
@@ -109,7 +109,7 @@ export function Sidebar({ className }: { className?: string }) {
               </div>
             </TooltipTrigger>
             <TooltipContent side="right">
-              AI usage: {profile?.aiUsage.used ?? 0}/{profile?.aiUsage.limit ?? 0}
+              KI-Nutzung: {profile?.aiUsage.used ?? 0}/{profile?.aiUsage.limit ?? 0}
             </TooltipContent>
           </Tooltip>
         )}
@@ -120,7 +120,7 @@ export function Sidebar({ className }: { className?: string }) {
           </Avatar>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate t-callout font-medium text-ink">{profile?.name ?? "Student"}</p>
+              <p className="truncate t-callout font-medium text-ink">{profile?.name ?? "Schüler:in"}</p>
               <p className="truncate t-caption text-ink-3">
                 {[profile?.grade, profile?.schoolYear].filter(Boolean).join(" · ")}
               </p>
@@ -130,7 +130,7 @@ export function Sidebar({ className }: { className?: string }) {
 
         <button
           onClick={toggleSidebar}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={collapsed ? "Seitenleiste ausklappen" : "Seitenleiste einklappen"}
           aria-expanded={!collapsed}
           className={cn(
             "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 t-caption text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink",
@@ -138,7 +138,7 @@ export function Sidebar({ className }: { className?: string }) {
           )}
         >
           {collapsed ? <ChevronsRight className="size-4" /> : <ChevronsLeft className="size-4" />}
-          {!collapsed && "Collapse"}
+          {!collapsed && "Einklappen"}
         </button>
       </div>
     </aside>

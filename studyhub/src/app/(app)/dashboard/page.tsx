@@ -65,7 +65,7 @@ export default function DashboardPage() {
       icon: FileText,
       title: d.name,
       subjectId: d.subjectId,
-      meta: `${d.pages ?? "?"} pages`,
+      meta: `${d.pages ?? "?"} Seiten`,
       href: `/documents/${d.id}`,
     })),
     ...[...notes].sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt)).slice(0, 2).map((n) => ({
@@ -73,7 +73,7 @@ export default function DashboardPage() {
       icon: NotebookPen,
       title: n.title,
       subjectId: n.subjectId,
-      meta: "Note",
+      meta: "Notiz",
       href: `/notes/${n.id}`,
     })),
     ...decks
@@ -95,46 +95,46 @@ export default function DashboardPage() {
     <div>
       <PageHeader
         title={`${greeting()}, ${profile.name.split(" ")[0]}`}
-        description="Here's what's on your plate today."
+        description="Das steht heute an."
         actions={
           <Button asChild>
             <Link href="/ai-tutor">
-              <Sparkles className="size-3.5" /> Ask AI Tutor
+              <Sparkles className="size-3.5" /> KI-Tutor fragen
             </Link>
           </Button>
         }
       />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard icon={CheckSquare} label="Due today" value={dueToday.length} hint={overdue.length > 0 ? `${overdue.length} overdue` : "You're on track"} tone={overdue.length > 0 ? "warning" : "default"} />
+        <StatCard icon={CheckSquare} label="Heute fällig" value={dueToday.length} hint={overdue.length > 0 ? `${overdue.length} überfällig` : "Alles im Plan"} tone={overdue.length > 0 ? "warning" : "default"} />
         <StatCard
           icon={GraduationCap}
-          label="Next exam"
+          label="Nächste Prüfung"
           value={nextExams[0] ? formatDueLabel(nextExams[0].date) : "—"}
-          hint={nextExams[0]?.title ?? "Nothing scheduled"}
+          hint={nextExams[0]?.title ?? "Nichts geplant"}
         />
-        <StatCard icon={Clock} label="Study time today" value={formatMinutes(todayMinutes)} hint={todayMinutes > 0 ? "Nice work" : "Not started yet"} tone={todayMinutes > 0 ? "success" : "default"} />
-        <StatCard icon={Flame} label="Current streak" value={`${streak}d`} hint={streak > 0 ? "Keep it going" : "Start today"} tone={streak > 0 ? "success" : "default"} />
+        <StatCard icon={Clock} label="Lernzeit heute" value={formatMinutes(todayMinutes)} hint={todayMinutes > 0 ? "Gut gemacht" : "Noch nicht angefangen"} tone={todayMinutes > 0 ? "success" : "default"} />
+        <StatCard icon={Flame} label="Aktuelle Serie" value={`${streak} T`} hint={streak > 0 ? "Weiter so" : "Heute anfangen"} tone={streak > 0 ? "success" : "default"} />
       </div>
 
       <div className="mt-6 grid gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
           <Card>
             <CardHeader className="flex-row items-center justify-between">
-              <CardTitle>Continue learning</CardTitle>
+              <CardTitle>Weiterlernen</CardTitle>
               <Link href="/documents" className="t-caption text-ink-3 hover:text-ink transition-colors">
-                View all
+                Alle ansehen
               </Link>
             </CardHeader>
             <CardContent>
               {continueItems.length === 0 ? (
                 <EmptyState
                   icon={FileText}
-                  title="Nothing to continue yet"
-                  description="Upload a document or create a note to get started."
+                  title="Noch nichts zum Weitermachen"
+                  description="Lade ein Dokument hoch oder leg eine Notiz an."
                   action={
                     <Button size="sm" asChild>
-                      <Link href="/documents?upload=1">Upload your first document</Link>
+                      <Link href="/documents?upload=1">Erstes Dokument hochladen</Link>
                     </Button>
                   }
                 />
@@ -172,14 +172,14 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader className="flex-row items-center justify-between">
-              <CardTitle>Upcoming</CardTitle>
+              <CardTitle>Demnächst</CardTitle>
               <Link href="/calendar" className="t-caption text-ink-3 hover:text-ink transition-colors">
-                Open calendar
+                Kalender öffnen
               </Link>
             </CardHeader>
             <CardContent>
               {timeline.length === 0 ? (
-                <EmptyState icon={CalendarClock} title="Nothing coming up" description="Tasks and exams in the next two weeks will show up here." />
+                <EmptyState icon={CalendarClock} title="Nichts in Sicht" description="Aufgaben und Prüfungen der nächsten zwei Wochen erscheinen hier." />
               ) : (
                 <ul className="divide-y divide-border">
                   {timeline.map((item) => {
@@ -208,7 +208,7 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Study time, last 14 days</CardTitle>
+              <CardTitle>Lernzeit, letzte 14 Tage</CardTitle>
             </CardHeader>
             <CardContent>
               <MinutesBarChart data={daily.map((d) => ({ label: d.label, minutes: d.minutes }))} />
@@ -220,12 +220,12 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-1.5">
-                <Sparkles className="size-4 text-[var(--color-signal-2)]" /> Study insights
+                <Sparkles className="size-4 text-[var(--color-signal-2)]" /> Lern-Erkenntnisse
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {insights.length === 0 ? (
-                <p className="t-callout text-ink-3">Complete a few quizzes or flashcard reviews and StudyHub will start surfacing insights here.</p>
+                <p className="t-callout text-ink-3">Mach ein paar Quiz oder Karteikarten-Runden, dann tauchen hier Erkenntnisse auf.</p>
               ) : (
                 insights.map((insight) => (
                   <div key={insight.id} className="flex gap-2.5 rounded-lg border border-border bg-surface-2 p-3">
@@ -242,7 +242,7 @@ export default function DashboardPage() {
               )}
               <Button variant="ghost" size="sm" className="w-full justify-center" asChild>
                 <Link href="/progress">
-                  See full progress <ArrowRight className="size-3.5" />
+                  Ganzen Fortschritt ansehen <ArrowRight className="size-3.5" />
                 </Link>
               </Button>
             </CardContent>
@@ -250,7 +250,7 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader className="flex-row items-center justify-between">
-              <CardTitle>Subject performance</CardTitle>
+              <CardTitle>Leistung nach Fach</CardTitle>
               {weakest && (
                 <Badge variant="warning" className="gap-1">
                   <TrendingDown className="size-3" /> {weakest.subject.name}
@@ -259,7 +259,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               {perf.length === 0 ? (
-                <EmptyState icon={ListChecks} title="No subjects yet" description="Add a subject to start tracking performance." />
+                <EmptyState icon={ListChecks} title="Noch keine Fächer" description="Leg ein Fach an, dann wird die Leistung mitverfolgt." />
               ) : (
                 <SubjectBarList items={perf} />
               )}

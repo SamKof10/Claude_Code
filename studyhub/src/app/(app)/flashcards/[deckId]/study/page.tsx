@@ -12,10 +12,10 @@ import { Progress } from "@/components/ui/progress";
 import { EmptyState } from "@/components/shared/empty-state";
 
 const GRADES: { grade: ReviewGrade; label: string; hint: string; className: string }[] = [
-  { grade: 1, label: "Again", hint: "1", className: "border-danger/40 text-danger-text hover:bg-[color-mix(in_srgb,var(--danger)_10%,transparent)]" },
-  { grade: 2, label: "Difficult", hint: "2", className: "border-warning/40 text-warning-text hover:bg-[color-mix(in_srgb,var(--warning)_10%,transparent)]" },
-  { grade: 3, label: "Good", hint: "3", className: "border-[var(--color-signal)]/40 text-[var(--color-signal-2)] hover:bg-[color-mix(in_srgb,var(--color-signal)_10%,transparent)]" },
-  { grade: 4, label: "Easy", hint: "4", className: "border-success/40 text-success-text hover:bg-[color-mix(in_srgb,var(--success)_10%,transparent)]" },
+  { grade: 1, label: "Nochmal", hint: "1", className: "border-danger/40 text-danger-text hover:bg-[color-mix(in_srgb,var(--danger)_10%,transparent)]" },
+  { grade: 2, label: "Schwer", hint: "2", className: "border-warning/40 text-warning-text hover:bg-[color-mix(in_srgb,var(--warning)_10%,transparent)]" },
+  { grade: 3, label: "Gut", hint: "3", className: "border-[var(--color-signal)]/40 text-[var(--color-signal-2)] hover:bg-[color-mix(in_srgb,var(--color-signal)_10%,transparent)]" },
+  { grade: 4, label: "Leicht", hint: "4", className: "border-success/40 text-success-text hover:bg-[color-mix(in_srgb,var(--success)_10%,transparent)]" },
 ];
 
 export default function StudyModePage() {
@@ -92,7 +92,7 @@ export default function StudyModePage() {
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
         <p className="t-body font-medium text-ink">Deck not found</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
-          <Link href="/flashcards">Back to flashcards</Link>
+          <Link href="/flashcards">Zurück zu den Karteikarten</Link>
         </Button>
       </div>
     );
@@ -102,11 +102,11 @@ export default function StudyModePage() {
     return (
       <EmptyState
         icon={CheckCircle2}
-        title="Nothing to study"
-        description="This deck doesn't have any cards yet."
+        title="Nichts zu lernen"
+        description="Dieser Stapel hat noch keine Karten."
         action={
           <Button asChild>
-            <Link href={`/flashcards/${deck.id}`}>Back to deck</Link>
+            <Link href={`/flashcards/${deck.id}`}>Zurück zum Stapel</Link>
           </Button>
         }
       />
@@ -121,30 +121,30 @@ export default function StudyModePage() {
         <div className="mb-4 flex size-14 items-center justify-center rounded-2xl signal-gradient">
           <CheckCircle2 className="size-7 text-white" />
         </div>
-        <h1 className="t-title font-semibold text-ink">Session complete</h1>
+        <h1 className="t-title font-semibold text-ink">Runde geschafft</h1>
         <p className="mt-1.5 t-callout text-ink-3">
           You reviewed {results.length} card{results.length === 1 ? "" : "s"} from {deck.name}.
         </p>
         <div className="mt-6 grid w-full grid-cols-3 gap-3">
           <div className="rounded-xl border border-border bg-surface p-3">
             <p className="text-lg font-semibold text-ink">{accuracy}%</p>
-            <p className="t-caption text-ink-3">Accuracy</p>
+            <p className="t-caption text-ink-3">Trefferquote</p>
           </div>
           <div className="rounded-xl border border-border bg-surface p-3">
             <p className="text-lg font-semibold text-ink">{results.filter((r) => r === 1).length}</p>
-            <p className="t-caption text-ink-3">Again</p>
+            <p className="t-caption text-ink-3">Nochmal</p>
           </div>
           <div className="rounded-xl border border-border bg-surface p-3">
             <p className="text-lg font-semibold text-ink">{results.filter((r) => r === 4).length}</p>
-            <p className="t-caption text-ink-3">Easy</p>
+            <p className="t-caption text-ink-3">Leicht</p>
           </div>
         </div>
         <div className="mt-6 flex gap-2">
           <Button variant="secondary" onClick={() => window.location.reload()}>
-            <RotateCcw className="size-3.5" /> Study again
+            <RotateCcw className="size-3.5" /> Nochmal lernen
           </Button>
           <Button asChild>
-            <Link href={`/flashcards/${deck.id}`}>Back to deck</Link>
+            <Link href={`/flashcards/${deck.id}`}>Zurück zum Stapel</Link>
           </Button>
         </div>
       </div>
@@ -173,7 +173,7 @@ export default function StudyModePage() {
           type="button"
           onClick={() => setRevealed((r) => !r)}
           aria-live="polite"
-          aria-label={revealed ? `Answer: ${card?.back}. Press to hide.` : `Question: ${card?.front}. Press to reveal the answer.`}
+          aria-label={revealed ? `Antwort: ${card?.back}. Zum Verbergen drücken.` : `Frage: ${card?.front}. Zum Aufdecken drücken.`}
           className="relative flex h-72 w-full items-center justify-center rounded-3xl border border-border bg-surface p-8 text-center shadow-xl focus-visible:ring-2 focus-visible:ring-[var(--color-signal)] focus-visible:outline-none"
           animate={reduceMotion ? {} : { rotateY: revealed ? 180 : 0 }}
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
@@ -187,7 +187,7 @@ export default function StudyModePage() {
                 : { backfaceVisibility: "hidden" }
             }
           >
-            <span className="mono-label">Question</span>
+            <span className="mono-label">Frage</span>
             <p className="t-title font-medium text-ink text-balance">{card?.front}</p>
           </div>
           <div
@@ -198,14 +198,14 @@ export default function StudyModePage() {
                 : { backfaceVisibility: "hidden", transform: "rotateY(180deg)" }
             }
           >
-            <span className="mono-label">Answer</span>
+            <span className="mono-label">Antwort</span>
             <p className="t-title-2 font-normal leading-relaxed text-ink text-pretty">{card?.back}</p>
           </div>
         </motion.button>
       </div>
 
       <p className="mt-4 t-caption text-ink-3">
-        Press <kbd className="rounded border border-border px-1.5 py-0.5 font-mono">Space</kbd> to flip
+        <kbd className="rounded border border-border px-1.5 py-0.5 font-mono">Leertaste</kbd> zum Umdrehen
       </p>
 
       <div className="mt-6 grid w-full grid-cols-4 gap-2">

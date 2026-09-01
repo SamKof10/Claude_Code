@@ -48,12 +48,12 @@ function twoWeeksFromNow(): string {
 }
 
 const ACTIONS: { kind: TurnKind; label: string; icon: React.ElementType }[] = [
-  { kind: "summarize", label: "Summarize", icon: Sparkles },
-  { kind: "explain", label: "Explain simply", icon: Wand2 },
-  { kind: "flashcards", label: "Generate flashcards", icon: Layers3 },
-  { kind: "quiz", label: "Generate quiz", icon: ListChecks },
-  { kind: "concepts", label: "Find key concepts", icon: Lightbulb },
-  { kind: "studyplan", label: "Create study plan", icon: CalendarClock },
+  { kind: "summarize", label: "Zusammenfassen", icon: Sparkles },
+  { kind: "explain", label: "Einfach erklären", icon: Wand2 },
+  { kind: "flashcards", label: "Karteikarten erzeugen", icon: Layers3 },
+  { kind: "quiz", label: "Quiz erzeugen", icon: ListChecks },
+  { kind: "concepts", label: "Kernbegriffe finden", icon: Lightbulb },
+  { kind: "studyplan", label: "Lernplan erstellen", icon: CalendarClock },
 ];
 
 export function DocumentAIPanel({ document }: { document: StudyDocument }) {
@@ -121,8 +121,8 @@ export function DocumentAIPanel({ document }: { document: StudyDocument }) {
         }
         case "studyplan": {
           const { data, source } = await aiStudyPlan({
-            subjectName: subject?.name ?? "This subject",
-            examTitle: `${document.name} review`,
+            subjectName: subject?.name ?? "Dieses Fach",
+            examTitle: `${document.name} — Wiederholung`,
             examDate: twoWeeksFromNow(),
             topics: document.tags.length ? document.tags : [document.name],
             currentLevel: "intermediate",
@@ -140,14 +140,14 @@ export function DocumentAIPanel({ document }: { document: StudyDocument }) {
       }
       spendAICredits(kind === "flashcards" || kind === "quiz" ? 3 : 1);
     } catch (err) {
-      patchTurn(id, { status: "error", errorMessage: err instanceof AIClientError ? err.message : "Something went wrong. Please try again." });
+      patchTurn(id, { status: "error", errorMessage: err instanceof AIClientError ? err.message : "Etwas ist schiefgelaufen. Versuch es bitte nochmal." });
     }
   }
 
   function saveFlashcards(cards: { front: string; back: string }[]) {
-    const deck = addDeck({ subjectId: document.subjectId, name: `${document.name} — flashcards`, description: `Generated from ${document.name}`, sourceDocumentId: document.id });
+    const deck = addDeck({ subjectId: document.subjectId, name: `${document.name} — Karteikarten`, description: `Erzeugt aus ${document.name}`, sourceDocumentId: document.id });
     cards.forEach((c) => addFlashcard({ deckId: deck.id, front: c.front, back: c.back }));
-    toast.success(`Saved ${cards.length} flashcards`, { action: { label: "Study now", onClick: () => router.push(`/flashcards/${deck.id}/study`) } });
+    toast.success(`${cards.length} Karteikarten gespeichert`, { action: { label: "Jetzt lernen", onClick: () => router.push(`/flashcards/${deck.id}/study`) } });
   }
 
   function saveQuiz(questions: QuizQuestion[] | undefined) {
@@ -162,7 +162,7 @@ export function DocumentAIPanel({ document }: { document: StudyDocument }) {
       timeLimitMinutes: 10,
       questions,
     });
-    toast.success("Quiz saved", { action: { label: "Start quiz", onClick: () => router.push(`/quizzes/${quiz.id}`) } });
+    toast.success("Quiz gespeichert", { action: { label: "Quiz starten", onClick: () => router.push(`/quizzes/${quiz.id}`) } });
   }
 
   function submitQuestion() {
@@ -180,7 +180,7 @@ export function DocumentAIPanel({ document }: { document: StudyDocument }) {
         </div>
         <div>
           <p className="t-callout font-semibold text-ink">AI Assistant</p>
-          <p className="t-caption text-ink-3">Grounded in this document</p>
+          <p className="t-caption text-ink-3">Basiert auf diesem Dokument</p>
         </div>
       </div>
 
@@ -188,8 +188,8 @@ export function DocumentAIPanel({ document }: { document: StudyDocument }) {
         <div className="space-y-4 p-4">
           {turns.length === 0 && (
             <div className="rounded-xl border border-dashed border-border p-4 t-callout text-ink-3">
-              Ask a question about &ldquo;{document.name}&rdquo;, or try an action below — summarize it, get a simple explanation, or turn it into flashcards and a quiz.
-              <AIDataNotice live={aiLive === true} what="This document's text" className="mt-2.5" />
+              Stell eine Frage zu &bdquo;{document.name}&ldquo; oder nimm eine Aktion unten — zusammenfassen, einfach erklären lassen oder Karteikarten und ein Quiz daraus machen.
+              <AIDataNotice live={aiLive === true} what="Der Text dieses Dokuments" className="mt-2.5" />
             </div>
           )}
           {turns.map((turn) => (
@@ -209,7 +209,7 @@ export function DocumentAIPanel({ document }: { document: StudyDocument }) {
         </div>
         <div className="flex items-end gap-2">
           <Textarea
-            placeholder="Ask anything about this document…"
+            placeholder="Frag irgendetwas zu diesem Dokument…"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => {
@@ -270,7 +270,7 @@ function TurnView({
           <p className="t-callout text-ink">{turn.question}</p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-3.5">
-          <TurnHeader icon={Sparkles} label="Answer" source={turn.source} />
+          <TurnHeader icon={Sparkles} label="Antwort" source={turn.source} />
           <Markdown>{turn.answer ?? ""}</Markdown>
           <AIFeedback className="mt-1.5 -ml-1" />
         </div>
@@ -322,10 +322,10 @@ function TurnView({
                 <p className="mt-0.5 t-caption text-ink-3">{c.back}</p>
               </div>
             ))}
-            {turn.cards.length > 4 && <p className="t-caption text-ink-3">+{turn.cards.length - 4} more</p>}
+            {turn.cards.length > 4 && <p className="t-caption text-ink-3">+{turn.cards.length - 4} weitere</p>}
           </div>
           <Button size="sm" onClick={() => onSaveFlashcards(turn.cards!)}>
-            <Layers3 className="size-3.5" /> Save {turn.cards.length} cards to a deck
+            <Layers3 className="size-3.5" /> {turn.cards.length} Karten in einen Stapel speichern
           </Button>
         </div>
       )}
@@ -343,7 +343,7 @@ function TurnView({
             ))}
           </ul>
           <Button size="sm" onClick={() => onSaveQuiz(turn.questions)}>
-            <ListChecks className="size-3.5" /> Save quiz ({turn.questions.length} questions)
+            <ListChecks className="size-3.5" /> Quiz speichern ({turn.questions.length} Fragen)
           </Button>
         </div>
       )}

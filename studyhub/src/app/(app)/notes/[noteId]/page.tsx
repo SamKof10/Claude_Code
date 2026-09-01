@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Pin, Trash2 } from "lucide-react";
 import { useStudyStore } from "@/lib/store";
 import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 import { RichTextEditor } from "@/components/notes/rich-text-editor";
 import { NoteAIPanel } from "@/components/notes/note-ai-panel";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -32,10 +33,10 @@ export default function NoteDetailPage() {
   if (!note) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-        <p className="t-body font-medium text-ink">Note not found</p>
+        <p className="t-body font-medium text-ink">Notiz nicht gefunden</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
           <Link href="/notes">
-            <ArrowLeft className="size-3.5" /> Back to notes
+            <ArrowLeft className="size-3.5" /> Zurück zu den Notizen
           </Link>
         </Button>
       </div>
@@ -60,10 +61,10 @@ export default function NoteDetailPage() {
             <Input
               value={note.title}
               onChange={(e) => updateNote(note.id, { title: e.target.value })}
-              placeholder="Untitled note"
+              placeholder="Neue Notiz"
               className="h-auto border-none bg-transparent px-0 t-title font-semibold tracking-tight text-ink placeholder:text-ink-3 focus-visible:ring-0"
             />
-            <p className="t-caption text-ink-3">Edited {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}</p>
+            <p className="t-caption text-ink-3">Bearbeitet {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true, locale: de })}</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
@@ -79,7 +80,7 @@ export default function NoteDetailPage() {
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Select value={note.subjectId ?? "none"} onValueChange={(v) => updateNote(note.id, { subjectId: v === "none" ? null : v })}>
           <SelectTrigger className="w-40">
-            <SelectValue placeholder="No subject" />
+            <SelectValue placeholder="Kein Fach" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">No subject</SelectItem>
@@ -105,7 +106,7 @@ export default function NoteDetailPage() {
               setTagInput("");
             }
           }}
-          placeholder="+ add tag"
+          placeholder="+ Schlagwort"
           className="h-6 w-24 border-none bg-transparent px-1 t-caption"
         />
       </div>
@@ -122,11 +123,11 @@ export default function NoteDetailPage() {
       <ConfirmDialog
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
-        title={`Delete "${note.title || "Untitled note"}"?`}
-        description="This can't be undone."
+        title={`„${note.title || "Neue Notiz"}“ löschen?`}
+        description="Das lässt sich nicht rückgängig machen."
         onConfirm={() => {
           deleteNote(note.id);
-          toast.success("Note deleted");
+          toast.success("Notiz gelöscht");
           router.push("/notes");
         }}
       />

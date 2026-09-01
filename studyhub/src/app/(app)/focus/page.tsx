@@ -33,10 +33,10 @@ const PHASES: { value: FocusPhase; icon: React.ElementType }[] = [
 const NO_SUBJECT = "__none__";
 
 const DURATION_FIELDS: { key: keyof FocusSettings; label: string; min: number; max: number }[] = [
-  { key: "focusMinutes", label: "Focus block", min: 5, max: 120 },
-  { key: "shortBreakMinutes", label: "Short break", min: 1, max: 30 },
-  { key: "longBreakMinutes", label: "Long break", min: 5, max: 60 },
-  { key: "roundsBeforeLongBreak", label: "Blocks before long break", min: 2, max: 8 },
+  { key: "focusMinutes", label: "Fokusblock", min: 5, max: 120 },
+  { key: "shortBreakMinutes", label: "Kurze Pause", min: 1, max: 30 },
+  { key: "longBreakMinutes", label: "Lange Pause", min: 5, max: 60 },
+  { key: "roundsBeforeLongBreak", label: "Blöcke bis zur langen Pause", min: 2, max: 8 },
 ];
 
 function isToday(iso: string): boolean {
@@ -77,15 +77,15 @@ export default function FocusPage() {
   return (
     <div>
       <PageHeader
-        title="Focus"
-        description="Work in timed blocks. Every finished focus block is logged as study time, so it shows up in Progress and keeps your streak alive."
+        title="Fokus"
+        description="Arbeite in getakteten Blöcken. Jeder fertige Fokusblock wird als Lernzeit gezählt, taucht also im Fortschritt auf und hält deine Serie am Leben."
       />
 
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
           <Card>
             <CardContent className="p-6 md:p-8">
-              <div role="group" aria-label="Timer phase" className="mx-auto mb-7 flex w-fit gap-1 rounded-xl border border-border bg-surface-2 p-1">
+              <div role="group" aria-label="Timer-Phase" className="mx-auto mb-7 flex w-fit gap-1 rounded-xl border border-border bg-surface-2 p-1">
                 {PHASES.map(({ value, icon: Icon }) => (
                   <button
                     key={value}
@@ -112,19 +112,19 @@ export default function FocusPage() {
                   </Button>
                 ) : (
                   <Button size="lg" onClick={status === "paused" ? resume : start} className="min-w-[132px]">
-                    <Play className="size-4" /> {status === "paused" ? "Resume" : "Start"}
+                    <Play className="size-4" /> {status === "paused" ? "Weiter" : "Start"}
                   </Button>
                 )}
                 <Button size="lg" variant="ghost" onClick={reset} disabled={status === "idle" && msLeft === totalMs}>
-                  <RotateCcw className="size-4" /> Reset
+                  <RotateCcw className="size-4" /> Zurücksetzen
                 </Button>
                 <Button size="lg" variant="ghost" onClick={skip}>
-                  <SkipForward className="size-4" /> Skip
+                  <SkipForward className="size-4" /> Überspringen
                 </Button>
               </div>
 
               <div className="mt-7 flex flex-col items-center gap-3">
-                <div className="flex items-center gap-1.5" aria-label={`Block ${(round % settings.roundsBeforeLongBreak) + 1} of ${settings.roundsBeforeLongBreak} before a long break`}>
+                <div className="flex items-center gap-1.5" aria-label={`Block ${(round % settings.roundsBeforeLongBreak) + 1} von ${settings.roundsBeforeLongBreak} bis zur langen Pause`}>
                   {Array.from({ length: settings.roundsBeforeLongBreak }).map((_, i) => (
                     <span
                       key={i}
@@ -141,17 +141,17 @@ export default function FocusPage() {
 
                 <div className="flex flex-wrap items-center justify-center gap-2">
                   <Label htmlFor="focus-subject" className="t-caption text-ink-3">
-                    Credit this block to
+                    Block anrechnen auf
                   </Label>
                   <Select
                     value={subjectId ?? NO_SUBJECT}
                     onValueChange={(v) => setSubject(v === NO_SUBJECT ? null : v)}
                   >
                     <SelectTrigger id="focus-subject" className="w-52">
-                      <SelectValue placeholder="No subject" />
+                      <SelectValue placeholder="Kein Fach" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={NO_SUBJECT}>No subject</SelectItem>
+                      <SelectItem value={NO_SUBJECT}>Kein Fach</SelectItem>
                       {subjects.map((s) => (
                         <SelectItem key={s.id} value={s.id}>
                           {s.name}
@@ -165,13 +165,13 @@ export default function FocusPage() {
           </Card>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <StatCard icon={Clock3} label="Focused today" value={minutesToday > 0 ? formatMinutes(minutesToday) : "0m"} />
-            <StatCard icon={Target} label="Blocks today" value={todaySessions.length} />
+            <StatCard icon={Clock3} label="Heute fokussiert" value={minutesToday > 0 ? formatMinutes(minutesToday) : "0 Min"} />
+            <StatCard icon={Target} label="Blöcke heute" value={todaySessions.length} />
             <StatCard
               icon={Brain}
-              label="Block length"
-              value={`${settings.focusMinutes}m`}
-              hint={`${settings.shortBreakMinutes}m break · ${settings.longBreakMinutes}m long`}
+              label="Blocklänge"
+              value={`${settings.focusMinutes} Min`}
+              hint={`${settings.shortBreakMinutes} Min Pause · ${settings.longBreakMinutes} Min lang`}
             />
           </div>
         </div>
@@ -182,7 +182,7 @@ export default function FocusPage() {
               <CardTitle className="flex items-center gap-1.5">
                 <SlidersHorizontal className="size-4" /> Timer
               </CardTitle>
-              <CardDescription>Changes apply to the next block — a run in progress is never cut short.</CardDescription>
+              <CardDescription>Änderungen gelten ab dem nächsten Block — ein laufender wird nie abgebrochen.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {DURATION_FIELDS.map(({ key, label, min, max }) => (
@@ -208,7 +208,7 @@ export default function FocusPage() {
 
               <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
                 <Label htmlFor="focus-auto" className="t-callout font-normal text-ink-2">
-                  Start the next block automatically
+                  Nächsten Block automatisch starten
                 </Label>
                 <Switch
                   id="focus-auto"
@@ -218,7 +218,7 @@ export default function FocusPage() {
               </div>
               <div className="flex items-center justify-between gap-3">
                 <Label htmlFor="focus-chime" className="t-callout font-normal text-ink-2">
-                  Play a chime when a block ends
+                  Ton abspielen, wenn ein Block endet
                 </Label>
                 <Switch id="focus-chime" checked={settings.chime} onCheckedChange={(v) => updateSettings({ chime: v })} />
               </div>
@@ -227,14 +227,14 @@ export default function FocusPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Recent blocks</CardTitle>
+              <CardTitle>Letzte Blöcke</CardTitle>
               <CardDescription>
-                {activeSubject ? `New blocks are credited to ${activeSubject.name}.` : "Blocks without a subject still count towards your total study time."}
+                {activeSubject ? `Neue Blöcke werden ${activeSubject.name} angerechnet.` : "Blöcke ohne Fach zählen trotzdem zu deiner gesamten Lernzeit."}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {recent.length === 0 ? (
-                <p className="t-callout text-ink-3">Nothing yet. Finish a block and it shows up here.</p>
+                <p className="t-callout text-ink-3">Noch nichts. Beende einen Block, dann erscheint er hier.</p>
               ) : (
                 <ul className="space-y-2.5">
                   {recent.map((session) => {

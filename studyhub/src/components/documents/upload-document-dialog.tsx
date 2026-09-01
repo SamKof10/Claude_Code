@@ -86,7 +86,7 @@ function UploadFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: stri
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Upload document</DialogTitle>
+        <DialogTitle>Dokument hochladen</DialogTitle>
         <DialogDescription>PDF, Word, images or text files. StudyHub processes them for AI features automatically.</DialogDescription>
       </DialogHeader>
 
@@ -144,10 +144,10 @@ function UploadFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: stri
         )}
 
         <div className="space-y-1.5">
-          <Label>Subject</Label>
+          <Label>Fach</Label>
           <Select value={subjectId} onValueChange={setSubjectId}>
             <SelectTrigger>
-              <SelectValue placeholder="Choose a subject" />
+              <SelectValue placeholder="Fach wählen" />
             </SelectTrigger>
             <SelectContent>
               {subjects.map((s) => (
@@ -161,10 +161,10 @@ function UploadFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: stri
 
         {files.length === 1 && (
           <div className="space-y-1.5">
-            <Label>Document text (optional)</Label>
+            <Label>Dokumenttext (optional)</Label>
             <Textarea
               rows={4}
-              placeholder="Paste the document's text to power AI summaries, flashcards and quizzes in demo mode…"
+              placeholder="Füg den Text des Dokuments ein — davon leben Zusammenfassungen, Karteikarten und Quiz im Demo-Modus…"
               value={pastedContent}
               onChange={(e) => setPastedContent(e.target.value)}
             />

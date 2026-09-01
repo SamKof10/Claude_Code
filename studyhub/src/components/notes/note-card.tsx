@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 import { MoreHorizontal, Pin, Trash2 } from "lucide-react";
 import type { Note, Subject } from "@/lib/types";
 import { htmlToText } from "@/lib/html-to-text";
@@ -45,9 +46,9 @@ export function NoteCard({
       <Link href={`/notes/${note.id}`} className="block">
         <div className="flex items-center gap-1.5 pr-10">
           {note.pinned && <Pin className="size-3 shrink-0 fill-warning text-warning" />}
-          <h3 className="truncate t-body font-semibold text-ink">{note.title || "Untitled note"}</h3>
+          <h3 className="truncate t-body font-semibold text-ink">{note.title || "Neue Notiz"}</h3>
         </div>
-        <p className="mt-1.5 line-clamp-2 t-callout text-ink-3">{snippet || "No content yet."}</p>
+        <p className="mt-1.5 line-clamp-2 t-callout text-ink-3">{snippet || "Noch kein Inhalt."}</p>
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {subject && <SubjectPill subject={subject} />}
           {note.tags.slice(0, 2).map((t) => (
@@ -56,7 +57,7 @@ export function NoteCard({
             </Badge>
           ))}
         </div>
-        <p className="mt-3 t-caption text-ink-3">Updated {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}</p>
+        <p className="mt-3 t-caption text-ink-3">Aktualisiert {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true, locale: de })}</p>
       </Link>
     </div>
   );

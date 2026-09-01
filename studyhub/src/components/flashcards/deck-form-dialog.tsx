@@ -76,11 +76,11 @@ function DeckFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
       });
       data.cards.forEach((c) => addFlashcard({ deckId: deck.id, front: c.front, back: c.back }));
       spendAICredits(3);
-      toast.success(`Generated ${data.cards.length} flashcards`);
+      toast.success(`${data.cards.length} Karteikarten erzeugt`);
       onClose();
       router.push(`/flashcards/${deck.id}`);
     } catch (err) {
-      toast.error(err instanceof AIClientError ? err.message : "Couldn't generate flashcards. Try again.");
+      toast.error(err instanceof AIClientError ? err.message : "Karteikarten konnten nicht erzeugt werden. Versuch es nochmal.");
     } finally {
       setGenerating(false);
     }
@@ -89,32 +89,32 @@ function DeckFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
   return (
     <>
       <DialogHeader>
-        <DialogTitle>New flashcard deck</DialogTitle>
-        <DialogDescription>Create cards yourself, or let AI generate a first draft.</DialogDescription>
+        <DialogTitle>Neuer Kartenstapel</DialogTitle>
+        <DialogDescription>Karten selbst anlegen — oder die KI einen ersten Entwurf erzeugen lassen.</DialogDescription>
       </DialogHeader>
 
       <Tabs defaultValue="manual">
           <TabsList>
-            <TabsTrigger value="manual">Create manually</TabsTrigger>
+            <TabsTrigger value="manual">Selbst anlegen</TabsTrigger>
             <TabsTrigger value="ai">
-              <Sparkles className="size-3.5" /> Generate with AI
+              <Sparkles className="size-3.5" /> Mit KI erzeugen
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="manual" className="space-y-4">
             <div className="space-y-1.5">
-              <Label>Deck name</Label>
-              <Input autoFocus placeholder="e.g. Cell biology basics" value={name} onChange={(e) => setName(e.target.value)} />
+              <Label>Name des Stapels</Label>
+              <Input autoFocus placeholder="z. B. Zellbiologie Grundlagen" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Description</Label>
-              <Textarea rows={2} placeholder="What's this deck for?" value={description} onChange={(e) => setDescription(e.target.value)} />
+              <Label>Beschreibung</Label>
+              <Textarea rows={2} placeholder="Wofür ist dieser Stapel?" value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Subject</Label>
+              <Label>Fach</Label>
               <Select value={subjectId} onValueChange={setSubjectId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="No subject" />
+                  <SelectValue placeholder="Kein Fach" />
                 </SelectTrigger>
                 <SelectContent>
                   {subjects.map((s) => (
@@ -127,20 +127,20 @@ function DeckFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
             </div>
             <DialogFooter>
               <Button variant="ghost" onClick={onClose}>
-                Cancel
+                Abbrechen
               </Button>
               <Button onClick={createManual} disabled={!name.trim()}>
-                Create deck
+                Stapel anlegen
               </Button>
             </DialogFooter>
           </TabsContent>
 
           <TabsContent value="ai" className="space-y-4">
             <div className="space-y-1.5">
-              <Label>Subject</Label>
+              <Label>Fach</Label>
               <Select value={subjectId} onValueChange={(v) => { setSubjectId(v); setDocumentId(""); }}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a subject" />
+                  <SelectValue placeholder="Fach wählen" />
                 </SelectTrigger>
                 <SelectContent>
                   {subjects.map((s) => (
@@ -153,7 +153,7 @@ function DeckFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
             </div>
 
             <div className="space-y-1.5">
-              <Label>Source</Label>
+              <Label>Quelle</Label>
               <Select value={documentId || "topic"} onValueChange={(v) => setDocumentId(v === "topic" ? "" : v)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -172,18 +172,18 @@ function DeckFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
             {!documentId && (
               <>
                 <div className="space-y-1.5">
-                  <Label>Topic</Label>
-                  <Input placeholder="e.g. Photosynthesis" value={topic} onChange={(e) => setTopic(e.target.value)} />
+                  <Label>Thema</Label>
+                  <Input placeholder="z. B. Photosynthese" value={topic} onChange={(e) => setTopic(e.target.value)} />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Details (optional)</Label>
-                  <Textarea rows={3} placeholder="Paste notes or describe what to cover for better cards…" value={detail} onChange={(e) => setDetail(e.target.value)} />
+                  <Textarea rows={3} placeholder="Notizen einfügen oder beschreiben, was drankommen soll — das ergibt bessere Karten…" value={detail} onChange={(e) => setDetail(e.target.value)} />
                 </div>
               </>
             )}
 
             <div className="space-y-1.5">
-              <Label>Number of cards</Label>
+              <Label>Anzahl der Karten</Label>
               <Select value={count} onValueChange={setCount}>
                 <SelectTrigger className="w-28">
                   <SelectValue />
@@ -200,10 +200,10 @@ function DeckFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
 
             <DialogFooter>
               <Button variant="ghost" onClick={onClose}>
-                Cancel
+                Abbrechen
               </Button>
               <Button onClick={generate} disabled={generating || (!documentId && !topic.trim())}>
-                {generating && <Loader2 className="size-3.5 animate-spin" />} Generate deck
+                {generating && <Loader2 className="size-3.5 animate-spin" />} Stapel erzeugen
               </Button>
             </DialogFooter>
         </TabsContent>

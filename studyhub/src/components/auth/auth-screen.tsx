@@ -14,18 +14,18 @@ type Mode = "signin" | "signup";
 
 const COPY: Record<Mode, { title: string; sub: string; submit: string; switchTo: Mode; switchLabel: string }> = {
   signin: {
-    title: "Welcome back",
-    sub: "Sign in to pick up where you left off.",
-    submit: "Sign in",
+    title: "Willkommen zurück",
+    sub: "Melde dich an und mach dort weiter, wo du aufgehört hast.",
+    submit: "Anmelden",
     switchTo: "signup",
-    switchLabel: "Create one",
+    switchLabel: "Konto erstellen",
   },
   signup: {
-    title: "Create your account",
-    sub: "One account keeps your subjects, notes and progress together.",
-    submit: "Create account",
+    title: "Konto erstellen",
+    sub: "Ein Konto hält deine Fächer, Notizen und deinen Fortschritt zusammen.",
+    submit: "Konto erstellen",
     switchTo: "signin",
-    switchLabel: "Sign in",
+    switchLabel: "Anmelden",
   },
 };
 
@@ -60,11 +60,11 @@ export function AuthScreen() {
     if (pending) return;
 
     if (!isValidEmail(email)) {
-      setLocalError("Enter a valid email address.");
+      setLocalError("Gib eine gültige E-Mail-Adresse ein.");
       return;
     }
     if (password.length < MIN_PASSWORD_LENGTH) {
-      setLocalError(`Your password needs at least ${MIN_PASSWORD_LENGTH} characters.`);
+      setLocalError(`Dein Passwort braucht mindestens ${MIN_PASSWORD_LENGTH} Zeichen.`);
       return;
     }
     setLocalError(null);
@@ -103,7 +103,7 @@ export function AuthScreen() {
                   id="auth-name"
                   autoFocus
                   autoComplete="name"
-                  placeholder="Your name"
+                  placeholder="Dein Name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
@@ -111,26 +111,26 @@ export function AuthScreen() {
             )}
 
             <div className="space-y-1.5">
-              <Label htmlFor="auth-email">Email</Label>
+              <Label htmlFor="auth-email">E-Mail</Label>
               <Input
                 id="auth-email"
                 type="email"
                 inputMode="email"
                 autoFocus={mode === "signin"}
                 autoComplete="email"
-                placeholder="you@school.edu"
+                placeholder="du@schule.it"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="auth-password">Password</Label>
+              <Label htmlFor="auth-password">Passwort</Label>
               <Input
                 id="auth-password"
                 type="password"
                 autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                placeholder={mode === "signup" ? `At least ${MIN_PASSWORD_LENGTH} characters` : "Your password"}
+                placeholder={mode === "signup" ? `Mindestens ${MIN_PASSWORD_LENGTH} Zeichen` : "Dein Passwort"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -145,7 +145,7 @@ export function AuthScreen() {
             <Button type="submit" size="lg" className="w-full" disabled={pending}>
               {pending ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" /> Checking…
+                  <Loader2 className="size-4 animate-spin" /> Prüfe…
                 </>
               ) : (
                 copy.submit
@@ -154,7 +154,7 @@ export function AuthScreen() {
           </form>
 
           <p className="mt-5 text-center t-callout text-ink-3">
-            {mode === "signin" ? "No account yet?" : "Already have an account?"}{" "}
+            {mode === "signin" ? "Noch kein Konto?" : "Schon ein Konto?"}{" "}
             <button
               type="button"
               onClick={() => switchMode(copy.switchTo)}
@@ -168,9 +168,9 @@ export function AuthScreen() {
         <div className={cn("mt-5 flex gap-2.5 rounded-xl border border-border bg-surface p-3.5")}>
           <MonitorSmartphone className="mt-0.5 size-4 shrink-0 text-ink-3" />
           <p className="t-caption text-ink-3">
-            Your account lives in this browser, on this device. Nothing is sent to a server, so StudyHub
-            can&apos;t recover a forgotten password and your work won&apos;t follow you to another
-            computer. Export from Settings if you need a copy.
+            Dein Konto liegt in diesem Browser, auf diesem Gerät. Nichts geht an einen Server — StudyHub
+            kann ein vergessenes Passwort deshalb nicht wiederherstellen, und deine Arbeit wandert nicht
+            auf einen anderen Computer mit. Exportiere in den Einstellungen, wenn du eine Kopie brauchst.
           </p>
         </div>
       </div>

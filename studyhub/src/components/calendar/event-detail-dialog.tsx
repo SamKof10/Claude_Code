@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 const KIND_ICON = { exam: GraduationCap, task: CheckSquare, session: NotebookPen } as const;
-const KIND_LABEL = { exam: "Exam", task: "Task", session: "Study session" } as const;
+const KIND_LABEL = { exam: "Prüfung", task: "Aufgabe", session: "Lerneinheit" } as const;
 
 export function EventDetailDialog({ event, subject, onOpenChange }: { event: CalendarEvent | null; subject: Subject | null | undefined; onOpenChange: (open: boolean) => void }) {
   if (!event) return null;
@@ -42,7 +42,7 @@ export function EventDetailDialog({ event, subject, onOpenChange }: { event: Cal
             Close
           </Button>
           <Button asChild>
-            <Link href={event.href}>Open</Link>
+            <Link href={event.href}>Öffnen</Link>
           </Button>
         </DialogFooter>
       </DialogContent>

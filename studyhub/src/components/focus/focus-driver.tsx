@@ -33,9 +33,9 @@ export function FocusDriver() {
 
     if (finished.phase === "focus") {
       logStudySession({ subjectId: finished.subjectId, durationMinutes: finished.minutes, type: "focus" });
-      toast.success(`${finished.minutes} minutes of focus logged`, { description: "It counts towards today's study time." });
+      toast.success(`${finished.minutes} Minuten Fokus verbucht`, { description: "Zählt zu deiner heutigen Lernzeit." });
     } else {
-      toast(`${PHASE_LABEL[finished.phase]} over`, { description: "Ready for the next block." });
+      toast(`${PHASE_LABEL[finished.phase]} vorbei`, { description: "Bereit für den nächsten Block." });
     }
     if (chime) playChime();
   }, [due, finish, logStudySession, chime]);

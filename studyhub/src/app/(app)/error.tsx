@@ -15,16 +15,16 @@ export default function AppError({ error, reset }: { error: Error & { digest?: s
       <div className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-[color-mix(in_srgb,var(--warning)_16%,transparent)]">
         <AlertTriangle className="size-5 text-warning-text" />
       </div>
-      <h1 className="t-headline font-semibold text-ink">Something went wrong on this page</h1>
+      <h1 className="t-headline font-semibold text-ink">Auf dieser Seite ist etwas schiefgelaufen</h1>
       <p className="mt-1.5 max-w-sm t-callout text-ink-3">
-        Your data is safe — it&apos;s stored in this browser. Try reloading the page, or head back to the dashboard.
+        Deine Daten sind sicher — sie liegen in diesem Browser. Lade die Seite neu oder geh zurück zur Übersicht.
       </p>
       <div className="mt-5 flex gap-2">
         <Button variant="secondary" onClick={reset}>
-          <RotateCcw className="size-3.5" /> Try again
+          <RotateCcw className="size-3.5" /> Nochmal versuchen
         </Button>
         <Button asChild>
-          <Link href="/dashboard">Go to dashboard</Link>
+          <Link href="/dashboard">Zur Übersicht</Link>
         </Button>
       </div>
     </div>

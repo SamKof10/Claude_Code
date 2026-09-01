@@ -20,11 +20,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "StudyHub — Your personal AI study platform",
+    default: "StudyHub — deine persönliche KI-Lernplattform",
     template: "%s · StudyHub",
   },
   description:
-    "StudyHub organizes your school materials, explains what you don't understand, and gets you ready for every exam — documents, notes, flashcards, quizzes and an AI tutor in one place.",
+    "StudyHub ordnet dein Schulmaterial, erklärt dir, was du nicht verstehst, und bringt dich durch jede Prüfung — Dokumente, Notizen, Karteikarten, Quiz und ein KI-Tutor an einem Ort.",
   robots: { index: false, follow: false },
 };
 
@@ -40,7 +40,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+    <html lang="de" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <body className="antialiased bg-bg text-ink">
         <script
           // Applies an explicit override before first paint. Without one it

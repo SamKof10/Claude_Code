@@ -70,7 +70,7 @@ export default function ProgressPage() {
       });
       setAnalysis(data);
     } catch (err) {
-      toast.error(err instanceof AIClientError ? err.message : "Couldn't analyze right now. Try again.");
+      toast.error(err instanceof AIClientError ? err.message : "Analyse gerade nicht möglich. Versuch es nochmal.");
     } finally {
       setAnalyzing(false);
     }
@@ -78,20 +78,20 @@ export default function ProgressPage() {
 
   return (
     <div>
-      <PageHeader title="Progress" description="What's working, what isn't, and what to do about it." />
+      <PageHeader title="Fortschritt" description="Was läuft, was nicht, und was du dagegen tun kannst." />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard icon={Clock} label="Total study time" value={formatMinutes(totalMinutes)} hint={`${formatMinutes(thisWeekMinutes)} this week`} />
-        <StatCard icon={ListChecks} label="Quiz average" value={avgScore != null ? `${avgScore}%` : "—"} hint={`${completedQuizzes.length} completed`} />
-        <StatCard icon={Layers3} label="Flashcard retention" value={`${retention}%`} tone={retention >= 70 ? "success" : retention > 0 ? "warning" : "default"} />
-        <StatCard icon={CheckSquare} label="Tasks completed" value={`${taskCompletion}%`} hint={`${tasks.filter((t) => t.status === "done").length}/${tasks.length}`} />
+        <StatCard icon={Clock} label="Gesamte Lernzeit" value={formatMinutes(totalMinutes)} hint={`${formatMinutes(thisWeekMinutes)} diese Woche`} />
+        <StatCard icon={ListChecks} label="Quiz-Schnitt" value={avgScore != null ? `${avgScore}%` : "—"} hint={`${completedQuizzes.length} abgeschlossen`} />
+        <StatCard icon={Layers3} label="Behaltensquote" value={`${retention}%`} tone={retention >= 70 ? "success" : retention > 0 ? "warning" : "default"} />
+        <StatCard icon={CheckSquare} label="Aufgaben erledigt" value={`${taskCompletion}%`} hint={`${tasks.filter((t) => t.status === "done").length}/${tasks.length}`} />
       </div>
 
       <div className="mt-6 grid gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Weekly study time</CardTitle>
+              <CardTitle>Lernzeit pro Woche</CardTitle>
             </CardHeader>
             <CardContent>
               <MinutesBarChart data={weekly.map((w) => ({ label: w.label, minutes: w.minutes }))} height={200} />
@@ -100,13 +100,13 @@ export default function ProgressPage() {
 
           <Card>
             <CardHeader className="flex-row items-center justify-between">
-              <CardTitle>Quiz scores over time</CardTitle>
+              <CardTitle>Quiz-Ergebnisse im Verlauf</CardTitle>
               <Select value={scoreSubject} onValueChange={setScoreSubject}>
                 <SelectTrigger className="w-36">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All subjects</SelectItem>
+                  <SelectItem value="all">Alle Fächer</SelectItem>
                   {subjects.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
                       {s.name}
@@ -126,14 +126,14 @@ export default function ProgressPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Subject performance</CardTitle>
+              <CardTitle>Leistung nach Fach</CardTitle>
             </CardHeader>
             <CardContent>{perf.length > 0 ? <SubjectBarList items={perf} /> : <p className="t-callout text-ink-3">No subjects yet.</p>}</CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Exam readiness</CardTitle>
+              <CardTitle>Prüfungsbereitschaft</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {exams.length === 0 && <p className="t-callout text-ink-3">No exams scheduled.</p>}
@@ -166,12 +166,12 @@ export default function ProgressPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-1.5">
-                <Sparkles className="size-4 text-[var(--color-signal-2)]" /> Study insights
+                <Sparkles className="size-4 text-[var(--color-signal-2)]" /> Lern-Erkenntnisse
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {insights.length === 0 ? (
-                <p className="t-callout text-ink-3">Complete a few quizzes and flashcard reviews to unlock insights.</p>
+                <p className="t-callout text-ink-3">Mach ein paar Quiz und Karteikarten-Runden, dann gibt es hier Erkenntnisse.</p>
               ) : (
                 insights.map((i) => (
                   <div key={i.id} className="flex gap-2.5 rounded-lg border border-border bg-surface-2 p-3">
@@ -186,13 +186,13 @@ export default function ProgressPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-1.5">
-                <Brain className="size-4 text-[var(--color-signal-2)]" /> Ask AI to analyze
+                <Brain className="size-4 text-[var(--color-signal-2)]" /> KI-Analyse anfordern
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <Select value={analyzeSubject} onValueChange={setAnalyzeSubject}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a subject" />
+                  <SelectValue placeholder="Fach wählen" />
                 </SelectTrigger>
                 <SelectContent>
                   {subjects.map((s) => (
@@ -203,7 +203,7 @@ export default function ProgressPage() {
                 </SelectContent>
               </Select>
               <Button size="sm" className="w-full" onClick={analyze} disabled={analyzing || !analyzeSubject}>
-                {analyzing ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />} Analyze weaknesses
+                {analyzing ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />} Schwächen analysieren
               </Button>
               {analysis && (
                 <div className="rounded-lg border border-border bg-surface-2 p-3 space-y-2">

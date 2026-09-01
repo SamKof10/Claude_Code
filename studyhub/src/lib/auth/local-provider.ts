@@ -37,7 +37,7 @@ function writeAccounts(accounts: StoredAccount[]): void {
   try {
     window.localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
   } catch {
-    throw new AuthError("unavailable", "This browser is blocking local storage, so accounts can't be saved.");
+    throw new AuthError("unavailable", "Dieser Browser blockiert den lokalen Speicher, deshalb lassen sich keine Konten sichern.");
   }
 }
 
@@ -60,14 +60,14 @@ export const localAuthProvider: AuthProvider = {
 
   async signUp({ name, email, password }: SignUpInput): Promise<Account> {
     const normalized = normalizeEmail(email);
-    if (!isValidEmail(normalized)) throw new AuthError("invalid-email", "That doesn't look like an email address.");
+    if (!isValidEmail(normalized)) throw new AuthError("invalid-email", "Das sieht nicht nach einer E-Mail-Adresse aus.");
     if (password.length < MIN_PASSWORD_LENGTH) {
-      throw new AuthError("weak-password", `Use at least ${MIN_PASSWORD_LENGTH} characters.`);
+      throw new AuthError("weak-password", `Nimm mindestens ${MIN_PASSWORD_LENGTH} Zeichen.`);
     }
 
     const accounts = readAccounts();
     if (accounts.some((a) => a.email === normalized)) {
-      throw new AuthError("email-taken", "There's already an account with that email on this device.");
+      throw new AuthError("email-taken", "Auf diesem Gerät gibt es schon ein Konto mit dieser E-Mail.");
     }
 
     const digest = await hashPassword(password);
@@ -89,7 +89,7 @@ export const localAuthProvider: AuthProvider = {
     // Same error whether the email is unknown or the password is wrong, so the
     // screen can't be used to enumerate which accounts exist.
     const ok = account ? await verifyPassword(password, account) : false;
-    if (!account || !ok) throw new AuthError("invalid-credentials", "Email or password is incorrect.");
+    if (!account || !ok) throw new AuthError("invalid-credentials", "E-Mail oder Passwort stimmt nicht.");
     setSession(account.id);
     return publicAccount(account);
   },

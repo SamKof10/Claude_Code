@@ -34,149 +34,149 @@ export interface DemoBundle {
 }
 
 export function buildDemoData(now: Date = new Date()): DemoBundle {
-  const math: Subject = { id: uid("subj"), name: "Mathematics", icon: "Sigma", color: "subj-1", createdAt: iso(subDays(now, 210)) };
-  const english: Subject = { id: uid("subj"), name: "English", icon: "BookOpen", color: "subj-2", createdAt: iso(subDays(now, 210)) };
-  const physics: Subject = { id: uid("subj"), name: "Physics", icon: "Atom", color: "subj-3", createdAt: iso(subDays(now, 200)) };
-  const history: Subject = { id: uid("subj"), name: "History", icon: "Landmark", color: "subj-4", createdAt: iso(subDays(now, 200)) };
+  const math: Subject = { id: uid("subj"), name: "Mathematik", icon: "Sigma", color: "subj-1", createdAt: iso(subDays(now, 210)) };
+  const english: Subject = { id: uid("subj"), name: "Englisch", icon: "BookOpen", color: "subj-2", createdAt: iso(subDays(now, 210)) };
+  const physics: Subject = { id: uid("subj"), name: "Physik", icon: "Atom", color: "subj-3", createdAt: iso(subDays(now, 200)) };
+  const history: Subject = { id: uid("subj"), name: "Geschichte", icon: "Landmark", color: "subj-4", createdAt: iso(subDays(now, 200)) };
   const subjects = [math, english, physics, history];
 
   // ── Documents ──────────────────────────────────────────────────────
-  const physicsThermoContent = `Chapter 3 — Thermodynamics
+  const physicsThermoContent = `Kapitel 3 — Thermodynamik
 
-3.1 Systems and Surroundings
-A thermodynamic system is the specific portion of matter we choose to study; everything else is the surroundings. Systems are open (exchange matter and energy), closed (exchange energy only), or isolated (exchange neither).
+3.1 System und Umgebung
+Ein thermodynamisches System ist der Ausschnitt der Materie, den wir betrachten; alles andere ist die Umgebung. Systeme sind offen (Austausch von Materie und Energie), geschlossen (nur Energie) oder abgeschlossen (weder noch).
 
-3.2 The First Law of Thermodynamics
-Energy cannot be created or destroyed, only converted from one form to another. For a closed system, the change in internal energy ΔU equals the heat added to the system Q minus the work done by the system W: ΔU = Q − W. This is simply conservation of energy applied to heat and work.
+3.2 Der erste Hauptsatz der Thermodynamik
+Energie kann weder erzeugt noch vernichtet, sondern nur umgewandelt werden. Für ein geschlossenes System gilt: Die Änderung der inneren Energie ΔU ist die zugeführte Wärme Q minus die vom System verrichtete Arbeit W, also ΔU = Q − W. Das ist nichts anderes als der Energieerhaltungssatz, angewandt auf Wärme und Arbeit.
 
-3.3 Heat, Work and Internal Energy
-Internal energy U is the sum of the kinetic and potential energies of all particles in a system. Heat Q is energy transferred due to a temperature difference. Work W, in the gas-piston case, is the energy transferred when a gas expands or is compressed: W = PΔV at constant pressure.
+3.3 Wärme, Arbeit und innere Energie
+Die innere Energie U ist die Summe der kinetischen und potentiellen Energien aller Teilchen eines Systems. Wärme Q ist Energie, die aufgrund eines Temperaturunterschieds übertragen wird. Arbeit W ist im Fall von Gas und Kolben die Energie, die beim Ausdehnen oder Zusammendrücken übertragen wird: W = p·ΔV bei konstantem Druck.
 
-3.4 The Second Law and Entropy
-Heat flows spontaneously from hot to cold, never the reverse, without external work. Entropy S is a measure of disorder; the total entropy of an isolated system never decreases. This explains why some processes (like an ice cube melting) happen spontaneously while their reverse does not.
+3.4 Der zweite Hauptsatz und die Entropie
+Wärme fließt von selbst immer von warm nach kalt, nie umgekehrt — ohne Arbeit von außen. Die Entropie S ist ein Maß für die Unordnung; die Gesamtentropie eines abgeschlossenen Systems nimmt nie ab. Das erklärt, warum manche Vorgänge (etwa das Schmelzen eines Eiswürfels) von selbst ablaufen, ihre Umkehrung aber nicht.
 
-3.5 Thermodynamic Processes
-Isothermal (constant temperature), adiabatic (no heat exchange), isobaric (constant pressure) and isochoric (constant volume) processes each simplify the first law differently. In an adiabatic process Q = 0, so ΔU = −W: all the work done changes the internal energy directly.
+3.5 Thermodynamische Prozesse
+Isotherm (konstante Temperatur), adiabatisch (kein Wärmeaustausch), isobar (konstanter Druck) und isochor (konstantes Volumen) — jeder Prozess vereinfacht den ersten Hauptsatz auf eigene Weise. Beim adiabatischen Prozess ist Q = 0, also ΔU = −W: Die gesamte verrichtete Arbeit geht direkt in die innere Energie.
 
-3.6 Heat Engines and Efficiency
-A heat engine converts heat into work by operating in a cycle between a hot and a cold reservoir. Efficiency η = W / Q_hot is always less than 100% — the second law guarantees some heat is always rejected to the cold reservoir. The Carnot engine sets the theoretical maximum efficiency: η_carnot = 1 − T_cold / T_hot (temperatures in Kelvin).`;
+3.6 Wärmekraftmaschinen und Wirkungsgrad
+Eine Wärmekraftmaschine wandelt Wärme in Arbeit um, indem sie einen Kreisprozess zwischen einem warmen und einem kalten Reservoir durchläuft. Der Wirkungsgrad η = W / Q_warm liegt immer unter 100% — der zweite Hauptsatz garantiert, dass ein Teil der Wärme an das kalte Reservoir abgegeben wird. Der Carnot-Prozess setzt die theoretische Obergrenze: η_Carnot = 1 − T_kalt / T_warm (Temperaturen in Kelvin).`;
 
-  const mathFunctionsContent = `Algebra II — Functions & Graphs
+  const mathFunctionsContent = `Funktionen und Graphen
 
-Unit 4: Quadratic Functions
-A quadratic function has the form f(x) = ax² + bx + c, with a ≠ 0. Its graph is a parabola. If a > 0 it opens upward with a minimum; if a < 0 it opens downward with a maximum. The vertex sits at x = −b/2a.
+Kapitel 4: Quadratische Funktionen
+Eine quadratische Funktion hat die Form f(x) = ax² + bx + c mit a ≠ 0. Ihr Graph ist eine Parabel. Für a > 0 ist sie nach oben geöffnet und hat ein Minimum, für a < 0 nach unten und hat ein Maximum. Der Scheitelpunkt liegt bei x = −b/2a.
 
-Solving quadratic equations: factoring, completing the square, and the quadratic formula x = (−b ± √(b² − 4ac)) / 2a. The discriminant b² − 4ac tells you the number of real roots: positive gives two, zero gives one repeated root, negative gives none (two complex roots).
+Quadratische Gleichungen löst man durch Faktorisieren, quadratische Ergänzung oder mit der Lösungsformel x = (−b ± √(b² − 4ac)) / 2a. Die Diskriminante b² − 4ac verrät die Anzahl der reellen Lösungen: positiv ergibt zwei, null eine doppelte, negativ keine (zwei komplexe).
 
-Unit 5: Functions and Transformations
-A function assigns exactly one output to each input. Transformations of f(x): f(x) + k shifts vertically, f(x + h) shifts horizontally, −f(x) reflects vertically, f(x)·a stretches or compresses. Composite functions (f∘g)(x) = f(g(x)) apply one function to the result of another.
+Kapitel 5: Funktionen und Transformationen
+Eine Funktion ordnet jedem Eingabewert genau einen Ausgabewert zu. Transformationen von f(x): f(x) + k verschiebt senkrecht, f(x + h) waagrecht, −f(x) spiegelt an der x-Achse, a·f(x) streckt oder staucht. Die Verkettung (f∘g)(x) = f(g(x)) wendet eine Funktion auf das Ergebnis einer anderen an.
 
-Unit 6: Exponential and Logarithmic Functions
-Exponential growth/decay: f(x) = a·bˣ. The logarithm is the inverse: if bˣ = y then log_b(y) = x. Key rules: log(xy) = log x + log y, log(x/y) = log x − log y, log(xⁿ) = n·log x.`;
+Kapitel 6: Exponential- und Logarithmusfunktionen
+Exponentielles Wachstum und Zerfall: f(x) = a·bˣ. Der Logarithmus ist die Umkehrung: Ist bˣ = y, dann ist log_b(y) = x. Die wichtigsten Regeln: log(xy) = log x + log y, log(x/y) = log x − log y, log(xⁿ) = n·log x.`;
 
-  const englishMacbethContent = `Macbeth — Act-by-Act Summary & Themes
+  const englishMacbethContent = `Macbeth — Zusammenfassung nach Akten und Themen
 
-Act I: Three witches prophesy that Macbeth will become Thane of Cawdor and later King. The prophecy partly comes true immediately, planting the seed of ambition. Lady Macbeth pushes her hesitant husband toward murdering King Duncan.
+Akt I: Drei Hexen prophezeien Macbeth, er werde Thane of Cawdor und später König. Ein Teil der Prophezeiung trifft sofort ein und pflanzt den Ehrgeiz. Lady Macbeth drängt ihren zögernden Mann zum Mord an König Duncan.
 
-Act II: Macbeth murders Duncan while he sleeps as a guest in Macbeth's own castle — a double betrayal of kinship and hospitality. Guilt appears immediately: Macbeth hallucinates a bloody dagger before the act and cannot say "Amen" afterward.
+Akt II: Macbeth ermordet Duncan im Schlaf, während dieser Gast in seinem eigenen Schloss ist — ein doppelter Verrat an Verwandtschaft und Gastrecht. Die Schuld zeigt sich sofort: Macbeth halluziniert vor der Tat einen blutigen Dolch und bringt danach kein „Amen“ heraus.
 
-Act III: Macbeth, now king, has his former ally Banquo murdered to silence the part of the prophecy that promised Banquo's descendants the throne. Banquo's ghost appears at a banquet, visible only to Macbeth — the guilt motif intensifies.
+Akt III: Macbeth, nun König, lässt seinen früheren Verbündeten Banquo ermorden, um den Teil der Prophezeiung zu verhindern, der Banquos Nachkommen den Thron versprach. Banquos Geist erscheint beim Bankett, sichtbar nur für Macbeth — das Schuldmotiv verschärft sich.
 
-Act IV: Macbeth visits the witches again and receives further prophecies that make him overconfident ("none of woman born shall harm Macbeth"). He orders the massacre of Macduff's family, escalating from ambition to pure tyranny.
+Akt IV: Macbeth sucht die Hexen erneut auf und erhält weitere Prophezeiungen, die ihn selbstsicher machen („keiner, den ein Weib geboren, schadet Macbeth“). Er lässt Macduffs Familie ermorden — der Schritt vom Ehrgeiz zur reinen Tyrannei.
 
-Act V: Lady Macbeth, consumed by guilt, sleepwalks and obsessively tries to wash imaginary blood from her hands before dying offstage. Macduff, revealed to have been "from his mother's womb untimely ripped" (a caesarean birth), kills Macbeth, fulfilling the witches' riddle.
+Akt V: Lady Macbeth, von Schuld zerfressen, wandelt im Schlaf und versucht zwanghaft, eingebildetes Blut von den Händen zu waschen; sie stirbt hinter der Bühne. Macduff, der „aus dem Leib der Mutter geschnitten“ wurde, tötet Macbeth und erfüllt damit das Rätsel der Hexen.
 
-Central themes: unchecked ambition, the corrupting nature of power, guilt as a psychological force, and the tension between fate and free will — the witches predict, but Macbeth chooses to act.`;
+Zentrale Themen: entfesselter Ehrgeiz, die verderbende Wirkung von Macht, Schuld als psychologische Kraft und die Spannung zwischen Schicksal und freiem Willen — die Hexen sagen voraus, aber Macbeth entscheidet sich zu handeln.`;
 
-  const historyWW2Content = `World War II — Overview
+  const historyWW2Content = `Der Zweite Weltkrieg — Überblick
 
-Causes: The Treaty of Versailles left Germany economically devastated and resentful; the global depression of the 1930s enabled the rise of fascist and militarist governments in Germany, Italy and Japan. Appeasement policy by Britain and France failed to stop German expansion.
+Ursachen: Der Vertrag von Versailles hinterließ ein wirtschaftlich zerrüttetes und verbittertes Deutschland; die Weltwirtschaftskrise der 1930er Jahre ermöglichte den Aufstieg faschistischer und militaristischer Regierungen in Deutschland, Italien und Japan. Die Appeasement-Politik Großbritanniens und Frankreichs konnte die deutsche Expansion nicht aufhalten.
 
-Course of the war (Europe): Germany invaded Poland in September 1939, triggering British and French declarations of war. Blitzkrieg tactics led to the rapid fall of France in 1940. Germany invaded the Soviet Union in 1941 (Operation Barbarossa), opening a massive eastern front. The tide turned after Stalingrad (1942–43) and the D-Day landings (June 1944).
+Verlauf in Europa: Deutschland überfiel im September 1939 Polen, worauf Großbritannien und Frankreich den Krieg erklärten. Die Blitzkrieg-Taktik führte 1940 zum raschen Fall Frankreichs. 1941 griff Deutschland die Sowjetunion an (Unternehmen Barbarossa) und eröffnete damit eine gewaltige Ostfront. Nach Stalingrad (1942/43) und der Landung in der Normandie (Juni 1944) wendete sich das Blatt.
 
-Pacific theater: Japan's attack on Pearl Harbor (December 1941) brought the United States into the war. Island-hopping campaigns and naval battles like Midway gradually pushed Japan back; the war ended after atomic bombs were dropped on Hiroshima and Nagasaki in August 1945.
+Pazifik: Der japanische Angriff auf Pearl Harbor (Dezember 1941) brachte die USA in den Krieg. Das Vorrücken von Insel zu Insel und Seeschlachten wie Midway drängten Japan zurück; der Krieg endete nach den Atombombenabwürfen auf Hiroshima und Nagasaki im August 1945.
 
-Consequences: Roughly 70–85 million deaths made it the deadliest conflict in human history. The Holocaust, the systematic genocide of six million Jews and millions of others, remains its defining atrocity. The war reshaped the global order: the UN was founded, colonial empires began to dissolve, and the US and USSR emerged as rival superpowers, setting up the Cold War.`;
+Folgen: Mit rund 70 bis 85 Millionen Toten war er der verlustreichste Konflikt der Menschheitsgeschichte. Der Holocaust, der systematische Völkermord an sechs Millionen Jüdinnen und Juden und Millionen weiteren Menschen, bleibt sein bestimmendes Verbrechen. Der Krieg ordnete die Welt neu: Die UNO wurde gegründet, die Kolonialreiche begannen zu zerfallen, und die USA und die UdSSR standen sich als rivalisierende Supermächte gegenüber — der Beginn des Kalten Krieges.`;
 
   const documents: StudyDocument[] = [
     {
       id: uid("doc"),
       subjectId: physics.id,
-      name: "Thermodynamics — Chapter 3.pdf",
+      name: "Thermodynamik — Kapitel 3.pdf",
       fileType: "pdf",
       uploadDate: iso(subDays(now, 6)),
       sizeBytes: 3_400_000,
       pages: 40,
       status: "ready",
-      tags: ["thermodynamics", "energy", "entropy"],
+      tags: ["thermodynamik", "energie", "entropie"],
       content: physicsThermoContent,
       summary:
-        "Covers the first and second laws of thermodynamics, heat/work/internal energy, the four classical processes, and heat-engine efficiency including the Carnot limit.",
+        "Behandelt den ersten und zweiten Hauptsatz, Wärme, Arbeit und innere Energie, die vier klassischen Prozesse sowie den Wirkungsgrad von Wärmekraftmaschinen bis zur Carnot-Grenze.",
       starred: true,
     },
     {
       id: uid("doc"),
       subjectId: math.id,
-      name: "Algebra II — Functions & Graphs.pdf",
+      name: "Funktionen und Graphen.pdf",
       fileType: "pdf",
       uploadDate: iso(subDays(now, 14)),
       sizeBytes: 2_100_000,
       pages: 24,
       status: "ready",
-      tags: ["algebra", "quadratics", "functions"],
+      tags: ["algebra", "quadratische-funktionen", "funktionen"],
       content: mathFunctionsContent,
-      summary: "Quadratic functions and the discriminant, function transformations, and exponential/logarithm rules.",
+      summary: "Quadratische Funktionen und die Diskriminante, Transformationen von Funktionen sowie Exponential- und Logarithmusregeln.",
     },
     {
       id: uid("doc"),
       subjectId: math.id,
-      name: "Trigonometry — Formula Sheet.pdf",
+      name: "Trigonometrie — Formelsammlung.pdf",
       fileType: "pdf",
       uploadDate: iso(subDays(now, 3)),
       sizeBytes: 540_000,
       pages: 4,
       status: "ready",
-      tags: ["trigonometry", "formulas"],
+      tags: ["trigonometrie", "formeln"],
       content:
-        "Core identities: sin²θ + cos²θ = 1. tan θ = sin θ / cos θ. Sum formulas: sin(A±B) = sinA cosB ± cosA sinB, cos(A±B) = cosA cosB ∓ sinA sinB. Law of sines: a/sinA = b/sinB = c/sinC. Law of cosines: c² = a² + b² − 2ab·cosC.",
+        "Grundbeziehungen: sin²θ + cos²θ = 1. tan θ = sin θ / cos θ. Additionstheoreme: sin(A±B) = sinA cosB ± cosA sinB, cos(A±B) = cosA cosB ∓ sinA sinB. Sinussatz: a/sinA = b/sinB = c/sinC. Kosinussatz: c² = a² + b² − 2ab·cosC.",
     },
     {
       id: uid("doc"),
       subjectId: english.id,
-      name: "Macbeth — Act Summaries.docx",
+      name: "Macbeth — Zusammenfassung der Akte.docx",
       fileType: "docx",
       uploadDate: iso(subDays(now, 21)),
       sizeBytes: 180_000,
       pages: 9,
       status: "ready",
-      tags: ["shakespeare", "tragedy", "themes"],
+      tags: ["shakespeare", "tragödie", "themen"],
       content: englishMacbethContent,
-      summary: "Act-by-act plot summary of Macbeth with a focus on ambition, guilt, and fate vs. free will.",
+      summary: "Handlung von Macbeth Akt für Akt, mit Schwerpunkt auf Ehrgeiz, Schuld und Schicksal gegen freien Willen.",
     },
     {
       id: uid("doc"),
       subjectId: history.id,
-      name: "World War II — Overview.pdf",
+      name: "Zweiter Weltkrieg — Überblick.pdf",
       fileType: "pdf",
       uploadDate: iso(subDays(now, 9)),
       sizeBytes: 4_800_000,
       pages: 32,
       status: "ready",
-      tags: ["ww2", "20th-century", "causes-and-effects"],
+      tags: ["zweiter-weltkrieg", "20-jahrhundert", "ursachen-und-folgen"],
       content: historyWW2Content,
-      summary: "Causes, European and Pacific theaters, and the lasting consequences of World War II.",
+      summary: "Ursachen, Kriegsschauplätze in Europa und im Pazifik sowie die langfristigen Folgen des Zweiten Weltkriegs.",
     },
     {
       id: uid("doc"),
       subjectId: physics.id,
-      name: "Lab Report — Specific Heat Capacity.docx",
+      name: "Laborbericht — Spezifische Wärmekapazität.docx",
       fileType: "docx",
       uploadDate: iso(subHours(now, 20)),
       sizeBytes: 260_000,
       pages: 3,
       status: "processing",
-      tags: ["lab", "calorimetry"],
-      content: "Lab writeup measuring the specific heat capacity of aluminium and copper using a calorimeter.",
+      tags: ["labor", "kalorimetrie"],
+      content: "Protokoll zur Messung der spezifischen Wärmekapazität von Aluminium und Kupfer mit dem Kalorimeter.",
     },
   ];
 
@@ -185,10 +185,10 @@ Consequences: Roughly 70–85 million deaths made it the deadliest conflict in h
     {
       id: uid("note"),
       subjectId: physics.id,
-      title: "Thermo — first law, in my own words",
+      title: "Thermo — erster Hauptsatz in eigenen Worten",
       contentHTML:
-        "<h2>The first law</h2><p>Energy in a closed system is conserved: <strong>ΔU = Q − W</strong>.</p><ul><li>Q positive = heat added to the system</li><li>W positive = work done <em>by</em> the system (e.g. gas expanding)</li></ul><p>Mnemonic: heat <strong>in</strong> is positive, work <strong>out</strong> is positive.</p><h2>Second law</h2><p>Entropy of an isolated system never decreases. Explains the arrow of time — why the ice cube melts but never un-melts.</p>",
-      tags: ["thermodynamics", "exam-prep"],
+        "<h2>Erster Hauptsatz</h2><p>Im geschlossenen System bleibt die Energie erhalten: <strong>ΔU = Q − W</strong>.</p><ul><li>Q positiv = Wärme wird dem System zugeführt</li><li>W positiv = Arbeit wird <em>vom</em> System verrichtet (z. B. Gas dehnt sich aus)</li></ul><p>Merksatz: Wärme <strong>hinein</strong> ist positiv, Arbeit <strong>hinaus</strong> ist positiv.</p><h2>Zweiter Hauptsatz</h2><p>Die Entropie eines abgeschlossenen Systems nimmt nie ab. Das erklärt den Zeitpfeil — warum der Eiswürfel schmilzt, aber nie von selbst wieder gefriert.</p>",
+      tags: ["thermodynamik", "prüfungsvorbereitung"],
       pinned: true,
       createdAt: iso(subDays(now, 5)),
       updatedAt: iso(subHours(now, 30)),
@@ -196,9 +196,9 @@ Consequences: Roughly 70–85 million deaths made it the deadliest conflict in h
     {
       id: uid("note"),
       subjectId: math.id,
-      title: "Quadratic formula — when to use what method",
+      title: "Quadratische Gleichungen — welche Methode wann",
       contentHTML:
-        "<h2>Choosing a method</h2><ol><li>Factors obvious? → factor directly.</li><li>Leading coefficient is 1 and b is even? → complete the square.</li><li>Otherwise → quadratic formula, always works.</li></ol><p>Discriminant <code>b² − 4ac</code>: positive → 2 roots, zero → 1 root, negative → no real roots.</p>",
+        "<h2>Methode wählen</h2><ol><li>Faktoren offensichtlich? → direkt faktorisieren.</li><li>Leitkoeffizient 1 und b gerade? → quadratisch ergänzen.</li><li>Sonst → Lösungsformel, funktioniert immer.</li></ol><p>Diskriminante <code>b² − 4ac</code>: positiv → 2 Lösungen, null → 1 Lösung, negativ → keine reelle Lösung.</p>",
       tags: ["algebra"],
       pinned: false,
       createdAt: iso(subDays(now, 12)),
@@ -207,10 +207,10 @@ Consequences: Roughly 70–85 million deaths made it the deadliest conflict in h
     {
       id: uid("note"),
       subjectId: english.id,
-      title: "Macbeth: ambition quotes to memorize",
+      title: "Macbeth: Zitate zum Ehrgeiz, auswendig",
       contentHTML:
-        '<p>"Stars, hide your fires; Let not light see my black and deep desires" — Macbeth, Act I. Shows he already knows his ambition is wrong.</p><p>"Look like the innocent flower, but be the serpent under\'t" — Lady Macbeth teaching deception.</p><p>"I am in blood stepped in so far..." — Act III, the point of no return.</p>',
-      tags: ["quotes", "themes"],
+        '<p>„Stars, hide your fires; Let not light see my black and deep desires“ — Macbeth, Akt I. Zeigt: Er weiß bereits, dass sein Ehrgeiz falsch ist.</p><p>„Look like the innocent flower, but be the serpent under\'t“ — Lady Macbeth lehrt die Täuschung.</p><p>„I am in blood stepped in so far…“ — Akt III, der Punkt ohne Wiederkehr.</p>',
+      tags: ["zitate", "themen"],
       pinned: true,
       createdAt: iso(subDays(now, 18)),
       updatedAt: iso(subDays(now, 4)),
@@ -218,10 +218,10 @@ Consequences: Roughly 70–85 million deaths made it the deadliest conflict in h
     {
       id: uid("note"),
       subjectId: history.id,
-      title: "WW2 causes — quick outline",
+      title: "Ursachen Zweiter Weltkrieg — Kurzübersicht",
       contentHTML:
-        "<h2>Long-term</h2><ul><li>Treaty of Versailles resentment</li><li>Global depression → extremism</li></ul><h2>Short-term</h2><ul><li>Failed appeasement</li><li>Invasion of Poland, Sept 1939</li></ul>",
-      tags: ["causes"],
+        "<h2>Langfristig</h2><ul><li>Verbitterung über den Vertrag von Versailles</li><li>Weltwirtschaftskrise → Extremismus</li></ul><h2>Kurzfristig</h2><ul><li>Gescheiterte Appeasement-Politik</li><li>Überfall auf Polen, September 1939</li></ul>",
+      tags: ["ursachen"],
       pinned: false,
       createdAt: iso(subDays(now, 8)),
       updatedAt: iso(subDays(now, 8)),
@@ -232,31 +232,31 @@ Consequences: Roughly 70–85 million deaths made it the deadliest conflict in h
   const physicsDeck: FlashcardDeck = {
     id: uid("deck"),
     subjectId: physics.id,
-    name: "Thermodynamics essentials",
-    description: "Core laws, quantities and definitions from Chapter 3.",
+    name: "Thermodynamik — das Wichtigste",
+    description: "Hauptsätze, Größen und Definitionen aus Kapitel 3.",
     sourceDocumentId: documents[0].id,
     createdAt: iso(subDays(now, 5)),
   };
   const mathDeck: FlashcardDeck = {
     id: uid("deck"),
     subjectId: math.id,
-    name: "Quadratics & functions",
-    description: "Formulas and transformation rules for Algebra II.",
+    name: "Quadratische Funktionen",
+    description: "Formeln und Transformationsregeln.",
     sourceDocumentId: documents[1].id,
     createdAt: iso(subDays(now, 13)),
   };
   const englishDeck: FlashcardDeck = {
     id: uid("deck"),
     subjectId: english.id,
-    name: "Macbeth — plot & themes",
-    description: "Key events and quotes, act by act.",
+    name: "Macbeth — Handlung und Themen",
+    description: "Wichtige Ereignisse und Zitate, Akt für Akt.",
     createdAt: iso(subDays(now, 17)),
   };
   const historyDeck: FlashcardDeck = {
     id: uid("deck"),
     subjectId: history.id,
-    name: "WW2 key dates & terms",
-    description: "Dates, battles and vocabulary.",
+    name: "Zweiter Weltkrieg — Daten und Begriffe",
+    description: "Daten, Schlachten und Begriffe.",
     createdAt: iso(subDays(now, 8)),
   };
   const decks = [physicsDeck, mathDeck, englishDeck, historyDeck];
@@ -283,23 +283,23 @@ Consequences: Roughly 70–85 million deaths made it the deadliest conflict in h
   }
 
   const flashcards: Flashcard[] = [
-    makeCard(physicsDeck.id, "First law of thermodynamics?", "ΔU = Q − W — energy is conserved; internal energy change equals heat added minus work done by the system.", { correct: 4, incorrect: 1, ease: 2.6, dueInHours: -3, reviewedHoursAgo: 30 }),
-    makeCard(physicsDeck.id, "What does the second law of thermodynamics say?", "Entropy of an isolated system never decreases — heat flows spontaneously from hot to cold, not the reverse.", { correct: 2, incorrect: 2, ease: 2.1, dueInHours: -20, reviewedHoursAgo: 50 }),
-    makeCard(physicsDeck.id, "Adiabatic process — what's true about Q?", "Q = 0 (no heat exchange), so ΔU = −W.", { correct: 3, incorrect: 0, ease: 2.7, dueInHours: 30 }),
-    makeCard(physicsDeck.id, "Carnot efficiency formula?", "η = 1 − T_cold / T_hot (temperatures in Kelvin) — the theoretical maximum for a heat engine.", { correct: 1, incorrect: 3, ease: 1.6, dueInHours: -8, reviewedHoursAgo: 15 }),
-    makeCard(physicsDeck.id, "Define a closed thermodynamic system.", "A system that can exchange energy with its surroundings but not matter.", { correct: 5, incorrect: 0, ease: 2.9, dueInHours: 96 }),
-    makeCard(physicsDeck.id, "Isochoric process — what's constant?", "Volume is constant, so no work is done (W = 0) and ΔU = Q.", { dueInHours: -1 }),
-    makeCard(mathDeck.id, "Quadratic formula?", "x = (−b ± √(b² − 4ac)) / 2a", { correct: 6, incorrect: 1, ease: 2.8, dueInHours: 48 }),
-    makeCard(mathDeck.id, "What does a negative discriminant mean?", "No real roots — the two solutions are complex conjugates.", { correct: 2, incorrect: 3, ease: 1.8, dueInHours: -5, reviewedHoursAgo: 40 }),
-    makeCard(mathDeck.id, "Vertex x-coordinate of ax² + bx + c?", "x = −b / 2a", { correct: 4, incorrect: 1, ease: 2.4, dueInHours: -12, reviewedHoursAgo: 24 }),
-    makeCard(mathDeck.id, "log(x) + log(y) equals?", "log(xy) — the product rule for logarithms.", { correct: 3, incorrect: 0, ease: 2.6, dueInHours: 20 }),
-    makeCard(mathDeck.id, "How does f(x + h) transform the graph of f?", "Shifts it horizontally by −h (left if h > 0).", { dueInHours: -2 }),
-    makeCard(englishDeck.id, "What do the witches prophesy in Act I?", "That Macbeth will become Thane of Cawdor, then King, and that Banquo's descendants will be kings.", { correct: 5, incorrect: 0, ease: 2.9, dueInHours: 60 }),
-    makeCard(englishDeck.id, "How does Macbeth die?", "Killed by Macduff, who was born by caesarean section ('from his mother's womb untimely ripped') — fulfilling the prophecy.", { correct: 3, incorrect: 1, ease: 2.5, dueInHours: -6, reviewedHoursAgo: 20 }),
-    makeCard(englishDeck.id, "Why does Macbeth have Banquo murdered?", "To stop Banquo's descendants from taking the throne, as the witches prophesied.", { correct: 2, incorrect: 2, ease: 2.0, dueInHours: -18, reviewedHoursAgo: 45 }),
-    makeCard(historyDeck.id, "When did Germany invade Poland?", "September 1939 — the event that triggered British and French declarations of war.", { correct: 4, incorrect: 0, ease: 2.7, dueInHours: 40 }),
-    makeCard(historyDeck.id, "What brought the US into WW2?", "Japan's attack on Pearl Harbor, December 1941.", { correct: 3, incorrect: 1, ease: 2.4, dueInHours: -4, reviewedHoursAgo: 10 }),
-    makeCard(historyDeck.id, "What turned the tide on the Eastern Front?", "The Battle of Stalingrad, 1942–43.", { dueInHours: -10 }),
+    makeCard(physicsDeck.id, "Erster Hauptsatz der Thermodynamik?", "ΔU = Q − W — Energie bleibt erhalten: Die Änderung der inneren Energie ist die zugeführte Wärme minus die verrichtete Arbeit.", { correct: 4, incorrect: 1, ease: 2.6, dueInHours: -3, reviewedHoursAgo: 30 }),
+    makeCard(physicsDeck.id, "Was besagt der zweite Hauptsatz?", "Die Entropie eines abgeschlossenen Systems nimmt nie ab — Wärme fließt von selbst von warm nach kalt, nie umgekehrt.", { correct: 2, incorrect: 2, ease: 2.1, dueInHours: -20, reviewedHoursAgo: 50 }),
+    makeCard(physicsDeck.id, "Adiabatischer Prozess — was gilt für Q?", "Q = 0 (kein Wärmeaustausch), also ΔU = −W.", { correct: 3, incorrect: 0, ease: 2.7, dueInHours: 30 }),
+    makeCard(physicsDeck.id, "Formel für den Carnot-Wirkungsgrad?", "η = 1 − T_kalt / T_warm (Temperaturen in Kelvin) — das theoretische Maximum einer Wärmekraftmaschine.", { correct: 1, incorrect: 3, ease: 1.6, dueInHours: -8, reviewedHoursAgo: 15 }),
+    makeCard(physicsDeck.id, "Definiere ein geschlossenes thermodynamisches System.", "Ein System, das mit der Umgebung Energie austauscht, aber keine Materie.", { correct: 5, incorrect: 0, ease: 2.9, dueInHours: 96 }),
+    makeCard(physicsDeck.id, "Isochorer Prozess — was bleibt konstant?", "Das Volumen. Also wird keine Arbeit verrichtet (W = 0) und ΔU = Q.", { dueInHours: -1 }),
+    makeCard(mathDeck.id, "Lösungsformel für quadratische Gleichungen?", "x = (−b ± √(b² − 4ac)) / 2a", { correct: 6, incorrect: 1, ease: 2.8, dueInHours: 48 }),
+    makeCard(mathDeck.id, "Was bedeutet eine negative Diskriminante?", "Keine reelle Lösung — die beiden Lösungen sind konjugiert komplex.", { correct: 2, incorrect: 3, ease: 1.8, dueInHours: -5, reviewedHoursAgo: 40 }),
+    makeCard(mathDeck.id, "x-Koordinate des Scheitelpunkts von ax² + bx + c?", "x = −b / 2a", { correct: 4, incorrect: 1, ease: 2.4, dueInHours: -12, reviewedHoursAgo: 24 }),
+    makeCard(mathDeck.id, "log(x) + log(y) ergibt?", "log(xy) — die Produktregel für Logarithmen.", { correct: 3, incorrect: 0, ease: 2.6, dueInHours: 20 }),
+    makeCard(mathDeck.id, "Wie verändert f(x + h) den Graphen von f?", "Verschiebt ihn waagrecht um −h (nach links, wenn h > 0).", { dueInHours: -2 }),
+    makeCard(englishDeck.id, "Was prophezeien die Hexen in Akt I?", "Dass Macbeth Thane of Cawdor und dann König wird — und dass Banquos Nachkommen Könige sein werden.", { correct: 5, incorrect: 0, ease: 2.9, dueInHours: 60 }),
+    makeCard(englishDeck.id, "Wie stirbt Macbeth?", "Getötet von Macduff, der per Kaiserschnitt zur Welt kam („from his mother's womb untimely ripped“) — damit erfüllt sich die Prophezeiung.", { correct: 3, incorrect: 1, ease: 2.5, dueInHours: -6, reviewedHoursAgo: 20 }),
+    makeCard(englishDeck.id, "Warum lässt Macbeth Banquo ermorden?", "Damit Banquos Nachkommen nicht auf den Thron kommen, wie es die Hexen vorhergesagt haben.", { correct: 2, incorrect: 2, ease: 2.0, dueInHours: -18, reviewedHoursAgo: 45 }),
+    makeCard(historyDeck.id, "Wann überfiel Deutschland Polen?", "Im September 1939 — daraufhin erklärten Großbritannien und Frankreich den Krieg.", { correct: 4, incorrect: 0, ease: 2.7, dueInHours: 40 }),
+    makeCard(historyDeck.id, "Was brachte die USA in den Zweiten Weltkrieg?", "Der japanische Angriff auf Pearl Harbor im Dezember 1941.", { correct: 3, incorrect: 1, ease: 2.4, dueInHours: -4, reviewedHoursAgo: 10 }),
+    makeCard(historyDeck.id, "Was wendete das Blatt an der Ostfront?", "Die Schlacht von Stalingrad, 1942/43.", { dueInHours: -10 }),
   ];
 
   // ── Quizzes ────────────────────────────────────────────────────────
@@ -308,19 +308,19 @@ Consequences: Roughly 70–85 million deaths made it the deadliest conflict in h
   }
 
   const physicsQuizQuestions = [
-    mcq("Which equation expresses the first law of thermodynamics?", ["ΔU = Q − W", "F = ma", "E = mc²", "PV = nRT"], "ΔU = Q − W", "First law", "easy", "The first law is conservation of energy: internal energy change equals heat in minus work done by the system."),
-    mcq("In an adiabatic process, what is true?", ["Q = 0", "W = 0", "ΔU = 0", "T is constant"], "Q = 0", "Processes", "medium", "Adiabatic means no heat is exchanged with the surroundings."),
-    mcq("What does entropy measure?", ["Disorder / randomness", "Temperature", "Pressure", "Mass"], "Disorder / randomness", "Second law", "easy", "Entropy quantifies disorder; the second law says it never decreases for an isolated system."),
-    mcq("A Carnot engine's efficiency depends only on:", ["The reservoir temperatures", "The gas used", "The piston material", "The engine's size"], "The reservoir temperatures", "Heat engines", "hard", "η = 1 − T_cold/T_hot — only the temperatures of the two reservoirs matter."),
-    mcq("Which process has constant volume?", ["Isochoric", "Isobaric", "Isothermal", "Adiabatic"], "Isochoric", "Processes", "medium", "Isochoric = constant volume, so W = 0 and ΔU = Q."),
+    mcq("Welche Gleichung drückt den ersten Hauptsatz aus?", ["ΔU = Q − W", "F = ma", "E = mc²", "pV = nRT"], "ΔU = Q − W", "Erster Hauptsatz", "easy", "Der erste Hauptsatz ist der Energieerhaltungssatz: Änderung der inneren Energie = zugeführte Wärme minus verrichtete Arbeit."),
+    mcq("Was gilt bei einem adiabatischen Prozess?", ["Q = 0", "W = 0", "ΔU = 0", "T ist konstant"], "Q = 0", "Prozesse", "medium", "Adiabatisch heißt: kein Wärmeaustausch mit der Umgebung."),
+    mcq("Was misst die Entropie?", ["Unordnung", "Temperatur", "Druck", "Masse"], "Unordnung", "Zweiter Hauptsatz", "easy", "Die Entropie beziffert die Unordnung; nach dem zweiten Hauptsatz nimmt sie in einem abgeschlossenen System nie ab."),
+    mcq("Der Wirkungsgrad einer Carnot-Maschine hängt nur ab von:", ["den Temperaturen der Reservoirs", "dem verwendeten Gas", "dem Material des Kolbens", "der Größe der Maschine"], "den Temperaturen der Reservoirs", "Wärmekraftmaschinen", "hard", "η = 1 − T_kalt/T_warm — nur die Temperaturen der beiden Reservoirs zählen."),
+    mcq("Bei welchem Prozess bleibt das Volumen konstant?", ["isochor", "isobar", "isotherm", "adiabatisch"], "isochor", "Prozesse", "medium", "Isochor = konstantes Volumen, also W = 0 und ΔU = Q."),
   ];
 
   const completedPhysicsQuiz: Quiz = {
     id: uid("quiz"),
     subjectId: physics.id,
     documentId: documents[0].id,
-    title: "Thermodynamics — Chapter 3 check",
-    topics: ["First law", "Second law", "Processes", "Heat engines"],
+    title: "Thermodynamik — Test zu Kapitel 3",
+    topics: ["Erster Hauptsatz", "Zweiter Hauptsatz", "Prozesse", "Wärmekraftmaschinen"],
     difficulty: "medium",
     questionTypes: ["mcq"],
     timeLimitMinutes: 10,
@@ -332,27 +332,27 @@ Consequences: Roughly 70–85 million deaths made it the deadliest conflict in h
     answers: {
       [physicsQuizQuestions[0].id]: "ΔU = Q − W",
       [physicsQuizQuestions[1].id]: "W = 0",
-      [physicsQuizQuestions[2].id]: "Disorder / randomness",
-      [physicsQuizQuestions[3].id]: "The piston material",
-      [physicsQuizQuestions[4].id]: "Isochoric",
+      [physicsQuizQuestions[2].id]: "Unordnung",
+      [physicsQuizQuestions[3].id]: "dem Material des Kolbens",
+      [physicsQuizQuestions[4].id]: "isochor",
     },
     score: 60,
-    weakTopics: ["Processes", "Heat engines"],
+    weakTopics: ["Prozesse", "Wärmekraftmaschinen"],
   };
 
   const mathQuizQuestions = [
-    mcq("Solve: what is the discriminant of 2x² − 4x + 2?", ["0", "4", "-8", "16"], "0", "Quadratics", "medium", "b² − 4ac = 16 − 16 = 0, so there's one repeated root."),
-    mcq("f(x − 3) shifts the graph of f how?", ["Right by 3", "Left by 3", "Up by 3", "Down by 3"], "Right by 3", "Transformations", "easy", "f(x − h) shifts right by h when h is positive."),
-    mcq("log_2(8) = ?", ["3", "4", "2", "8"], "3", "Logarithms", "easy", "2³ = 8, so log₂(8) = 3."),
-    { id: uid("q"), type: "true-false" as const, prompt: "A negative discriminant means the quadratic has two real roots.", options: ["True", "False"], correctAnswer: "False", explanation: "A negative discriminant means no real roots (two complex roots).", topic: "Quadratics", difficulty: "easy" as const },
+    mcq("Solve: what is the discriminant of 2x² − 4x + 2?", ["0", "4", "-8", "16"], "0", "Quadratische Funktionen", "medium", "b² − 4ac = 16 − 16 = 0, so there's one repeated root."),
+    mcq("Wie verschiebt f(x − 3) den Graphen von f?", ["um 3 nach rechts", "um 3 nach links", "um 3 nach oben", "um 3 nach unten"], "um 3 nach rechts", "Transformationen", "easy", "f(x − h) verschiebt um h nach rechts, wenn h positiv ist."),
+    mcq("log₂(8) = ?", ["3", "4", "2", "8"], "3", "Logarithmen", "easy", "2³ = 8, so log₂(8) = 3."),
+    { id: uid("q"), type: "true-false" as const, prompt: "Eine negative Diskriminante bedeutet, dass die quadratische Gleichung zwei reelle Lösungen hat.", options: ["Wahr", "Falsch"], correctAnswer: "Falsch", explanation: "Eine negative Diskriminante bedeutet keine reelle Lösung (zwei komplexe).", topic: "Quadratische Funktionen", difficulty: "easy" as const },
   ];
 
   const completedMathQuiz: Quiz = {
     id: uid("quiz"),
     subjectId: math.id,
     documentId: documents[1].id,
-    title: "Functions & quadratics practice",
-    topics: ["Quadratics", "Transformations", "Logarithms"],
+    title: "Übung: Funktionen und quadratische Gleichungen",
+    topics: ["Quadratische Funktionen", "Transformationen", "Logarithmen"],
     difficulty: "easy",
     questionTypes: ["mcq", "true-false"],
     timeLimitMinutes: 8,
@@ -363,9 +363,9 @@ Consequences: Roughly 70–85 million deaths made it the deadliest conflict in h
     completedAt: iso(subDays(now, 10)),
     answers: {
       [mathQuizQuestions[0].id]: "0",
-      [mathQuizQuestions[1].id]: "Right by 3",
+      [mathQuizQuestions[1].id]: "um 3 nach rechts",
       [mathQuizQuestions[2].id]: "3",
-      [mathQuizQuestions[3].id]: "False",
+      [mathQuizQuestions[3].id]: "Falsch",
     },
     score: 100,
     weakTopics: [],
@@ -374,34 +374,34 @@ Consequences: Roughly 70–85 million deaths made it the deadliest conflict in h
   const olderPhysicsQuiz: Quiz = {
     ...completedPhysicsQuiz,
     id: uid("quiz"),
-    title: "Energy & heat — warm-up quiz",
+    title: "Energie und Wärme — Aufwärmquiz",
     createdAt: iso(subDays(now, 24)),
     startedAt: iso(subDays(now, 24)),
     completedAt: iso(subDays(now, 24)),
     score: 40,
-    weakTopics: ["Second law", "Heat engines", "Processes"],
+    weakTopics: ["Zweiter Hauptsatz", "Wärmekraftmaschinen", "Prozesse"],
   };
 
   const quizzes: Quiz[] = [completedPhysicsQuiz, completedMathQuiz, olderPhysicsQuiz];
 
   // ── Tasks ──────────────────────────────────────────────────────────
   const tasks: StudyTask[] = [
-    { id: uid("task"), title: "Finish thermodynamics problem set #4", subjectId: physics.id, description: "Questions 1–12, focus on Carnot efficiency.", deadline: iso(subHours(now, 4)), priority: "high", status: "todo", estimatedMinutes: 60, recurring: null, createdAt: iso(subDays(now, 3)), completedAt: null },
-    { id: uid("task"), title: "Read Macbeth Act V", subjectId: english.id, description: "Take notes on the sleepwalking scene.", deadline: iso(addDays(now, 0)), priority: "medium", status: "todo", estimatedMinutes: 40, recurring: null, createdAt: iso(subDays(now, 2)), completedAt: null },
-    { id: uid("task"), title: "Review quadratic formula flashcards", subjectId: math.id, description: "", deadline: iso(addDays(now, 0)), priority: "low", status: "in-progress", estimatedMinutes: 15, recurring: "daily", createdAt: iso(subDays(now, 30)), completedAt: null },
-    { id: uid("task"), title: "Outline WW2 causes essay", subjectId: history.id, description: "Long-term vs short-term causes, 800 words.", deadline: iso(addDays(now, 2)), priority: "high", status: "todo", estimatedMinutes: 90, recurring: null, createdAt: iso(subDays(now, 1)), completedAt: null },
-    { id: uid("task"), title: "Physics lab report — specific heat", subjectId: physics.id, description: "Write conclusion + error analysis.", deadline: iso(addDays(now, 1)), priority: "medium", status: "todo", estimatedMinutes: 45, recurring: null, createdAt: iso(subDays(now, 1)), completedAt: null },
-    { id: uid("task"), title: "Practice trigonometry identities", subjectId: math.id, description: "", deadline: iso(addDays(now, 4)), priority: "low", status: "todo", estimatedMinutes: 30, recurring: null, createdAt: iso(now), completedAt: null },
-    { id: uid("task"), title: "Submit English essay draft", subjectId: english.id, description: "Ambition as a theme in Macbeth.", deadline: iso(subDays(now, 1)), priority: "high", status: "done", estimatedMinutes: 90, recurring: null, createdAt: iso(subDays(now, 6)), completedAt: iso(subDays(now, 1)) },
-    { id: uid("task"), title: "Weekly planner check-in", subjectId: null, description: "Review the week ahead every Monday.", deadline: iso(addDays(now, 6)), priority: "low", status: "todo", estimatedMinutes: 10, recurring: "weekly", createdAt: iso(subDays(now, 40)), completedAt: null },
-    { id: uid("task"), title: "Flashcards: WW2 key dates", subjectId: history.id, description: "", deadline: iso(subDays(now, 2)), priority: "medium", status: "done", estimatedMinutes: 20, recurring: null, createdAt: iso(subDays(now, 9)), completedAt: iso(subDays(now, 3)) },
+    { id: uid("task"), title: "Aufgabenblatt 4 Thermodynamik fertig machen", subjectId: physics.id, description: "Aufgaben 1–12, Schwerpunkt Carnot-Wirkungsgrad.", deadline: iso(subHours(now, 4)), priority: "high", status: "todo", estimatedMinutes: 60, recurring: null, createdAt: iso(subDays(now, 3)), completedAt: null },
+    { id: uid("task"), title: "Macbeth Akt V lesen", subjectId: english.id, description: "Notizen zur Schlafwandelszene machen.", deadline: iso(addDays(now, 0)), priority: "medium", status: "todo", estimatedMinutes: 40, recurring: null, createdAt: iso(subDays(now, 2)), completedAt: null },
+    { id: uid("task"), title: "Karteikarten zur Lösungsformel wiederholen", subjectId: math.id, description: "", deadline: iso(addDays(now, 0)), priority: "low", status: "in-progress", estimatedMinutes: 15, recurring: "daily", createdAt: iso(subDays(now, 30)), completedAt: null },
+    { id: uid("task"), title: "Aufsatz zu den Kriegsursachen gliedern", subjectId: history.id, description: "Langfristige gegen kurzfristige Ursachen, 800 Wörter.", deadline: iso(addDays(now, 2)), priority: "high", status: "todo", estimatedMinutes: 90, recurring: null, createdAt: iso(subDays(now, 1)), completedAt: null },
+    { id: uid("task"), title: "Laborbericht Physik — spezifische Wärme", subjectId: physics.id, description: "Schluss und Fehlerbetrachtung schreiben.", deadline: iso(addDays(now, 1)), priority: "medium", status: "todo", estimatedMinutes: 45, recurring: null, createdAt: iso(subDays(now, 1)), completedAt: null },
+    { id: uid("task"), title: "Trigonometrische Identitäten üben", subjectId: math.id, description: "", deadline: iso(addDays(now, 4)), priority: "low", status: "todo", estimatedMinutes: 30, recurring: null, createdAt: iso(now), completedAt: null },
+    { id: uid("task"), title: "Entwurf des Englisch-Aufsatzes abgeben", subjectId: english.id, description: "Ehrgeiz als Thema in Macbeth.", deadline: iso(subDays(now, 1)), priority: "high", status: "done", estimatedMinutes: 90, recurring: null, createdAt: iso(subDays(now, 6)), completedAt: iso(subDays(now, 1)) },
+    { id: uid("task"), title: "Wochenplanung", subjectId: null, description: "Jeden Montag die kommende Woche durchgehen.", deadline: iso(addDays(now, 6)), priority: "low", status: "todo", estimatedMinutes: 10, recurring: "weekly", createdAt: iso(subDays(now, 40)), completedAt: null },
+    { id: uid("task"), title: "Karteikarten: Daten Zweiter Weltkrieg", subjectId: history.id, description: "", deadline: iso(subDays(now, 2)), priority: "medium", status: "done", estimatedMinutes: 20, recurring: null, createdAt: iso(subDays(now, 9)), completedAt: iso(subDays(now, 3)) },
   ];
 
   // ── Exams ──────────────────────────────────────────────────────────
   function planWeek(weekNumber: number, start: Date, topics: string[], focus: string, done: boolean): Exam["studyPlan"][number] {
     return {
       weekNumber,
-      label: `Week ${weekNumber}`,
+      label: `Woche ${weekNumber}`,
       startDate: iso(start),
       endDate: iso(addDays(start, 6)),
       topics,
@@ -414,15 +414,15 @@ Consequences: Roughly 70–85 million deaths made it the deadliest conflict in h
   const mathExam: Exam = {
     id: uid("exam"),
     subjectId: math.id,
-    title: "Mathematics — Midterm Exam",
+    title: "Mathematik — Schularbeit",
     date: iso(mathExamDate),
-    topics: ["Quadratic functions", "Function transformations", "Logarithms", "Trigonometric identities"],
+    topics: ["Quadratische Funktionen", "Transformationen", "Logarithmen", "Trigonometrische Identitäten"],
     currentLevel: "intermediate",
     availableHoursPerWeek: 5,
     studyPlan: [
-      planWeek(1, subDays(mathExamDate, 19), ["Quadratic functions", "Completing the square"], "Rebuild the fundamentals before moving on.", true),
-      planWeek(2, subDays(mathExamDate, 12), ["Function transformations", "Composite functions"], "Practice graph transformations daily.", false),
-      planWeek(3, subDays(mathExamDate, 5), ["Practice exams", "Weak topics review"], "Timed practice + fix recurring mistakes.", false),
+      planWeek(1, subDays(mathExamDate, 19), ["Quadratische Funktionen", "Quadratische Ergänzung"], "Zuerst die Grundlagen wieder festigen.", true),
+      planWeek(2, subDays(mathExamDate, 12), ["Transformationen", "Verkettete Funktionen"], "Täglich Graphentransformationen üben.", false),
+      planWeek(3, subDays(mathExamDate, 5), ["Probeprüfungen", "Schwache Themen"], "Unter Zeitdruck üben und wiederkehrende Fehler abstellen.", false),
     ],
     createdAt: iso(subDays(now, 15)),
   };
@@ -431,14 +431,14 @@ Consequences: Roughly 70–85 million deaths made it the deadliest conflict in h
   const physicsExam: Exam = {
     id: uid("exam"),
     subjectId: physics.id,
-    title: "Physics — Thermodynamics Test",
+    title: "Physik — Test Thermodynamik",
     date: iso(physicsExamDate),
-    topics: ["First & second law", "Thermodynamic processes", "Heat engines", "Entropy"],
+    topics: ["Erster und zweiter Hauptsatz", "Thermodynamische Prozesse", "Wärmekraftmaschinen", "Entropie"],
     currentLevel: "beginner",
     availableHoursPerWeek: 4,
     studyPlan: [
-      planWeek(1, subDays(physicsExamDate, 9), ["First law", "Second law"], "Nail the two laws cold — everything else builds on them.", true),
-      planWeek(2, subDays(physicsExamDate, 2), ["Heat engines", "Practice exam"], "Carnot efficiency + full timed practice test.", false),
+      planWeek(1, subDays(physicsExamDate, 9), ["Erster Hauptsatz", "Zweiter Hauptsatz"], "Die beiden Hauptsätze müssen sitzen — alles andere baut darauf auf.", true),
+      planWeek(2, subDays(physicsExamDate, 2), ["Wärmekraftmaschinen", "Probeprüfung"], "Carnot-Wirkungsgrad und ein vollständiger Test unter Zeitdruck.", false),
     ],
     createdAt: iso(subDays(now, 6)),
   };
@@ -447,17 +447,17 @@ Consequences: Roughly 70–85 million deaths made it the deadliest conflict in h
   const historyExam: Exam = {
     id: uid("exam"),
     subjectId: history.id,
-    title: "History — World War II Assessment",
+    title: "Geschichte — Prüfung Zweiter Weltkrieg",
     date: iso(historyExamDate),
-    topics: ["Causes of WW2", "European theater", "Pacific theater", "Consequences"],
+    topics: ["Kriegsursachen", "Kriegsschauplatz Europa", "Kriegsschauplatz Pazifik", "Folgen"],
     currentLevel: "intermediate",
     availableHoursPerWeek: 3,
     studyPlan: [
-      planWeek(1, subDays(historyExamDate, 34), ["Causes of WW2"], "Long-term vs short-term causes.", false),
-      planWeek(2, subDays(historyExamDate, 27), ["European theater"], "Timeline: Poland to D-Day.", false),
-      planWeek(3, subDays(historyExamDate, 20), ["Pacific theater"], "Pearl Harbor to VJ Day.", false),
-      planWeek(4, subDays(historyExamDate, 13), ["Consequences", "Practice essays"], "Cold War setup + essay practice.", false),
-      planWeek(5, subDays(historyExamDate, 6), ["Full review", "Practice exam"], "Timed practice + weak-topic cleanup.", false),
+      planWeek(1, subDays(historyExamDate, 34), ["Kriegsursachen"], "Langfristige gegen kurzfristige Ursachen.", false),
+      planWeek(2, subDays(historyExamDate, 27), ["Kriegsschauplatz Europa"], "Zeitleiste: von Polen bis zur Landung in der Normandie.", false),
+      planWeek(3, subDays(historyExamDate, 20), ["Kriegsschauplatz Pazifik"], "Von Pearl Harbor bis zur Kapitulation Japans.", false),
+      planWeek(4, subDays(historyExamDate, 13), ["Folgen", "Aufsätze üben"], "Vorgeschichte des Kalten Kriegs und Aufsatztraining.", false),
+      planWeek(5, subDays(historyExamDate, 6), ["Gesamtwiederholung", "Probeprüfung"], "Unter Zeitdruck üben und die letzten Lücken schließen.", false),
     ],
     createdAt: iso(subDays(now, 2)),
   };
@@ -496,18 +496,18 @@ Consequences: Roughly 70–85 million deaths made it the deadliest conflict in h
     subjectId: physics.id,
     documentId: documents[0].id,
     mode: "simplify",
-    title: "Explain thermodynamics like I'm 15",
+    title: "Erklär mir Thermodynamik, als wäre ich 15",
     createdAt: iso(subDays(now, 5)),
     updatedAt: iso(subDays(now, 5)),
   };
   const messages: AIMessage[] = [
-    { id: uid("msg"), conversationId: conversation.id, role: "user", content: "Explain chapter 3 like I'm 15.", createdAt: iso(subDays(now, 5)) },
+    { id: uid("msg"), conversationId: conversation.id, role: "user", content: "Erklär mir Kapitel 3, als wäre ich 15.", createdAt: iso(subDays(now, 5)) },
     {
       id: uid("msg"),
       conversationId: conversation.id,
       role: "assistant",
       content:
-        "Sure! Think of energy like money in a bank account.\n\n**The first law** just says you can't create money from nothing — if your balance changes, it's because money came in or went out. In physics: `ΔU = Q − W`. Heat coming in (Q) adds to your account; work your system does on the outside world (W) takes money out.\n\n**The second law** says money naturally flows from the rich account to the poor one, never the other way around by itself — that's why a hot cup of coffee cools down instead of getting hotter on its own. That 'never spontaneously reverses' idea is entropy always increasing.\n\nWant me to walk through a Carnot engine example next, or quiz you on this?",
+        "Klar! Stell dir Energie wie Geld auf einem Bankkonto vor.\n\n**Der erste Hauptsatz** sagt nur: Aus dem Nichts entsteht kein Geld. Ändert sich dein Kontostand, ist etwas hinein- oder hinausgegangen. In der Physik: `ΔU = Q − W`. Zugeführte Wärme (Q) kommt aufs Konto, Arbeit, die dein System nach außen verrichtet (W), geht davon ab.\n\n**Der zweite Hauptsatz** sagt: Geld fließt von selbst immer vom reichen zum armen Konto, nie umgekehrt. Deshalb kühlt heißer Kaffee ab und wird nicht von allein heißer. Genau dieses „läuft nie von selbst rückwärts“ ist die Entropie, die immer zunimmt.\n\nSoll ich als Nächstes ein Beispiel zur Carnot-Maschine durchgehen oder dich dazu abfragen?",
       createdAt: iso(subDays(now, 5)),
     },
   ];

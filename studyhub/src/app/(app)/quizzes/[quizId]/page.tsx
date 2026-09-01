@@ -71,7 +71,7 @@ export default function QuizDetailPage() {
         <p className="t-body font-medium text-ink">Quiz not found</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
           <Link href="/quizzes">
-            <ArrowLeft className="size-3.5" /> Back to quizzes
+            <ArrowLeft className="size-3.5" /> Zurück zu den Quiz
           </Link>
         </Button>
       </div>
@@ -88,9 +88,9 @@ export default function QuizDetailPage() {
       const deck = addDeck({ subjectId: quiz.subjectId, name: `${quiz.title} — revision`, description: `Weak topics: ${quiz.weakTopics!.join(", ")}` });
       data.cards.forEach((c) => addFlashcard({ deckId: deck.id, front: c.front, back: c.back }));
       spendAICredits(3);
-      toast.success("Revision deck created", { action: { label: "Study now", onClick: () => router.push(`/flashcards/${deck.id}/study`) } });
+      toast.success("Wiederholungsstapel erstellt", { action: { label: "Jetzt lernen", onClick: () => router.push(`/flashcards/${deck.id}/study`) } });
     } catch (err) {
-      toast.error(err instanceof AIClientError ? err.message : "Couldn't create a revision deck. Try again.");
+      toast.error(err instanceof AIClientError ? err.message : "Wiederholungsstapel konnte nicht erstellt werden. Versuch es nochmal.");
     } finally {
       setRevisionLoading(false);
     }
@@ -128,17 +128,17 @@ export default function QuizDetailPage() {
             <h1 className="t-title-2 font-semibold text-ink">{quiz.title}</h1>
             <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
               {subject && <SubjectPill subject={subject} />}
-              <Badge variant="outline">{quiz.questions.length} questions</Badge>
+              <Badge variant="outline">{quiz.questions.length} Fragen</Badge>
               <Badge variant="outline">{quiz.difficulty}</Badge>
               {quiz.timeLimitMinutes && (
                 <Badge variant="outline" className="gap-1">
-                  <Clock className="size-2.5" /> {quiz.timeLimitMinutes} min
+                  <Clock className="size-2.5" /> {quiz.timeLimitMinutes} Min
                 </Badge>
               )}
             </div>
-            {quiz.topics.length > 0 && <p className="mt-3 t-callout text-ink-3">Topics: {quiz.topics.join(", ")}</p>}
+            {quiz.topics.length > 0 && <p className="mt-3 t-callout text-ink-3">Themen: {quiz.topics.join(", ")}</p>}
             <Button className="mt-6 w-full" onClick={() => startQuiz(quiz.id)}>
-              Start quiz
+              Quiz starten
             </Button>
           </CardContent>
         </Card>
@@ -171,14 +171,14 @@ export default function QuizDetailPage() {
 
         <div className="mt-4 flex items-center justify-between">
           <Button variant="ghost" onClick={() => setIndex((i) => Math.max(0, i - 1))} disabled={index === 0}>
-            <ArrowLeft className="size-3.5" /> Previous
+            <ArrowLeft className="size-3.5" /> Zurück
           </Button>
           <span className="t-caption text-ink-3">{answered}/{quiz.questions.length} answered</span>
           {isLast ? (
-            <Button onClick={submit}>Submit quiz</Button>
+            <Button onClick={submit}>Quiz abgeben</Button>
           ) : (
             <Button onClick={() => setIndex((i) => Math.min(quiz.questions.length - 1, i + 1))}>
-              Next <ArrowRight className="size-3.5" />
+              Weiter <ArrowRight className="size-3.5" />
             </Button>
           )}
         </div>
@@ -193,20 +193,20 @@ export default function QuizDetailPage() {
     <div className="mx-auto max-w-2xl">
       <Button variant="ghost" size="sm" className="mb-4" asChild>
         <Link href="/quizzes">
-          <ArrowLeft className="size-3.5" /> Back to quizzes
+          <ArrowLeft className="size-3.5" /> Zurück zu den Quiz
         </Link>
       </Button>
 
       <Card className="mb-5">
         <CardContent className="pt-6 text-center">
-          <p className="mono-label">Your score</p>
+          <p className="mono-label">Dein Ergebnis</p>
           <p className="mt-1 text-4xl font-semibold tracking-tight text-ink">{quiz.score}%</p>
           <p className="mt-1 t-callout text-ink-3">
-            {correctCount} of {quiz.questions.length} correct
+            {correctCount} von {quiz.questions.length} richtig
           </p>
           {quiz.weakTopics && quiz.weakTopics.length > 0 && (
             <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5">
-              <span className="t-caption text-ink-3">Focus on:</span>
+              <span className="t-caption text-ink-3">Dranbleiben bei:</span>
               {quiz.weakTopics.map((t) => (
                 <Badge key={t} variant="warning">
                   {t}
@@ -216,11 +216,11 @@ export default function QuizDetailPage() {
           )}
           <div className="mt-5 flex flex-wrap justify-center gap-2">
             <Button variant="secondary" onClick={retake}>
-              <RotateCcw className="size-3.5" /> Retake
+              <RotateCcw className="size-3.5" /> Nochmal
             </Button>
             {quiz.weakTopics && quiz.weakTopics.length > 0 && (
               <Button onClick={generateRevisionDeck} disabled={revisionLoading}>
-                {revisionLoading ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />} Create revision deck
+                {revisionLoading ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />} Wiederholungsstapel erstellen
               </Button>
             )}
           </div>
@@ -241,11 +241,11 @@ export default function QuizDetailPage() {
                       {i + 1}. {q.prompt}
                     </p>
                     <p className="mt-1 t-callout text-ink-3">
-                      Your answer: <span className={correct ? "text-success-text" : "text-danger-text"}>{given || "—"}</span>
+                      Deine Antwort: <span className={correct ? "text-success-text" : "text-danger-text"}>{given || "—"}</span>
                     </p>
                     {!correct && (
                       <p className="t-callout text-ink-3">
-                        Correct: <span className="text-ink">{q.correctAnswer}</span>
+                        Richtig: <span className="text-ink">{q.correctAnswer}</span>
                       </p>
                     )}
                     <p className="mt-1.5 t-caption text-ink-3">{q.explanation}</p>

@@ -29,7 +29,7 @@ export function SubjectDot({ subject, className }: { subject: Pick<Subject, "col
 }
 
 export function SubjectPill({ subject, href, className }: { subject: Subject | null | undefined; href?: string; className?: string }) {
-  if (!subject) return <span className={cn("t-caption text-ink-3", className)}>No subject</span>;
+  if (!subject) return <span className={cn("t-caption text-ink-3", className)}>Kein Fach</span>;
   const content = (
     <span className={cn("inline-flex items-center gap-1.5 rounded-md border border-border bg-surface-2 px-2 py-0.5 t-caption font-medium text-ink-2", className)}>
       <SubjectDot subject={subject} />
