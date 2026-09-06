@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Dashboard</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="shell">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">◆</span>
+      <span class="brand-name">Claude Dashboard</span>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="usage" role="tab" aria-selected="true">Usage &amp; Kosten</button>
+      <button class="tab" data-tab="projects" role="tab" aria-selected="false">Projekte</button>
+      <button class="tab" data-tab="sessions" role="tab" aria-selected="false">Sessions &amp; Tasks</button>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- USAGE & COSTS -->
+    <section id="panel-usage" class="panel active">
+      <div class="panel-head">
+        <h1>Usage &amp; Kosten</h1>
+        <p class="sub">Live-Daten aus der Anthropic Admin API. Der Key bleibt ausschließlich in deinem Browser.</p>
+      </div>
+
+      <div class="card key-card">
+        <div class="key-row">
+          <label for="admin-key">Admin API Key</label>
+          <input id="admin-key" type="password" placeholder="sk-ant-admin..." autocomplete="off">
+          <button id="key-save" class="btn">Speichern</button>
+          <button id="key-clear" class="btn ghost">Löschen</button>
+        </div>
+        <div class="key-row">
+          <label for="days-select">Zeitraum</label>
+          <select id="days-select">
+            <option value="7">Letzte 7 Tage</option>
+            <option value="14">Letzte 14 Tage</option>
+            <option value="30" selected>Letzte 30 Tage</option>
+            <option value="90">Letzte 90 Tage</option>
+          </select>
+          <button id="usage-refresh" class="btn primary">Aktualisieren</button>
+        </div>
+        <p id="key-status" class="hint"></p>
+      </div>
+
+      <div id="usage-empty" class="card empty-card">
+        <p>Kein Key gespeichert. Trag oben deinen <strong>Admin API Key</strong> aus der
+        <a href="https://console.anthropic.com/settings/admin-keys" target="_blank" rel="noopener">Anthropic Console</a>
+        ein, dann lädt hier Usage &amp; Kosten der letzten Tage.</p>
+      </div>
+
+      <div id="usage-error" class="card error-card" hidden></div>
+
+      <div id="usage-content" hidden>
+        <div class="stat-grid">
+          <div class="card stat">
+            <span class="stat-label">Kosten (Zeitraum)</span>
+            <span class="stat-value" id="stat-cost">–</span>
+          </div>
+          <div class="card stat">
+            <span class="stat-label">Input Tokens</span>
+            <span class="stat-value" id="stat-input">–</span>
+          </div>
+          <div class="card stat">
+            <span class="stat-label">Output Tokens</span>
+            <span class="stat-value" id="stat-output">–</span>
+          </div>
+          <div class="card stat">
+            <span class="stat-label">Requests</span>
+            <span class="stat-value" id="stat-requests">–</span>
+          </div>
+        </div>
+
+        <div class="card chart-card">
+          <h2>Kosten pro Tag</h2>
+          <svg id="cost-chart" class="chart" viewBox="0 0 640 220" preserveAspectRatio="none"></svg>
+        </div>
+
+        <div class="card">
+          <div class="raw-toggle-row">
+            <h2>Rohdaten</h2>
+            <button id="raw-toggle" class="btn ghost small">Anzeigen</button>
+          </div>
+          <pre id="raw-json" class="raw-json" hidden></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section id="panel-projects" class="panel">
+      <div class="panel-head">
+        <h1>Projekte</h1>
+        <p class="sub">Alle Projekte aus diesem Repository, aus der README zusammengestellt.</p>
+      </div>
+      <div id="project-grid" class="project-grid"></div>
+    </section>
+
+    <!-- SESSIONS & TASKS -->
+    <section id="panel-sessions" class="panel">
+      <div class="panel-head">
+        <h1>Sessions &amp; Tasks</h1>
+        <p class="sub">Eigene Tracking-Liste für laufende und geplante Claude-Code-Arbeit. Lokal gespeichert, kein Server.</p>
+      </div>
+
+      <form id="task-form" class="card task-form">
+        <input id="task-title" type="text" placeholder="Titel, z.B. 'StudyHub: Quiz-Export'" required>
+        <select id="task-status">
+          <option value="open">Offen</option>
+          <option value="running">Läuft</option>
+          <option value="review">Review</option>
+          <option value="done">Fertig</option>
+        </select>
+        <input id="task-link" type="url" placeholder="Link (optional, PR/Session)">
+        <button type="submit" class="btn primary">Hinzufügen</button>
+      </form>
+
+      <div id="task-board" class="task-board"></div>
+    </section>
+
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
