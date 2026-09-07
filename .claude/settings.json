@@ -11,12 +11,16 @@
     },
     "marketingskills": {
       "source": { "source": "github", "repo": "coreyhaines31/marketingskills" }
+    },
+    "ecc": {
+      "source": { "source": "github", "repo": "affaan-m/everything-claude-code" }
     }
   },
   "enabledPlugins": {
     "claude-mem@thedotmack": true,
     "claude-flow@claude-flow-marketplace": true,
     "caveman@caveman": true,
-    "marketing-skills@marketingskills": true
+    "marketing-skills@marketingskills": true,
+    "ecc@ecc": true
   }
 }

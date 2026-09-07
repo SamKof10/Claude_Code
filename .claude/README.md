@@ -1,6 +1,6 @@
 # Installed Claude Code skills
 
-This project registers four external plugin marketplaces in `settings.json`
+This project registers external plugin marketplaces in `settings.json`
 (`extraKnownMarketplaces` + `enabledPlugins`). Anyone opening this repo in
 Claude Code will be prompted to trust and install them on first use — no
 extra step required beyond accepting that prompt.
@@ -11,6 +11,7 @@ extra step required beyond accepting that prompt.
 | **claude-flow** | [n4s5ti/claude-flow](https://github.com/n4s5ti/claude-flow) | Multi-agent orchestration (150+ commands, swarm coordination, SPARC methodology). Its `marketplace.json` points at the same upstream project as `ruvnet/claude-flow`. Installs 3 MCP servers (`claude-flow`, `ruv-swarm`, `flow-nexus`) that run via `npx` on demand — review before relying on the optional ones. |
 | **caveman** | [juliusbrussee/caveman](https://github.com/juliusbrussee/caveman) | Token-compression skills (`caveman`, `cavecrew`, `caveman-compress`, etc.) plus its bundled proxy/CLI (`proxy/`, `cli/`) since the plugin source is the whole repo. |
 | **marketing-skills** | [coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills) | 49 marketing skills (CRO, copywriting, SEO, paid ads, growth, ...). |
+| **ecc** | [affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 68 agents, 286 skills, 94 legacy command shims, rules, and workflows. **Installs an active hook system on the `standard` profile by default** (`hooks_enabled: true` in the plugin's `userConfig`) — it runs on every `Bash`/`Write`/`Edit`/`MultiEdit` call and at every session start: a preflight dispatcher, a "fact-forcing gate" that blocks the first edit per file until investigated, a config-protection hook blocking edits to lint/formatter configs, an async "continuous learning" observer that captures tool-use observations, and an opt-in governance-capture hook for secrets/policy violations (`ECC_GOVERNANCE_CAPTURE=1`). To turn hooks off and keep only the agents/skills/commands, set `"pluginConfigs": {"ecc@ecc": {"options": {"hooks_enabled": false}}}` in `.claude/settings.json`. |
 
 ## grill-me / grilling
 
