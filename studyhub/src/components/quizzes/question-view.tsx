@@ -59,7 +59,7 @@ export function QuestionView({
 
         {(question.type === "short-answer" || question.type === "fill-blank") && (
           <Input
-            placeholder={question.type === "fill-blank" ? "Fill in the blank…" : "Your answer…"}
+            placeholder={question.type === "fill-blank" ? "Lücke ausfüllen…" : "Deine Antwort…"}
             value={answer}
             onChange={(e) => onAnswer(e.target.value)}
             disabled={reveal}

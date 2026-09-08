@@ -83,7 +83,7 @@ export default function NoteDetailPage() {
             <SelectValue placeholder="Kein Fach" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">No subject</SelectItem>
+            <SelectItem value="none">Kein Fach</SelectItem>
             {subjects.map((s) => (
               <SelectItem key={s.id} value={s.id}>
                 {s.name}

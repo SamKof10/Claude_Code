@@ -7,6 +7,7 @@ import { CircleDot, ListChecks, MoreHorizontal, Trash2 } from "lucide-react";
 import type { Quiz, Subject } from "@/lib/types";
 import { SubjectPill } from "@/components/shared/subject-pill";
 import { Badge } from "@/components/ui/badge";
+import { DIFFICULTY_LABEL } from "@/lib/labels";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 function scoreTone(score: number): "success" | "warning" | "danger" {
@@ -26,7 +27,7 @@ export function QuizListItem({ quiz, subject, onDelete }: { quiz: Quiz; subject:
         <div className="mt-1 flex flex-wrap items-center gap-1.5">
           {subject && <SubjectPill subject={subject} />}
           <Badge variant="outline">{quiz.questions.length} questions</Badge>
-          <Badge variant="outline">{quiz.difficulty}</Badge>
+          <Badge variant="outline">{DIFFICULTY_LABEL[quiz.difficulty]}</Badge>
           {quiz.status === "completed" && typeof quiz.score === "number" && <Badge variant={scoreTone(quiz.score)}>{quiz.score}%</Badge>}
           {quiz.status === "in-progress" && <Badge variant="signal">Läuft</Badge>}
           {quiz.status === "draft" && <Badge variant="outline">Nicht gestartet</Badge>}
@@ -43,7 +44,7 @@ export function QuizListItem({ quiz, subject, onDelete }: { quiz: Quiz; subject:
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem variant="destructive" onSelect={onDelete}>
-            <Trash2 /> Delete
+            <Trash2 /> Löschen
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

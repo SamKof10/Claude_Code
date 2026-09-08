@@ -11,6 +11,7 @@ import { QuestionView } from "@/components/quizzes/question-view";
 import { SubjectPill } from "@/components/shared/subject-pill";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DIFFICULTY_LABEL } from "@/lib/labels";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -68,7 +69,7 @@ export default function QuizDetailPage() {
   if (!quiz) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-        <p className="t-body font-medium text-ink">Quiz not found</p>
+        <p className="t-body font-medium text-ink">Quiz nicht gefunden</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
           <Link href="/quizzes">
             <ArrowLeft className="size-3.5" /> Zurück zu den Quiz
@@ -85,7 +86,7 @@ export default function QuizDetailPage() {
       const missed = quiz.questions.filter((q) => quiz.weakTopics!.includes(q.topic));
       const content = missed.map((q) => `${q.prompt} ${q.explanation}`).join(" ");
       const { data } = await aiFlashcards(content, quiz.title, Math.min(10, Math.max(4, missed.length * 2)));
-      const deck = addDeck({ subjectId: quiz.subjectId, name: `${quiz.title} — revision`, description: `Weak topics: ${quiz.weakTopics!.join(", ")}` });
+      const deck = addDeck({ subjectId: quiz.subjectId, name: `${quiz.title} — revision`, description: `Schwache Themen: ${quiz.weakTopics!.join(", ")}` });
       data.cards.forEach((c) => addFlashcard({ deckId: deck.id, front: c.front, back: c.back }));
       spendAICredits(3);
       toast.success("Wiederholungsstapel erstellt", { action: { label: "Jetzt lernen", onClick: () => router.push(`/flashcards/${deck.id}/study`) } });
@@ -117,7 +118,7 @@ export default function QuizDetailPage() {
       <div className="mx-auto max-w-xl">
         <Button variant="ghost" size="sm" className="mb-4" asChild>
           <Link href="/quizzes">
-            <ArrowLeft className="size-3.5" /> Back
+            <ArrowLeft className="size-3.5" /> Zurück
           </Link>
         </Button>
         <Card>
@@ -129,7 +130,7 @@ export default function QuizDetailPage() {
             <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
               {subject && <SubjectPill subject={subject} />}
               <Badge variant="outline">{quiz.questions.length} Fragen</Badge>
-              <Badge variant="outline">{quiz.difficulty}</Badge>
+              <Badge variant="outline">{DIFFICULTY_LABEL[quiz.difficulty]}</Badge>
               {quiz.timeLimitMinutes && (
                 <Badge variant="outline" className="gap-1">
                   <Clock className="size-2.5" /> {quiz.timeLimitMinutes} Min

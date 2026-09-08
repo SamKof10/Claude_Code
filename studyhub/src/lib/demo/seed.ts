@@ -341,9 +341,9 @@ Folgen: Mit rund 70 bis 85 Millionen Toten war er der verlustreichste Konflikt d
   };
 
   const mathQuizQuestions = [
-    mcq("Solve: what is the discriminant of 2x² − 4x + 2?", ["0", "4", "-8", "16"], "0", "Quadratische Funktionen", "medium", "b² − 4ac = 16 − 16 = 0, so there's one repeated root."),
+    mcq("Berechne die Diskriminante von 2x² − 4x + 2.", ["0", "4", "-8", "16"], "0", "Quadratische Funktionen", "medium", "b² − 4ac = 16 − 16 = 0, also gibt es genau eine doppelte Lösung."),
     mcq("Wie verschiebt f(x − 3) den Graphen von f?", ["um 3 nach rechts", "um 3 nach links", "um 3 nach oben", "um 3 nach unten"], "um 3 nach rechts", "Transformationen", "easy", "f(x − h) verschiebt um h nach rechts, wenn h positiv ist."),
-    mcq("log₂(8) = ?", ["3", "4", "2", "8"], "3", "Logarithmen", "easy", "2³ = 8, so log₂(8) = 3."),
+    mcq("log₂(8) = ?", ["3", "4", "2", "8"], "3", "Logarithmen", "easy", "2³ = 8, also ist log₂(8) = 3."),
     { id: uid("q"), type: "true-false" as const, prompt: "Eine negative Diskriminante bedeutet, dass die quadratische Gleichung zwei reelle Lösungen hat.", options: ["Wahr", "Falsch"], correctAnswer: "Falsch", explanation: "Eine negative Diskriminante bedeutet keine reelle Lösung (zwei komplexe).", topic: "Quadratische Funktionen", difficulty: "easy" as const },
   ];
 
@@ -522,7 +522,7 @@ Folgen: Mit rund 70 bis 85 Millionen Toten war er der verlustreichste Konflikt d
     // Derived, not written down: a hard-coded year would be wrong the moment
     // the demo is loaded in a later school year.
     schoolYear: currentSchoolYear(now),
-    learningGoals: ["Improve physics problem-solving", "Keep a daily study streak", "Be exam-ready a week early"],
+    learningGoals: ["In Physik besser rechnen", "Jeden Tag eine Lerneinheit schaffen", "Eine Woche vor der Prüfung fertig sein"],
     preferredStudyTime: "evening",
     onboarded: true,
     streakDays: 6,

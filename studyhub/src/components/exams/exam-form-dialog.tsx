@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { KNOWLEDGE_LEVEL_HINT, KNOWLEDGE_LEVEL_LABEL } from "@/lib/labels";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { RemoveChipButton } from "@/components/shared/remove-chip-button";
@@ -136,9 +137,11 @@ function ExamFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="beginner">Anfang — bei null anfangen</SelectItem>
-              <SelectItem value="intermediate">Mittel — Grundlagen sitzen</SelectItem>
-              <SelectItem value="advanced">Fortgeschritten — nur noch feilen</SelectItem>
+              {(Object.keys(KNOWLEDGE_LEVEL_LABEL) as KnowledgeLevel[]).map((k) => (
+                <SelectItem key={k} value={k}>
+                  {KNOWLEDGE_LEVEL_LABEL[k]} — {KNOWLEDGE_LEVEL_HINT[k]}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

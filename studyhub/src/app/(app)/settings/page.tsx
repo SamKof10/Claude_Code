@@ -189,12 +189,12 @@ export default function SettingsPage() {
               <CardDescription>Fächer hinzufügen, umbenennen oder entfernen.</CardDescription>
             </div>
             <Button size="sm" variant="secondary" onClick={() => setSubjectDialog({ open: true })}>
-              <Plus className="size-3.5" /> Add
+              <Plus className="size-3.5" /> Hinzufügen
             </Button>
           </CardHeader>
           <CardContent>
             {state.subjects.length === 0 ? (
-              <p className="t-callout text-ink-3">No subjects yet.</p>
+              <p className="t-callout text-ink-3">Noch keine Fächer.</p>
             ) : (
               <ul className="divide-y divide-border">
                 {state.subjects.map((s) => (
@@ -202,7 +202,7 @@ export default function SettingsPage() {
                     <SubjectIcon subject={s} size={14} />
                     <span className="min-w-0 flex-1 truncate t-callout text-ink">{s.name}</span>
                     <Button variant="ghost" size="icon-sm" onClick={() => setSubjectDialog({ open: true, subject: s })}>
-                      <span className="t-caption">Edit</span>
+                      <span className="t-caption">Bearbeiten</span>
                     </Button>
                     <Button variant="ghost" size="icon-sm" onClick={() => setPendingDeleteSubject(s)}>
                       <Trash2 className="size-3.5" />
@@ -263,7 +263,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-1.5">
-              <Sparkles className="size-4 text-[var(--color-signal-2)]" /> AI provider
+              <Sparkles className="size-4 text-[var(--color-signal-2)]" /> KI-Anbieter
             </CardTitle>
             <CardDescription>Woher StudyHubs Zusammenfassungen, Karteikarten, Quiz und Tutor-Antworten kommen.</CardDescription>
           </CardHeader>
@@ -271,7 +271,7 @@ export default function SettingsPage() {
             <div className="flex items-center gap-2">
               {aiStatus === "loading" ? (
                 <Badge variant="outline" className="gap-1">
-                  <Loader2 className="size-2.5 animate-spin" /> Checking…
+                  <Loader2 className="size-2.5 animate-spin" /> Wird geprüft…
                 </Badge>
               ) : aiStatus === "live" ? (
                 <Badge variant="success">Echte KI verbunden</Badge>

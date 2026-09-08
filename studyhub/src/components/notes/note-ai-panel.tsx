@@ -126,13 +126,13 @@ export function NoteAIPanel({ note }: { note: Note }) {
           <Sparkles className="size-3.5 text-white" />
         </div>
         <div>
-          <p className="t-callout font-semibold text-ink">AI actions</p>
-          <p className="t-caption text-ink-3">Works on this note&apos;s content</p>
+          <p className="t-callout font-semibold text-ink">KI-Aktionen</p>
+          <p className="t-caption text-ink-3">Arbeitet mit dem Inhalt dieser Notiz</p>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {turns.length === 0 && <p className="t-callout text-ink-3">Pick an action below to get help with this note.</p>}
+        {turns.length === 0 && <p className="t-callout text-ink-3">Wähl unten eine Aktion, dann hilft dir die KI mit dieser Notiz.</p>}
         {turns.map((t) => (
           <TurnCard key={t.id} turn={t} onSaveFlashcards={saveFlashcards} onSaveQuiz={saveQuiz} />
         ))}
@@ -207,7 +207,7 @@ function TurnCard({
             {turn.cards.length > 3 && <p className="t-caption text-ink-3">+{turn.cards.length - 3} more</p>}
           </div>
           <Button size="sm" onClick={() => onSaveFlashcards(turn.cards!)}>
-            <Layers3 className="size-3.5" /> Save {turn.cards.length} cards
+            <Layers3 className="size-3.5" /> {turn.cards.length} Karten speichern
           </Button>
         </div>
       )}
@@ -222,7 +222,7 @@ function TurnCard({
             ))}
           </ul>
           <Button size="sm" onClick={() => onSaveQuiz(turn.questions)}>
-            <ListChecks className="size-3.5" /> Save quiz ({turn.questions.length})
+            <ListChecks className="size-3.5" /> Quiz speichern ({turn.questions.length})
           </Button>
         </div>
       )}

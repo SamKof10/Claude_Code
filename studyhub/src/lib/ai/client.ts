@@ -27,10 +27,10 @@ async function post<T>(payload: Record<string, unknown>): Promise<WithSource<T>>
       body: JSON.stringify(payload),
     });
   } catch {
-    throw new AIClientError("Couldn't reach StudyHub's AI service. Check your connection and try again.");
+    throw new AIClientError("Der KI-Dienst von StudyHub ist nicht erreichbar. Prüf deine Verbindung und versuch es noch einmal.");
   }
   if (!res.ok) {
-    let message = "The AI service ran into a problem. Please try again.";
+    let message = "Beim KI-Dienst ist etwas schiefgelaufen. Versuch es bitte noch einmal.";
     try {
       const body = await res.json();
       if (body?.error) message = body.error;
@@ -84,11 +84,11 @@ export async function streamAIChat(
     });
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") throw err;
-    throw new AIClientError("Couldn't reach StudyHub's AI service. Check your connection and try again.");
+    throw new AIClientError("Der KI-Dienst von StudyHub ist nicht erreichbar. Prüf deine Verbindung und versuch es noch einmal.");
   }
 
   if (!res.ok || !res.body) {
-    throw new AIClientError("The AI Tutor is temporarily unavailable. Please try again.");
+    throw new AIClientError("Der KI-Tutor ist gerade nicht verfügbar. Versuch es bitte noch einmal.");
   }
 
   const source = (res.headers.get("x-ai-source") as AISource) ?? "demo";

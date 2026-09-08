@@ -90,7 +90,7 @@ export default function StudyModePage() {
   if (!deck) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-        <p className="t-body font-medium text-ink">Deck not found</p>
+        <p className="t-body font-medium text-ink">Stapel nicht gefunden</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
           <Link href="/flashcards">Zurück zu den Karteikarten</Link>
         </Button>

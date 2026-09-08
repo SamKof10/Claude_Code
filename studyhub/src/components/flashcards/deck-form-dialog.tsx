@@ -55,7 +55,7 @@ function DeckFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
   function createManual() {
     if (!name.trim()) return;
     const deck = addDeck({ subjectId: subjectId || null, name: name.trim(), description: description.trim() });
-    toast.success(`${deck.name} created`);
+    toast.success(`${deck.name} angelegt`);
     onClose();
     router.push(`/flashcards/${deck.id}`);
   }
@@ -71,7 +71,7 @@ function DeckFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
       const deck = addDeck({
         subjectId: subjectId || null,
         name: name.trim() || `${sourceName} — flashcards`,
-        description: doc ? `Generated from ${doc.name}` : `Generated for "${topic}"`,
+        description: doc ? `Aus ${doc.name} erzeugt` : `Generated for "${topic}"`,
         sourceDocumentId: doc?.id,
       });
       data.cards.forEach((c) => addFlashcard({ deckId: deck.id, front: c.front, back: c.back }));
@@ -159,7 +159,7 @@ function DeckFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: string
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="topic">A topic I describe</SelectItem>
+                  <SelectItem value="topic">Ein Thema, das ich beschreibe</SelectItem>
                   {subjectDocs.map((d) => (
                     <SelectItem key={d.id} value={d.id}>
                       {d.name}

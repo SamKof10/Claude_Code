@@ -34,7 +34,7 @@ export function DeckCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem variant="destructive" onSelect={onDelete}>
-              <Trash2 /> Delete deck
+              <Trash2 /> Stapel löschen
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -54,13 +54,13 @@ export function DeckCard({
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {subject && <SubjectPill subject={subject} />}
           <Badge variant="outline">{masteredPct}% mastered</Badge>
-          {dueCount > 0 && <Badge variant="warning">{dueCount} due</Badge>}
+          {dueCount > 0 && <Badge variant="warning">{dueCount} fällig</Badge>}
         </div>
       </Link>
 
       <Button size="sm" variant="secondary" className="mt-3 w-full" disabled={cardCount === 0} asChild>
         <Link href={`/flashcards/${deck.id}/study`}>
-          <Play className="size-3.5" /> Study
+          <Play className="size-3.5" /> Lernen
         </Link>
       </Button>
     </div>

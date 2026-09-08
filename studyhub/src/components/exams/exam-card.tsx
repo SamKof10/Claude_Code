@@ -25,7 +25,7 @@ export function ExamCard({ exam, subject, onDelete }: { exam: Exam; subject: Sub
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem variant="destructive" onSelect={onDelete}>
-              <Trash2 /> Delete
+              <Trash2 /> Löschen
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

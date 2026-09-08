@@ -179,7 +179,7 @@ export function DocumentAIPanel({ document }: { document: StudyDocument }) {
           <Sparkles className="size-3.5 text-white" />
         </div>
         <div>
-          <p className="t-callout font-semibold text-ink">AI Assistant</p>
+          <p className="t-callout font-semibold text-ink">KI-Assistent</p>
           <p className="t-caption text-ink-3">Basiert auf diesem Dokument</p>
         </div>
       </div>
@@ -253,7 +253,7 @@ function TurnView({
     const meta = ACTIONS.find((a) => a.kind === turn.kind);
     return (
       <div className="flex items-center gap-2 rounded-xl border border-border bg-surface-2 px-3.5 py-3 t-callout text-ink-3">
-        <Loader2 className="size-3.5 animate-spin" /> {turn.kind === "qa" ? "Thinking…" : `${meta?.label ?? "Working"}…`}
+        <Loader2 className="size-3.5 animate-spin" /> {turn.kind === "qa" ? "Denkt nach…" : `${meta?.label ?? "Arbeitet"}…`}
       </div>
     );
   }
@@ -357,7 +357,7 @@ function TurnView({
               <p className="mt-0.5 t-caption text-ink-3">{w.focus}</p>
             </div>
           ))}
-          <p className="t-caption text-ink-3">Head to Exams to turn this into a full, trackable prep timeline.</p>
+          <p className="t-caption text-ink-3">Unter Prüfungen wird daraus ein vollständiger Lernplan, dessen Fortschritt du verfolgen kannst.</p>
         </div>
       )}
     </div>

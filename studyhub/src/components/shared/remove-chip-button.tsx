@@ -24,7 +24,7 @@ export function RemoveChipButton({
   return (
     <button
       type="button"
-      aria-label={`Remove ${label}`}
+      aria-label={`${label} entfernen`}
       onClick={onClick}
       className={cn(
         "-my-1.5 -mr-1.5 flex size-7 shrink-0 items-center justify-center rounded-md",

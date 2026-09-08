@@ -117,7 +117,7 @@ export default function ProgressPage() {
             </CardHeader>
             <CardContent>
               {scoreData.length === 0 ? (
-                <p className="py-10 text-center t-callout text-ink-3">No completed quizzes yet.</p>
+                <p className="py-10 text-center t-callout text-ink-3">Noch keine abgeschlossenen Quiz.</p>
               ) : (
                 <ScoreLineChart data={scoreData} height={200} />
               )}
@@ -128,7 +128,7 @@ export default function ProgressPage() {
             <CardHeader>
               <CardTitle>Leistung nach Fach</CardTitle>
             </CardHeader>
-            <CardContent>{perf.length > 0 ? <SubjectBarList items={perf} /> : <p className="t-callout text-ink-3">No subjects yet.</p>}</CardContent>
+            <CardContent>{perf.length > 0 ? <SubjectBarList items={perf} /> : <p className="t-callout text-ink-3">Noch keine Fächer.</p>}</CardContent>
           </Card>
 
           <Card>
@@ -136,7 +136,7 @@ export default function ProgressPage() {
               <CardTitle>Prüfungsbereitschaft</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {exams.length === 0 && <p className="t-callout text-ink-3">No exams scheduled.</p>}
+              {exams.length === 0 && <p className="t-callout text-ink-3">Keine Prüfungen eingetragen.</p>}
               {exams.map((exam) => {
                 const readiness = examReadiness(exam);
                 const subject = subjects.find((s) => s.id === exam.subjectId);

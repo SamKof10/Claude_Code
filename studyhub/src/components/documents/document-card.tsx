@@ -39,7 +39,7 @@ export function DocumentCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem variant="destructive" onSelect={onDelete}>
-              <Trash2 /> Delete
+              <Trash2 /> Löschen
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -63,7 +63,7 @@ export function DocumentCard({
           {subject && <SubjectPill subject={subject} />}
           {document.status === "processing" ? (
             <Badge variant="outline" className="gap-1">
-              <Loader2 className="size-2.5 animate-spin" /> Processing
+              <Loader2 className="size-2.5 animate-spin" /> Wird verarbeitet
             </Badge>
           ) : document.status === "error" ? (
             <Badge variant="danger">Fehlgeschlagen</Badge>

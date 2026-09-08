@@ -54,7 +54,7 @@ function SubjectFormBody({ subject, onClose }: { subject?: Subject; onClose: () 
       onClose();
     } else {
       const created = addSubject({ name: name.trim(), icon, color });
-      toast.success(`${created.name} added`);
+      toast.success(`${created.name} hinzugefügt`);
       onClose();
       router.push(`/subjects/${created.id}`);
     }
@@ -73,7 +73,7 @@ function SubjectFormBody({ subject, onClose }: { subject?: Subject; onClose: () 
           <Input
             id="subject-name"
             autoFocus
-            placeholder="e.g. Chemistry"
+            placeholder="z. B. Chemie"
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && submit()}
@@ -90,7 +90,7 @@ function SubjectFormBody({ subject, onClose }: { subject?: Subject; onClose: () 
                 onClick={() => setColor(c)}
                 className={cn("size-7 rounded-full ring-offset-2 ring-offset-[var(--surface-overlay)] transition-all", color === c && "ring-2 ring-[var(--color-signal)]")}
                 style={{ background: subjectColorVar(c) }}
-                aria-label={`Accent color ${c}`}
+                aria-label={`Akzentfarbe ${c}`}
                 aria-pressed={color === c}
               />
             ))}

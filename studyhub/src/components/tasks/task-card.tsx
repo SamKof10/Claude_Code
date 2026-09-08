@@ -3,6 +3,7 @@
 import { Clock, MoreHorizontal, Repeat, Trash2 } from "lucide-react";
 import type { StudyTask, Subject } from "@/lib/types";
 import { formatDueLabel } from "@/lib/date-format";
+import { PRIORITY_LABEL } from "@/lib/labels";
 import { formatMinutes } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { SubjectPill } from "@/components/shared/subject-pill";
@@ -44,7 +45,7 @@ export function TaskCard({
           <DropdownMenuContent align="end">
             <DropdownMenuItem onSelect={onEdit}>Bearbeiten</DropdownMenuItem>
             <DropdownMenuItem variant="destructive" onSelect={onDelete}>
-              <Trash2 /> Delete
+              <Trash2 /> Löschen
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -52,8 +53,8 @@ export function TaskCard({
 
       <div className="mt-2.5 flex flex-wrap items-center gap-1.5 pl-6">
         {subject && <SubjectPill subject={subject} />}
-        <Badge variant={PRIORITY_VARIANT[task.priority]} className="capitalize">
-          {task.priority}
+        <Badge variant={PRIORITY_VARIANT[task.priority]}>
+          {PRIORITY_LABEL[task.priority]}
         </Badge>
         {task.deadline && (
           <Badge variant={overdue ? "danger" : "outline"} className="gap-1">

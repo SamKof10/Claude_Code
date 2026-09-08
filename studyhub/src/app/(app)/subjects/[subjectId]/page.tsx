@@ -44,6 +44,7 @@ import { TaskFormDialog } from "@/components/tasks/task-form-dialog";
 import { ExamFormDialog } from "@/components/exams/exam-form-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DIFFICULTY_LABEL, PRIORITY_LABEL, TASK_STATUS_LABEL } from "@/lib/labels";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -64,10 +65,10 @@ export default function SubjectWorkspacePage() {
   if (!subject) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-        <p className="t-body font-medium text-ink">Subject not found</p>
+        <p className="t-body font-medium text-ink">Fach nicht gefunden</p>
         <Button variant="ghost" size="sm" className="mt-3" asChild>
           <Link href="/subjects">
-            <ArrowLeft className="size-3.5" /> Back to subjects
+            <ArrowLeft className="size-3.5" /> Zurück zu den Fächern
           </Link>
         </Button>
       </div>
@@ -111,7 +112,7 @@ export default function SubjectWorkspacePage() {
           </Button>
           <Button variant="secondary" asChild>
             <Link href={`/ai-tutor`}>
-              <Sparkles className="size-3.5" /> AI Tutor
+              <Sparkles className="size-3.5" /> KI-Tutor
             </Link>
           </Button>
         </div>
@@ -193,7 +194,7 @@ export default function SubjectWorkspacePage() {
                 </CardHeader>
                 <CardContent>
                   {weakTopics.length === 0 ? (
-                    <p className="t-callout text-ink-3">Nothing flagged yet — take a quiz and StudyHub will pinpoint what to review.</p>
+                    <p className="t-callout text-ink-3">Noch nichts markiert — mach ein Quiz, dann zeigt dir StudyHub genau, was du wiederholen musst.</p>
                   ) : (
                     <div className="flex flex-wrap gap-1.5">
                       {weakTopics.map((t) => (
@@ -227,7 +228,7 @@ export default function SubjectWorkspacePage() {
         <TabsContent value="documents">
           <SectionActions>
             <Button size="sm" onClick={() => setUploadOpen(true)}>
-              <Upload className="size-3.5" /> Upload document
+              <Upload className="size-3.5" /> Dokument hochladen
             </Button>
           </SectionActions>
           {documents.length === 0 ? (
@@ -245,7 +246,7 @@ export default function SubjectWorkspacePage() {
         <TabsContent value="notes">
           <SectionActions>
             <Button size="sm" onClick={() => router.push(`/notes/${addNote({ title: "Neue Notiz", subjectId: subject.id }).id}`)}>
-              <Plus className="size-3.5" /> New note
+              <Plus className="size-3.5" /> Neue Notiz
             </Button>
           </SectionActions>
           {notes.length === 0 ? (
@@ -263,7 +264,7 @@ export default function SubjectWorkspacePage() {
         <TabsContent value="flashcards">
           <SectionActions>
             <Button size="sm" onClick={() => setDeckOpen(true)}>
-              <Plus className="size-3.5" /> New deck
+              <Plus className="size-3.5" /> Neuer Stapel
             </Button>
           </SectionActions>
           {decks.length === 0 ? (
@@ -281,7 +282,7 @@ export default function SubjectWorkspacePage() {
                     icon={Layers3}
                     title={deck.name}
                     subtitle={`${deckCards.length} Karten · ${mastered}% sitzen`}
-                    badge={deckCards.filter((c) => isDue(c)).length > 0 ? `${deckCards.filter((c) => isDue(c)).length} due` : undefined}
+                    badge={deckCards.filter((c) => isDue(c)).length > 0 ? `${deckCards.filter((c) => isDue(c)).length} fällig` : undefined}
                   />
                 );
               })}
@@ -294,12 +295,12 @@ export default function SubjectWorkspacePage() {
           <SectionActions>
             <Button size="sm" asChild>
               <Link href={`/quizzes/new?subject=${subject.id}`}>
-                <Plus className="size-3.5" /> Generate quiz
+                <Plus className="size-3.5" /> Quiz erstellen
               </Link>
             </Button>
           </SectionActions>
           {quizzes.length === 0 ? (
-            <EmptyState icon={ListChecks} title="No quizzes" description={`Test yourself on ${subject.name} and find out exactly what to review.`} action={<Button size="sm" asChild><Link href={`/quizzes/new?subject=${subject.id}`}>Generate a quiz</Link></Button>} />
+            <EmptyState icon={ListChecks} title="Noch keine Quiz" description={`Teste dich in ${subject.name} und finde heraus, was du wiederholen musst.`} action={<Button size="sm" asChild><Link href={`/quizzes/new?subject=${subject.id}`}>Quiz erstellen</Link></Button>} />
           ) : (
             <ListGrid>
               {quizzes.map((q) => (
@@ -308,7 +309,7 @@ export default function SubjectWorkspacePage() {
                   href={`/quizzes/${q.id}`}
                   icon={ListChecks}
                   title={q.title}
-                  subtitle={`${q.questions.length} Fragen · ${q.difficulty}`}
+                  subtitle={`${q.questions.length} Fragen · ${DIFFICULTY_LABEL[q.difficulty]}`}
                   badge={q.status === "completed" ? `${q.score}%` : q.status === "in-progress" ? "Läuft" : "Nicht gestartet"}
                 />
               ))}
@@ -320,7 +321,7 @@ export default function SubjectWorkspacePage() {
         <TabsContent value="tasks">
           <SectionActions>
             <Button size="sm" onClick={() => setTaskOpen(true)}>
-              <Plus className="size-3.5" /> New task
+              <Plus className="size-3.5" /> Neue Aufgabe
             </Button>
           </SectionActions>
           {tasks.length === 0 ? (
@@ -334,7 +335,7 @@ export default function SubjectWorkspacePage() {
                   icon={CheckSquare}
                   title={t.title}
                   subtitle={t.deadline ? formatDueLabel(t.deadline) : "Keine Frist"}
-                  badge={t.status === "done" ? "Done" : t.priority}
+                  badge={t.status === "done" ? TASK_STATUS_LABEL.done : PRIORITY_LABEL[t.priority]}
                 />
               ))}
             </ListGrid>
@@ -345,7 +346,7 @@ export default function SubjectWorkspacePage() {
         <TabsContent value="exams">
           <SectionActions>
             <Button size="sm" onClick={() => setExamOpen(true)}>
-              <Plus className="size-3.5" /> New exam
+              <Plus className="size-3.5" /> Neue Prüfung
             </Button>
           </SectionActions>
           {exams.length === 0 ? (
@@ -353,7 +354,7 @@ export default function SubjectWorkspacePage() {
           ) : (
             <ListGrid>
               {exams.map((e) => (
-                <LinkTile key={e.id} href={`/exams/${e.id}`} icon={GraduationCap} title={e.title} subtitle={formatDateShort(e.date)} badge={`${examReadiness(e)}% ready`} />
+                <LinkTile key={e.id} href={`/exams/${e.id}`} icon={GraduationCap} title={e.title} subtitle={formatDateShort(e.date)} badge={`${examReadiness(e)}% bereit`} />
               ))}
             </ListGrid>
           )}
@@ -368,7 +369,7 @@ export default function SubjectWorkspacePage() {
               </CardHeader>
               <CardContent>
                 {quizScoreSeries(quizzes, subject.id).length === 0 ? (
-                  <p className="py-10 text-center t-callout text-ink-3">No completed quizzes yet.</p>
+                  <p className="py-10 text-center t-callout text-ink-3">Noch keine abgeschlossenen Quiz.</p>
                 ) : (
                   <ScoreLineChart data={quizScoreSeries(quizzes, subject.id)} />
                 )}
@@ -448,7 +449,7 @@ function LinkTile({
         <p className="mt-0.5 t-caption text-ink-3">{subtitle}</p>
       </div>
       {badge && (
-        <Badge variant="outline" className="shrink-0 capitalize">
+        <Badge variant="outline" className="shrink-0">
           {badge}
         </Badge>
       )}

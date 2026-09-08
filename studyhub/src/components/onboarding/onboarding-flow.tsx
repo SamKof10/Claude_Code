@@ -152,7 +152,7 @@ export function OnboardingFlow() {
                   </div>
                   <Input
                     autoFocus
-                    placeholder="e.g. Oberschulzentrum Bozen"
+                    placeholder="z. B. Oberschulzentrum Bozen"
                     value={form.school}
                     onChange={(e) => setForm((f) => ({ ...f, school: e.target.value }))}
                     onKeyDown={(e) => e.key === "Enter" && canContinue && setStep(2)}

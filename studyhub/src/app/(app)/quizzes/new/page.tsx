@@ -150,11 +150,11 @@ export default function NewQuizPage() {
             <>
               <div className="space-y-1.5">
                 <Label>Thema</Label>
-                <Input placeholder="e.g. The Krebs cycle" value={topic} onChange={(e) => setTopic(e.target.value)} />
+                <Input placeholder="z. B. Der Zitratzyklus" value={topic} onChange={(e) => setTopic(e.target.value)} />
               </div>
               <div className="space-y-1.5">
                 <Label>Details (optional)</Label>
-                <Textarea rows={3} placeholder="Paste notes or describe what to focus on…" value={detail} onChange={(e) => setDetail(e.target.value)} />
+                <Textarea rows={3} placeholder="Notizen einfügen oder beschreiben, worauf es ankommt…" value={detail} onChange={(e) => setDetail(e.target.value)} />
               </div>
             </>
           )}
@@ -218,9 +218,9 @@ export default function NewQuizPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="easy">Easy</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="hard">Hard</SelectItem>
+                  <SelectItem value="easy">Leicht</SelectItem>
+                  <SelectItem value="medium">Mittel</SelectItem>
+                  <SelectItem value="hard">Schwer</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -240,7 +240,7 @@ export default function NewQuizPage() {
 
           <div className="space-y-1.5">
             <Label>Zeitlimit (Minuten, optional)</Label>
-            <Input type="number" min={0} placeholder="No limit" value={timeLimit} onChange={(e) => setTimeLimit(e.target.value)} className="w-32" />
+            <Input type="number" min={0} placeholder="Kein Limit" value={timeLimit} onChange={(e) => setTimeLimit(e.target.value)} className="w-32" />
           </div>
 
           <Button className="w-full" onClick={generate} disabled={loading || !subjectId}>

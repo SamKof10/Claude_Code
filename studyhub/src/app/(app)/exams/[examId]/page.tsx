@@ -12,6 +12,7 @@ import { formatDateLong, formatDateShort } from "@/lib/date-format";
 import { SubjectPill } from "@/components/shared/subject-pill";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Badge } from "@/components/ui/badge";
+import { KNOWLEDGE_LEVEL_LABEL } from "@/lib/labels";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -60,8 +61,8 @@ export default function ExamDetailPage() {
               <Badge variant={daysLeft <= 3 ? "danger" : daysLeft <= 7 ? "warning" : "outline"}>
                 {daysLeft < 0 ? "Vorbei" : daysLeft === 0 ? "Heute" : `noch ${daysLeft} Tage`}
               </Badge>
-              <Badge variant="outline" className="capitalize">
-                {exam.currentLevel}
+              <Badge variant="outline">
+                {KNOWLEDGE_LEVEL_LABEL[exam.currentLevel]}
               </Badge>
             </div>
           </div>

@@ -174,7 +174,7 @@ function DayView({ anchor, eventsOn, bySubject, onSelect }: ViewProps) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-4">
       {dayEvents.length === 0 ? (
-        <p className="py-8 text-center t-callout text-ink-3">Nothing scheduled for this day.</p>
+        <p className="py-8 text-center t-callout text-ink-3">Für diesen Tag ist nichts geplant.</p>
       ) : (
         <ul className="divide-y divide-border">
           {dayEvents.map((e) => (

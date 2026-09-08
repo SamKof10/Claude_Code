@@ -20,7 +20,7 @@ export function FocusIndicator() {
   return (
     <Link
       href="/focus"
-      aria-label={`${PHASE_LABEL[phase]}, ${formatClock(msLeft)} left${status === "paused" ? ", paused" : ""}`}
+      aria-label={`${PHASE_LABEL[phase]}, noch ${formatClock(msLeft)}${status === "paused" ? ", pausiert" : ""}`}
       className="flex h-8 items-center gap-2 rounded-lg border border-border bg-surface-2 px-2.5 transition-colors hover:border-border-strong"
     >
       <span

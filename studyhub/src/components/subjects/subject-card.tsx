@@ -44,10 +44,10 @@ export function SubjectCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onSelect={onEdit}>
-              <Pencil /> Edit
+              <Pencil /> Bearbeiten
             </DropdownMenuItem>
             <DropdownMenuItem variant="destructive" onSelect={onDelete}>
-              <Trash2 /> Delete
+              <Trash2 /> Löschen
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -81,14 +81,14 @@ export function SubjectCard({
             <p className="font-medium text-ink">{quizAverage != null ? `${quizAverage}%` : "—"}</p>
           </div>
           <div>
-            <p className="text-ink-3">Studied (30d)</p>
+            <p className="text-ink-3">Gelernt (30 T)</p>
             <p className="font-medium text-ink">{studyMinutes30d > 0 ? formatMinutes(studyMinutes30d) : "—"}</p>
           </div>
         </div>
 
         {nextExam && (
           <div className="mt-3 rounded-lg border border-border bg-surface-2 px-2.5 py-2 t-caption">
-            <span className="text-ink-3">Next exam · </span>
+            <span className="text-ink-3">Nächste Prüfung · </span>
             <span className="font-medium text-ink">{nextExam.title}</span>
             <span className="text-ink-3"> · {formatDueLabel(nextExam.date)}</span>
           </div>

@@ -37,7 +37,7 @@ export function NoteCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem variant="destructive" onSelect={onDelete}>
-              <Trash2 /> Delete
+              <Trash2 /> Löschen
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

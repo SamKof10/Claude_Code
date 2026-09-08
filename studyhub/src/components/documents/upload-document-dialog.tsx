@@ -79,7 +79,7 @@ function UploadFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: stri
         content,
       });
     }
-    toast.success(files.length === 1 ? `${files[0].name} uploaded` : `${files.length} documents uploaded`);
+    toast.success(files.length === 1 ? `${files[0].name} hochgeladen` : `${files.length} Dokumente hochgeladen`);
     onClose();
   }
 
@@ -87,7 +87,7 @@ function UploadFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: stri
     <>
       <DialogHeader>
         <DialogTitle>Dokument hochladen</DialogTitle>
-        <DialogDescription>PDF, Word, images or text files. StudyHub processes them for AI features automatically.</DialogDescription>
+        <DialogDescription>PDF, Word, Bilder oder Textdateien. StudyHub bereitet sie automatisch für die KI-Funktionen auf.</DialogDescription>
       </DialogHeader>
 
       <div className="space-y-4">
@@ -111,7 +111,7 @@ function UploadFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: stri
           }`}
         >
           <Upload className="size-5 text-ink-3" />
-          <p className="t-callout font-medium text-ink">Drop files here, or click to browse</p>
+          <p className="t-callout font-medium text-ink">Dateien hierher ziehen oder klicken zum Auswählen</p>
           <p className="t-caption text-ink-3">PDF, DOCX, PNG/JPG, TXT</p>
           <input
             ref={inputRef}
@@ -132,7 +132,7 @@ function UploadFormBody({ defaultSubjectId, onClose }: { defaultSubjectId?: stri
                 <span className="shrink-0 text-ink-3">{formatBytes(f.size)}</span>
                 <button
                   type="button"
-                  aria-label={`Remove ${f.name}`}
+                  aria-label={`${f.name} entfernen`}
                   onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
                   className="shrink-0 text-ink-3 hover:text-danger-text"
                 >

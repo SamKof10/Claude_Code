@@ -112,7 +112,7 @@ function Toolbar({ editor }: { editor: Editor }) {
 export function RichTextEditor({
   content,
   onChange,
-  placeholder = "Start writing…",
+  placeholder = "Schreib los…",
   editable = true,
   className,
 }: {

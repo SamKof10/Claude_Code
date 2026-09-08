@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useStudyStore } from "@/lib/store";
 import type { RecurringFrequency, StudyTask, TaskPriority } from "@/lib/types";
+import { PRIORITY_LABEL } from "@/lib/labels";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -105,9 +106,11 @@ function TaskFormBody({ task, defaultSubjectId, onClose }: { task?: StudyTask; d
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">Niedrig</SelectItem>
-                <SelectItem value="medium">Mittel</SelectItem>
-                <SelectItem value="high">Hoch</SelectItem>
+                {(Object.keys(PRIORITY_LABEL) as TaskPriority[]).map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {PRIORITY_LABEL[p]}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

@@ -84,7 +84,7 @@ export default function DeckDetailPage() {
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               {subject && <SubjectPill subject={subject} />}
               <Badge variant="outline">{cards.length} cards</Badge>
-              {dueCount > 0 && <Badge variant="warning">{dueCount} due</Badge>}
+              {dueCount > 0 && <Badge variant="warning">{dueCount} fällig</Badge>}
             </div>
           </div>
         </div>
