@@ -138,11 +138,19 @@ export function weekOverview(ctx: AppContext, week: number) {
   const monday = new Date(start);
   monday.setUTCDate(monday.getUTCDate() - offsetToMonday);
 
+  const weekStart = monday.toISOString().slice(0, 10);
+  const lastDay = new Date(monday);
+  lastDay.setUTCDate(lastDay.getUTCDate() + 6);
+  const weekEnd = lastDay.toISOString().slice(0, 10);
+
   const days = DAY_TYPES.map((meta, i) => {
     const d = new Date(monday);
     d.setUTCDate(d.getUTCDate() + i);
     const date = d.toISOString().slice(0, 10);
-    const session = ctx.sessions.find((s) => s.date === date && s.dayType === meta.id) ?? null;
+    // Irgendwo in dieser Woche gesucht, nicht nur am Plantag: eine nachgeholte
+    // Einheit soll für die Woche zählen, auch wenn sie am Samstag stattfand.
+    const session =
+      ctx.sessions.find((s) => s.dayType === meta.id && s.date >= weekStart && s.date <= weekEnd) ?? null;
     const sets = session ? setsBySession(ctx, session.id) : [];
     const targetSets = phaseSpec(week).sets;
     const doneExercises = exercisesForDay(meta.id).filter(
@@ -158,6 +166,8 @@ export function weekOverview(ctx: AppContext, week: number) {
       complete: doneExercises >= exercisesForDay(meta.id).length,
       started: sets.length > 0,
       isToday: date === ctx.today,
+      /** Gesetzt, wenn die Einheit an einem anderen als dem geplanten Tag lief. */
+      movedTo: session && session.date !== date ? session.date : null,
     };
   });
 

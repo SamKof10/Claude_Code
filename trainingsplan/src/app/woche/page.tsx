@@ -86,7 +86,9 @@ export default async function WeekPage({ searchParams }: { searchParams: Promise
                     {day.meta.label}
                   </span>
                   <span className="text-[13px] leading-[18px] text-ink-2">
-                    {day.meta.weekday.slice(0, 2)} · {day.meta.focus} · {day.doneExercises}/{day.plannedExercises} Übungen
+                    {day.movedTo ? weekdayShort(day.movedTo) : day.meta.weekday.slice(0, 2)} · {day.meta.focus} ·{" "}
+                    {day.doneExercises}/{day.plannedExercises} Übungen
+                    {day.movedTo && " · nachgeholt"}
                   </span>
                 </span>
                 {day.isToday ? (
@@ -113,6 +115,12 @@ export default async function WeekPage({ searchParams }: { searchParams: Promise
       </div>
     </AppShell>
   );
+}
+
+const WEEKDAYS = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+
+function weekdayShort(dateISO: string): string {
+  return WEEKDAYS[new Date(dateISO + "T12:00:00Z").getUTCDay()];
 }
 
 function Legend({ color, label }: { color: string; label: string }) {
