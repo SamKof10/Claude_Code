@@ -16,6 +16,7 @@ jedem Push, der `fpv-portfolio-react/` ändert
 | [`mudroom/`](mudroom) | MUDROOM — Premium-Store für eine automatische Bike-Waschbox | Next.js 16, React 19, Tailwind 4, Motion |
 | [`gym-tracker/`](gym-tracker) | Gym Tracker — PWA für einen 5-Tage-Split, mit echtem Background-Push | Vanilla JS PWA + Node/Express |
 | [`studyhub/`](studyhub) | StudyHub — KI-gestützte Lernplattform: Anmeldung, Dokumente, Notizen, Karteikarten, Quizze, Prüfungspläne, Fokustimer und ein AI-Tutor | Next.js 16, React 19, Tailwind 4, Zustand, Tiptap, Recharts |
+| [`trainingsplan/`](trainingsplan) | Mesocycle — 8-Wochen Push/Pull-Trainingsplan mit Konto, Satz-Logging, automatischem Gewichtsvorschlag und Deload-Woche | Next.js 16, React 19, Tailwind 4, Postgres |
 
 ## Fertige Seiten ohne Build
 
@@ -68,6 +69,25 @@ Details in [`studyhub/README.md`](studyhub/README.md).
 **Auf Vercel deployen.** Repo importieren und **Root Directory** auf `studyhub`
 setzen — ohne das baut Vercel das Repo-Root, findet dort keine `package.json`
 und liefert eine 404 statt der App. Der Rest läuft auf den Standardwerten.
+
+## Mesocycle starten
+
+```bash
+cd trainingsplan
+npm install
+npm run dev     # http://localhost:3000
+npm test        # prüft Progressions- und Phasenlogik
+```
+
+Läuft sofort — ohne `DATABASE_URL` liegen Konto und Sätze allerdings nur im
+Arbeitsspeicher des Servers und sind beim Neustart weg; die App weist selbst
+darauf hin. Für dauerhafte Daten reicht ein beliebiger Postgres in
+`DATABASE_URL`, die Tabellen legt die App selbst an.
+
+**Auf Vercel deployen.** Repo importieren, **Root Directory** auf
+`trainingsplan` setzen (sonst 404, siehe StudyHub oben) und unter *Storage*
+eine Postgres-Datenbank verbinden — Vercel setzt die Variable dann selbst.
+Details in [`trainingsplan/README.md`](trainingsplan/README.md).
 
 ## Die Next.js-Projekte lokal starten
 
