@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@theme {
+  /* Flächen — kühl-neutrales Dunkel, damit lange Blicke im Studio nicht ermüden */
+  --color-bg: oklch(0.16 0.008 265);
+  --color-surface: oklch(0.21 0.010 265);
+  --color-raised: oklch(0.25 0.012 265);
+  --color-sunken: oklch(0.19 0.009 265);
+  --color-line: oklch(0.30 0.012 265);
+
+  /* Text — drei Stufen, alle über 4.5:1 auf --color-bg */
+  --color-ink: oklch(0.97 0.003 265);
+  --color-ink-2: oklch(0.72 0.008 265);
+  --color-ink-3: oklch(0.67 0.010 265);
+
+  /* Akzente — gleiche Helligkeit und Chroma, nur der Farbton unterscheidet sie */
+  --color-go: oklch(0.72 0.17 145);
+  --color-go-bright: oklch(0.82 0.15 145);
+  --color-warn: oklch(0.72 0.17 65);
+  --color-warn-bright: oklch(0.84 0.13 65);
+  /* Nur für zerstörende Aktionen — getrennt von warn, damit eine Farbe nicht
+     gleichzeitig "Deload", "Hinweis" und "löscht deine Daten" bedeutet. */
+  --color-danger: oklch(0.70 0.19 25);
+  --color-danger-bright: oklch(0.80 0.15 25);
+
+  --font-sans: -apple-system, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+
+  --radius-card: 14px;
+  --radius-field: 12px;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  background: var(--color-bg);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  /* Der Home-Indikator und die Statusleiste dürfen nichts verdecken */
+  padding-bottom: env(safe-area-inset-bottom);
+  overscroll-behavior-y: none;
+}
+
+/* Zahlen in Tabellen und Steppern sollen beim Zählen nicht springen */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sichtbarer Fokus für Tastatur — aber nicht bei Maus/Touch */
+:focus-visible {
+  outline: 2px solid var(--color-go);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

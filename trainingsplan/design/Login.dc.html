@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: -apple-system, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: oklch(0.72 0.17 145); text-decoration: none; }
+    a:hover { color: oklch(0.80 0.17 145); }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; background: oklch(0.16 0.008 265); color: oklch(0.97 0.003 265); display: flex; flex-direction: column; justify-content: center; gap: 40px; padding: 0 24px; overflow: hidden;">
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+      <rect x="12" y="12" width="16" height="16" rx="3" stroke="oklch(0.72 0.17 145)" stroke-width="2.5"></rect>
+      <path d="M5 15v10M35 15v10" stroke="oklch(0.72 0.17 145)" stroke-width="2.5" stroke-linecap="round"></path>
+      <path d="M9 17v6M31 17v6" stroke="oklch(0.72 0.17 145 / 0.45)" stroke-width="2.5" stroke-linecap="round"></path>
+    </svg>
+    <h1 style="margin: 0; font-size: 34px; line-height: 41px; font-weight: 700; letter-spacing: -0.5px;">Mesocycle</h1>
+    <p style="margin: 0; font-size: 17px; line-height: 22px; color: oklch(0.70 0.008 265); max-width: 300px; text-wrap: pretty;">Dein 8-Wochen-Plan für Oberkörper und Rumpf. Sätze loggen, Progression bekommen.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; flex-direction: column; gap: 7px;">
+      <span style="font-size: 13px; line-height: 18px; font-weight: 600; color: oklch(0.70 0.008 265); padding-left: 2px;">E-Mail</span>
+      <div style="display: flex; align-items: center; height: 52px; background: oklch(0.21 0.010 265); border: 1px solid oklch(0.28 0.012 265); border-radius: 12px; padding: 0 16px;">
+        <span style="font-size: 17px; line-height: 22px; color: oklch(0.97 0.003 265);">sam@beispiel.at</span>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 7px;">
+      <span style="font-size: 13px; line-height: 18px; font-weight: 600; color: oklch(0.70 0.008 265); padding-left: 2px;">Passwort</span>
+      <div style="display: flex; align-items: center; height: 52px; background: oklch(0.21 0.010 265); border: 1.5px solid oklch(0.72 0.17 145); border-radius: 12px; padding: 0 16px;">
+        <span style="flex-grow: 1; font-size: 17px; line-height: 22px; letter-spacing: 2px; color: oklch(0.97 0.003 265);">••••••••••</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="oklch(0.60 0.010 265)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <div style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 12px; background: oklch(0.72 0.17 145);">
+      <span style="font-size: 17px; line-height: 22px; font-weight: 600; color: oklch(0.16 0.008 265);">Anmelden</span>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px;">
+      <span style="font-size: 15px; line-height: 20px; color: oklch(0.70 0.008 265);">Noch kein Konto?</span>
+      <span style="font-size: 15px; line-height: 20px; font-weight: 600; color: oklch(0.72 0.17 145);">Registrieren</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
