@@ -2,7 +2,8 @@
 
 const $ = (sel) => document.querySelector(sel);
 const PALETTE = ['#ff8a5c', '#5cc8ff', '#b78cff', '#6be3a4', '#ffd166', '#ff7eb6', '#7fd1c7', '#c3d36b'];
-const ICONS = { start: '▶', watch: '◉', frame: '▦', ask: '?', tool: '›', cut: '✂', say: '“', done: '✓', error: '!' };
+const ICONS = { start: '▶', watch: '◉', frame: '▦', ask: '?', tool: '›', cut: '✂', motion: '✦', say: '“', done: '✓', error: '!' };
+const LOOK_NAMES = { neutral_punch: 'Clean', warm_cinematic: 'Cinematic', subtle: 'Subtil' };
 
 const state = {
   health: null,
@@ -101,7 +102,13 @@ function renderHealth() {
       : el('span', { class: 'pill err', text: 'watch-skill fehlt', title: 'uv tool install "watch-skill[perceive,whisper,ocr]"' }),
   );
   box.append(h.ffmpeg ? el('span', { class: 'pill ok', text: `ffmpeg ${h.ffmpeg}` }) : el('span', { class: 'pill err', text: 'ffmpeg fehlt', title: 'brew install ffmpeg' }));
+  const a = h.addons || {};
+  box.append(
+    el('span', { class: `pill ${a.videoUse ? 'ok' : ''}`, text: 'video-use', title: a.videoUse ? 'Timeline-Ansicht und Grades bereit' : 'Nicht installiert — npm run setup' }),
+    el('span', { class: `pill ${a.hyperframes ? 'ok' : ''}`, text: 'HyperFrames', title: a.hyperframes ? `Version ${a.hyperframesVersion}` : 'Nicht installiert — npm run setup' }),
+  );
   renderCutHint();
+  if (state.project) renderSettings();
 }
 
 function blocker() {
@@ -318,6 +325,10 @@ function currentSettings() {
     length: Number(segValue('lengthSeg')),
     audio: state.project.music ? segValue('audioSeg') : 'original',
     brief: $('#brief').value,
+    look: segValue('lookSeg'),
+    captions: segValue('captionsSeg'),
+    motion: segValue('motionSeg'),
+    review: $('#reviewToggle').checked,
   };
 }
 
@@ -328,6 +339,18 @@ function renderSettings() {
   setSeg('audioSeg', state.project.music ? s.audio : 'original');
   for (const b of $('#audioSeg').querySelectorAll('button')) b.disabled = !state.project.music;
   if (document.activeElement !== $('#brief')) $('#brief').value = s.brief;
+
+  // Add-on switches: greyed out with a hint when the add-on is missing.
+  const a = state.health?.addons || {};
+  const canCaption = a.hyperframes || (a.elevenLabs && a.videoUse);
+  setSeg('lookSeg', s.look || 'none');
+  setSeg('captionsSeg', canCaption ? s.captions || 'none' : 'none');
+  setSeg('motionSeg', a.hyperframes ? s.motion || 'none' : 'none');
+  for (const b of $('#captionsSeg').querySelectorAll('button')) b.disabled = !canCaption && b.dataset.v !== 'none';
+  for (const b of $('#motionSeg').querySelectorAll('button')) b.disabled = !a.hyperframes && b.dataset.v !== 'none';
+  $('#captionsHint').textContent = !state.health ? '' : canCaption ? (a.filters?.subtitles === false ? 'Dein ffmpeg kann keine Untertitel einbrennen (libass fehlt).' : '') : 'Braucht HyperFrames (lokales Whisper) — npm run setup';
+  $('#motionHint').textContent = !state.health || a.hyperframes ? '' : a.nodeOk === false ? 'HyperFrames braucht Node 22+.' : 'Nicht installiert — npm run setup';
+  $('#reviewToggle').checked = Boolean(s.review);
   renderMusic();
   renderCutHint();
 }
@@ -512,6 +535,23 @@ function renderResult() {
   $('#versionTitle').textContent = v.title;
   $('#versionRequest').textContent = v.mode === 'revise' ? `Wunsch zu v${v.from}: „${v.request}"` : v.request ? `Vorgabe: „${v.request}"` : '';
   $('#versionReply').textContent = v.reply || v.summary;
+  $('#versionReview').textContent = v.review ? `Selbstkontrolle: ${v.review}` : '';
+  const extras = [
+    v.grade && v.grade !== 'none' && `Look: ${LOOK_NAMES[v.grade] || (v.grade.length > 24 ? 'eigener Filter' : v.grade)}`,
+    v.captions && v.captions !== 'none' && `Untertitel: ${v.captions === 'bold' ? 'BOLD' : 'Clean'}`,
+    v.overlays?.length && `${v.overlays.length} Animation${v.overlays.length > 1 ? 'en' : ''}`,
+  ].filter(Boolean);
+  $('#versionExtras').replaceChildren(...extras.map((t) => el('span', { text: t })));
+  const track = $('#ovtrack');
+  track.hidden = !v.overlays?.length;
+  track.replaceChildren(
+    ...(v.overlays || []).map((o) =>
+      el('span', {
+        style: `left:${(o.start / v.duration) * 100}%;width:${(o.duration / v.duration) * 100}%`,
+        title: `${o.file.replace(/^overlays\//, '')} · ${tc(o.start)}–${tc(o.start + o.duration)}${o.why ? `\n${o.why}` : ''}`,
+      }),
+    ),
+  );
 
   // Timeline: each block is one segment, width = its share of the output.
   let at = 0;
@@ -589,7 +629,8 @@ $('#deleteProject').addEventListener('click', async () => {
   }
 });
 
-for (const id of ['aspectSeg', 'lengthSeg', 'audioSeg']) {
+$('#reviewToggle').addEventListener('change', saveSettings);
+for (const id of ['aspectSeg', 'lengthSeg', 'audioSeg', 'lookSeg', 'captionsSeg', 'motionSeg']) {
   $(`#${id}`).addEventListener('click', (e) => {
     const b = e.target.closest('button');
     if (!b || b.disabled) return;

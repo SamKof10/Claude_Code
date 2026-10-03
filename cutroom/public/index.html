@@ -91,6 +91,41 @@
                 </div>
 
                 <div class="field">
+                  <span class="label">Look <em>Color-Grade · video-use</em></span>
+                  <div class="seg" id="lookSeg" role="radiogroup" aria-label="Look">
+                    <button data-v="none">Original</button>
+                    <button data-v="neutral_punch">Clean</button>
+                    <button data-v="warm_cinematic">Cinematic</button>
+                    <button data-v="auto">Claude</button>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <span class="label">Untertitel <em>Whisper lokal oder ElevenLabs</em></span>
+                  <div class="seg" id="captionsSeg" role="radiogroup" aria-label="Untertitel">
+                    <button data-v="none">Aus</button>
+                    <button data-v="bold">BOLD</button>
+                    <button data-v="clean">Clean</button>
+                  </div>
+                  <p class="sub-hint" id="captionsHint"></p>
+                </div>
+
+                <div class="field">
+                  <span class="label">Animationen <em>HyperFrames</em></span>
+                  <div class="seg" id="motionSeg" role="radiogroup" aria-label="Animationen">
+                    <button data-v="none">Aus</button>
+                    <button data-v="titles">Titel / Intro</button>
+                    <button data-v="auto">Claude</button>
+                  </div>
+                  <p class="sub-hint" id="motionHint"></p>
+                </div>
+
+                <label class="check">
+                  <input type="checkbox" id="reviewToggle" />
+                  <span><strong>Selbstkontrolle</strong> — Claude prüft das fertige Video an jeder Schnittstelle und bessert nach. Kostet extra Limit.</span>
+                </label>
+
+                <div class="field">
                   <label class="label" for="brief">Was willst du?</label>
                   <textarea
                     id="brief"
@@ -125,13 +160,16 @@
                 <div class="player">
                   <video id="video" controls playsinline preload="metadata"></video>
                 </div>
+                <div class="ovtrack" id="ovtrack" aria-label="Animationen" hidden></div>
                 <div class="timeline" id="timeline" aria-label="Segmente"></div>
                 <div class="result-meta">
                   <h3 id="versionTitle"></h3>
                   <a class="btn btn-ghost" id="downloadBtn" download>Download</a>
                 </div>
                 <p class="request" id="versionRequest"></p>
+                <p class="extras" id="versionExtras"></p>
                 <p class="reply" id="versionReply"></p>
+                <p class="review" id="versionReview"></p>
                 <details class="segments">
                   <summary>Schnittliste</summary>
                   <ol id="segmentList"></ol>

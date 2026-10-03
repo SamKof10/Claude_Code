@@ -5,11 +5,15 @@ const path = require('path');
 const store = require('./store');
 const prompts = require('./prompts');
 const { validate } = require('./edl');
-const { probe, render, killTree } = require('./media');
+const { probe, render, killTree, outputSize } = require('./media');
+const tools = require('./tools');
+const { ensureTranscripts } = require('./transcribe');
+const { buildSrt, forceStyle } = require('./captions');
 const { runClaude } = require('./agent');
 
 const AGENT_DIR = path.join(__dirname, '..', 'agent');
 const MAX_FIX_ROUNDS = 2;
+const DEFAULT_EXTRAS = { look: 'none', captions: 'none', motion: 'none', review: false };
 
 // One live state per project; only one job runs at a time so parallel cuts
 // don't drain the Pro limit twice as fast.
@@ -110,8 +114,8 @@ async function execute(j, project, opts) {
     if (j.cancelled) throw new Error('Abgebrochen.');
   };
 
-  // Fresh agent instructions + watch skill on every run, so edits to
-  // agent/CLAUDE.md apply to old projects too.
+  // Fresh agent instructions, tools and skills on every run, so edits to
+  // agent/ apply to old projects too.
   fs.cpSync(AGENT_DIR, dir, { recursive: true, force: true });
 
   const clipNames = store.clipFiles(project.id);
@@ -121,21 +125,34 @@ async function execute(j, project, opts) {
   const musicName = store.musicFile(project.id);
   const music = musicName ? { name: musicName, ...(await probe(path.join(dir, 'music', musicName))) } : null;
   const editPath = path.join(dir, 'edit.json');
+  const addons = tools.status();
+
+  if (opts.mode === 'cut') project.settings = opts.settings;
+  const settings = { ...DEFAULT_EXTRAS, ...project.settings };
+  const size = outputSize(settings.aspect, clips[clipNames[0]]);
+
+  // Captions need word-level transcripts; making them first also lets
+  // Claude cut on word boundaries (video-use's "read, don't watch").
+  let transcripts = null;
+  if (settings.captions !== 'none') {
+    stillWanted();
+    transcripts = await transcribeSafely({ dir, clips, j, track });
+  }
 
   let prompt;
   let freshPrompt = null;
   let resume = null;
   let base = null;
+  const context = { clips, music, settings, size, tools: addons, transcripts };
   if (opts.mode === 'cut') {
-    project.settings = opts.settings;
     project.sessionId = null;
     fs.rmSync(editPath, { force: true });
-    prompt = prompts.cut({ settings: project.settings, clips, music });
+    prompt = prompts.cut(context);
   } else {
     base = project.versions.find((v) => v.n === opts.from) || project.versions[project.versions.length - 1];
     fs.copyFileSync(path.join(dir, 'edits', `v${base.n}.json`), editPath);
     const newClips = clipNames.filter((n) => !project.knownClips.includes(n));
-    const args = { base, feedback: opts.feedback, newClips, clips, music, settings: project.settings };
+    const args = { ...context, base, feedback: opts.feedback, newClips };
     prompt = prompts.revise({ ...args, fresh: !project.sessionId });
     resume = project.sessionId;
     freshPrompt = prompts.revise({ ...args, fresh: true });
@@ -155,55 +172,103 @@ async function execute(j, project, opts) {
   project.knownClips = clipNames;
   store.save(project);
 
-  let edit;
-  for (let round = 0; ; round++) {
-    let raw = null;
-    let errors;
+  // Reads edit.json and checks it against the clips plus whatever overlays
+  // Claude rendered under overlays/.
+  const defaults = { captions: settings.captions, grade: settings.look === 'auto' ? 'none' : settings.look };
+  const readEdit = async () => {
+    const all = { ...clips, ...(await overlayClips(dir)) };
     try {
-      raw = JSON.parse(fs.readFileSync(editPath, 'utf8'));
+      return { all, ...validate(JSON.parse(fs.readFileSync(editPath, 'utf8')), all, defaults) };
     } catch (err) {
-      errors = [`edit.json fehlt oder ist kein gültiges JSON (${err.message}).`];
+      return { all, errors: [`edit.json fehlt oder ist kein gültiges JSON (${err.message}).`] };
     }
-    if (!errors) ({ edit, errors } = validate(raw, clips));
-    if (!errors.length) break;
-    if (round >= MAX_FIX_ROUNDS) throw new Error(`Schnittliste unbrauchbar: ${errors.join(' ')}`);
+  };
+
+  let checked;
+  for (let round = 0; ; round++) {
+    checked = await readEdit();
+    if (!checked.errors.length) break;
+    if (round >= MAX_FIX_ROUNDS) throw new Error(`Schnittliste unbrauchbar: ${checked.errors.join(' ')}`);
     stillWanted();
-    log(j, { icon: 'error', text: `Schnittliste hat ${errors.length} Fehler — Claude korrigiert` });
-    r = await runClaude({ cwd: dir, prompt: prompts.fix(errors), resume: project.sessionId, onEvent, track });
+    log(j, { icon: 'error', text: `Schnittliste hat ${checked.errors.length} Fehler — Claude korrigiert` });
+    r = await runClaude({ cwd: dir, prompt: prompts.fix(checked.errors), resume: project.sessionId, onEvent, track });
     if (!r.ok) throw new Error(r.error);
   }
 
-  stillWanted();
-  setStatus(j, 'render', 'Rendern');
-  log(j, { icon: 'cut', text: `Rendert ${edit.segments.length} Segmente · ${edit.duration.toFixed(1)} s` });
   const n = project.versions.reduce((max, v) => Math.max(max, v.n), 0) + 1;
-  const result = await render({
-    clipsDir: path.join(dir, 'clips'),
-    edit,
-    clips,
-    musicFile: music ? path.join(dir, 'music', music.name) : null,
-    outFile: path.join(dir, 'renders', `v${n}.mp4`),
-    track,
-    onProgress: (p) => {
-      j.progress = p;
-      broadcast(j, { type: 'progress', progress: p });
-    },
-  });
-  fs.writeFileSync(path.join(dir, 'edits', `v${n}.json`), JSON.stringify(edit, null, 2));
+  const outFile = path.join(dir, 'renders', `v${n}.mp4`);
+  const renderEdit = async ({ edit, all }) => {
+    stillWanted();
+    setStatus(j, 'render', 'Rendern');
+    const extras = [
+      edit.output.grade !== 'none' && `Look ${edit.output.grade.length > 20 ? 'eigener Filter' : edit.output.grade}`,
+      edit.overlays.length && `${edit.overlays.length} Animation(en)`,
+      edit.captions !== 'none' && `Untertitel ${edit.captions}`,
+    ].filter(Boolean);
+    log(j, { icon: 'cut', text: `Rendert ${edit.segments.length} Segmente · ${edit.duration.toFixed(1)} s${extras.length ? ` · ${extras.join(' · ')}` : ''}` });
+    const srt = await captionsFor({ dir, edit, all, j, track });
+    return render({
+      dir,
+      edit,
+      clips: all,
+      musicFile: music ? path.join(dir, 'music', music.name) : null,
+      srt,
+      outFile,
+      track,
+      onProgress: (p) => {
+        j.progress = p;
+        broadcast(j, { type: 'progress', progress: p });
+      },
+    });
+  };
 
+  let result = await renderEdit(checked);
+  let review = null;
+
+  // Self-check (video-use): Claude looks at its own render before you do.
+  if (settings.review) {
+    stillWanted();
+    setStatus(j, 'agent', 'Selbstkontrolle');
+    log(j, { icon: 'watch', text: 'Selbstkontrolle: Claude prüft das fertige Video' });
+    let at = 0;
+    const cuts = checked.edit.segments.slice(0, -1).map((s) => (at += (s.end - s.start) / s.speed));
+    r = await runClaude({ cwd: dir, prompt: prompts.review({ n, cuts, tools: addons }), resume: project.sessionId, onEvent, track });
+    if (!r.ok) {
+      log(j, { icon: 'error', text: `Selbstkontrolle übersprungen: ${r.error}` });
+    } else if (/^\s*KORRIGIERT/i.test(r.result)) {
+      const again = await readEdit();
+      if (again.errors.length) {
+        log(j, { icon: 'error', text: 'Korrektur der Selbstkontrolle war ungültig — erste Fassung bleibt' });
+      } else {
+        review = r.result.replace(/^\s*KORRIGIERT:?\s*/i, '');
+        checked = again;
+        result = await renderEdit(checked);
+      }
+    } else {
+      review = 'Geprüft, alles in Ordnung.';
+      log(j, { icon: 'done', text: 'Selbstkontrolle: alles in Ordnung' });
+    }
+  }
+
+  const { edit } = checked;
+  fs.writeFileSync(path.join(dir, 'edits', `v${n}.json`), JSON.stringify(edit, null, 2));
   const version = {
     n,
     file: `v${n}.mp4`,
     createdAt: new Date().toISOString(),
     mode: opts.mode,
     from: base?.n ?? null,
-    request: opts.mode === 'cut' ? project.settings.brief : opts.feedback,
+    request: opts.mode === 'cut' ? settings.brief : opts.feedback,
     title: edit.title,
     summary: edit.summary,
     reply,
+    review,
     duration: result.duration,
     width: result.width,
     height: result.height,
+    grade: edit.output.grade,
+    captions: edit.captions,
+    overlays: edit.overlays,
     segments: edit.segments,
   };
   const fresh = store.get(project.id);
@@ -215,6 +280,59 @@ async function execute(j, project, opts) {
   log(j, { icon: 'done', text: `Fertig: v${n} · ${result.duration.toFixed(1)} s` });
   broadcast(j, { type: 'version', version });
   setStatus(j, 'done', `v${n} ist fertig`);
+}
+
+// Transcription is a nice-to-have: if it fails, the cut still happens.
+async function transcribeSafely({ dir, clips, j, track }) {
+  try {
+    return await ensureTranscripts({ dir, clips, track, onLog: (e) => log(j, e) });
+  } catch (err) {
+    if (j.cancelled) throw err;
+    log(j, { icon: 'error', text: `Transkription fehlgeschlagen — ohne Untertitel weiter (${err.message.slice(0, 160)})` });
+    return null;
+  }
+}
+
+async function captionsFor({ dir, edit, all, j, track }) {
+  if (edit.captions === 'none') return null;
+  if (!tools.ffmpegFilters().subtitles) {
+    log(j, { icon: 'error', text: 'Dein ffmpeg kann keine Untertitel einbrennen (libass fehlt) — sie fallen weg' });
+    return null;
+  }
+  const uploaded = Object.fromEntries(Object.entries(all).filter(([k]) => !k.startsWith('overlays/')));
+  const transcripts = await transcribeSafely({ dir, clips: uploaded, j, track });
+  const built = transcripts && buildSrt(edit, transcripts);
+  if (!built) return null;
+  const [W, H] = outputSize(edit.output.aspect, all[edit.segments[0].clip]);
+  return { text: built.srt, style: forceStyle(edit.captions, W, H) };
+}
+
+// Videos the agent rendered with HyperFrames (overlays/<id>/…). They can be
+// layered on top (edit.overlays) or used as full-frame segments.
+async function overlayClips(dir) {
+  const found = {};
+  const walk = async (rel, depth) => {
+    let entries;
+    try {
+      entries = fs.readdirSync(path.join(dir, rel), { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      if (e.name.startsWith('.') || e.name === 'node_modules') continue;
+      const child = `${rel}/${e.name}`;
+      if (e.isDirectory() && depth < 4) await walk(child, depth + 1);
+      else if (e.isFile() && /\.(mov|webm|mp4)$/i.test(e.name)) {
+        try {
+          found[child] = await probe(path.join(dir, child));
+        } catch {
+          // half-written render — ignore
+        }
+      }
+    }
+  };
+  await walk('overlays', 0);
+  return found;
 }
 
 module.exports = { start, cancel, cancelAll, snapshot, subscribe, isRunning };

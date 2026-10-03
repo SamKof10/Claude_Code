@@ -39,5 +39,16 @@ const bad = (msg, fix) => {
     const missing = ['perceive', 'whisper'].filter((extra) => new RegExp(`\\b${extra}\\b`).test(String(doctor).match(/not installed[^"]*/)?.[0] || ''));
     if (missing.length) bad(`watch-skill ohne ${missing.join(' + ')}`, install('--force '));
   }
+  // Optional add-ons — missing ones only switch features off.
+  const addons = require('../lib/tools').status();
+  console.log('\n  Add-ons (optional, installiert mit npm run setup):');
+  const opt = (on, label, hint) => console.log(`  ${on ? '✓' : '–'} ${label}${on ? '' : `  → ${hint}`}`);
+  opt(addons.videoUse, 'video-use — Timeline-Ansicht, Grades', 'npm run setup');
+  opt(addons.hyperframes, `HyperFrames ${addons.hyperframesVersion} — Animationen, lokale Untertitel`, addons.nodeOk ? 'npm run setup' : 'Node 22+ nötig, dann npm run setup');
+  opt(addons.whisper, 'whisper-cli — schnelle lokale Transkription', 'brew install whisper-cpp');
+  opt(addons.elevenLabs, 'ElevenLabs-Key — beste Untertitel (kostet)', 'optional: ELEVENLABS_API_KEY in vendor/video-use/.env');
+  opt(addons.filters.subtitles, 'ffmpeg mit libass — Untertitel einbrennen', 'brew reinstall ffmpeg');
+  opt(addons.filters.zscale, 'ffmpeg mit zimg — HDR-Clips (iPhone) korrekt umwandeln', 'brew reinstall ffmpeg');
+
   console.log(process.exitCode ? '\nNoch nicht startklar.\n' : '\nAlles bereit: npm start\n');
 })();

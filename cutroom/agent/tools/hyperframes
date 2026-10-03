@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# HyperFrames for the headless cutter: pinned version, telemetry off and only
+# the local authoring commands. Anything that publishes, uploads, renders in
+# the cloud or starts a long-running server is refused.
+set -euo pipefail
+
+cmd="${1:-help}"
+case "$cmd" in
+  init|lint|validate|check|render|snapshot|inspect|info|doctor|docs|catalog|add|keyframes|compositions|help|--help) ;;
+  *)
+    echo "cutroom: 'hyperframes $cmd' ist hier nicht erlaubt (nur init, lint, validate, check, render, snapshot, inspect, info, doctor, docs, catalog, add, keyframes, compositions)." >&2
+    exit 2
+    ;;
+esac
+
+export HYPERFRAMES_NO_TELEMETRY=1
+exec npx --yes "hyperframes@${CUTROOM_HYPERFRAMES_VERSION:-0.8.114}" "$@"

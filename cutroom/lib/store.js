@@ -12,7 +12,7 @@ const ID_RE = /^[a-z0-9-]{4,64}$/;
 const VIDEO_EXT = new Set(['.mp4', '.mov', '.m4v', '.mkv', '.webm', '.avi', '.mts', '.m2ts', '.3gp']);
 const AUDIO_EXT = new Set(['.mp3', '.m4a', '.aac', '.wav', '.flac', '.ogg', '.opus']);
 
-const DEFAULT_SETTINGS = { aspect: '9:16', length: 30, audio: 'original', brief: '' };
+const DEFAULT_SETTINGS = { aspect: '9:16', length: 30, audio: 'original', brief: '', look: 'none', captions: 'none', motion: 'none', review: false };
 
 fs.mkdirSync(PROJECTS_DIR, { recursive: true });
 

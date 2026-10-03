@@ -1,9 +1,28 @@
 'use strict';
 
-const { ASPECTS } = require('./media');
+const { ASPECTS, GRADES } = require('./media');
+const { STYLES } = require('./captions');
 
 const MIN_SEGMENT = 0.2;
 const MAX_TOTAL = 15 * 60;
+
+// Custom grades may only use plain colour filters — no graph syntax.
+const GRADE_FILTERS = new Set(['eq', 'curves', 'colorbalance', 'colortemperature', 'hue', 'vibrance', 'colorchannelmixer', 'colorlevels', 'unsharp']);
+
+function checkGrade(value) {
+  if (value === undefined || value === null || value === '') return { grade: 'none' };
+  const grade = String(value).trim();
+  if (grade in GRADES) return { grade };
+  if (grade.length > 400 || /[[\];\n]/.test(grade) || !/^[\w=:.,'\/ -]+$/.test(grade)) {
+    return { grade: 'none', error: `output.grade "${grade.slice(0, 60)}" ist kein erlaubter Filter.` };
+  }
+  const names = grade.split(/,(?=(?:[^']*'[^']*')*[^']*$)/).map((f) => f.split('=')[0].trim());
+  const bad = names.filter((f) => !GRADE_FILTERS.has(f));
+  if (bad.length) {
+    return { grade: 'none', error: `output.grade nutzt ${bad.join(', ')} — erlaubt sind Presets (${Object.keys(GRADES).join(', ')}) oder ${[...GRADE_FILTERS].join(', ')}.` };
+  }
+  return { grade };
+}
 
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 const num = (v, fallback) => (Number.isFinite(Number(v)) && v !== null && v !== '' ? Number(v) : fallback);
@@ -12,7 +31,7 @@ const num = (v, fallback) => (Number.isFinite(Number(v)) && v !== null && v !== 
 // few frames past the clip, a speed out of range) are corrected silently;
 // anything that would make the render meaningless is returned as an error so
 // Claude can fix it itself.
-function validate(raw, clips) {
+function validate(raw, clips, defaults = {}) {
   const errors = [];
   if (!raw || typeof raw !== 'object') return { errors: ['edit.json ist kein JSON-Objekt.'] };
 
@@ -21,6 +40,9 @@ function validate(raw, clips) {
   if (!aspect) errors.push(`output.aspect "${output.aspect}" ist unbekannt (erlaubt: ${Object.keys(ASPECTS).join(', ')}, source).`);
 
   const audio = raw.audio || {};
+  const { grade, error: gradeError } = checkGrade(output.grade ?? defaults.grade);
+  if (gradeError) errors.push(gradeError);
+  const captions = raw.captions ?? defaults.captions ?? 'none';
   const edit = {
     title: String(raw.title || 'Schnitt').slice(0, 120),
     summary: String(raw.summary || '').slice(0, 2000),
@@ -28,12 +50,15 @@ function validate(raw, clips) {
       aspect: aspect || '9:16',
       fps: Math.round(clamp(num(output.fps, 30), 24, 60)),
       fadeOut: clamp(num(output.fadeOut, 0), 0, 3),
+      grade,
     },
+    captions: captions in STYLES ? captions : 'none',
     audio: {
       original: clamp(num(audio.original, 1), 0, 2),
       music: clamp(num(audio.music, 0), 0, 2),
     },
     segments: [],
+    overlays: [],
   };
 
   if (!Array.isArray(raw.segments) || raw.segments.length === 0) {
@@ -80,6 +105,23 @@ function validate(raw, clips) {
       focusY: clamp(num(seg.focusY, 0.5), 0, 1),
       why: String(seg.why || '').slice(0, 200),
     });
+  });
+
+  (Array.isArray(raw.overlays) ? raw.overlays : []).forEach((ov, i) => {
+    const label = `overlays[${i}]`;
+    const info = clips[ov?.file];
+    if (!String(ov?.file || '').startsWith('overlays/') || !info) {
+      const have = Object.keys(clips).filter((k) => k.startsWith('overlays/'));
+      errors.push(`${label}: Datei "${ov?.file}" fehlt. Gerenderte Overlays: ${have.join(', ') || 'keine'}.`);
+      return;
+    }
+    const start = num(ov.start, NaN);
+    if (!Number.isFinite(start) || start < 0 || start >= total) {
+      errors.push(`${label}: start ${ov.start} liegt außerhalb des Schnitts (0–${total.toFixed(2)} s).`);
+      return;
+    }
+    const duration = clamp(num(ov.duration, info.duration), 0.1, info.duration || 0.1);
+    edit.overlays.push({ file: ov.file, start, duration: Math.min(duration, total - start), why: String(ov.why || '').slice(0, 200) });
   });
 
   if (total > MAX_TOTAL) errors.push(`Gesamtlänge ${Math.round(total)} s ist über dem Limit von ${MAX_TOTAL} s.`);

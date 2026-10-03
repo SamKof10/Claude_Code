@@ -7,6 +7,7 @@ const store = require('./lib/store');
 const jobs = require('./lib/jobs');
 const media = require('./lib/media');
 const agent = require('./lib/agent');
+const tools = require('./lib/tools');
 
 const PORT = Number(process.env.PORT || 4317);
 // Local only: the app drives your personal Claude login, so it must never be
@@ -34,6 +35,9 @@ const MIME = {
 
 const ASPECTS = ['9:16', '16:9', '1:1', '4:5', 'source'];
 const AUDIO_MODES = ['original', 'music', 'mix'];
+const LOOKS = ['none', 'auto', 'neutral_punch', 'warm_cinematic'];
+const CAPTIONS = ['none', 'bold', 'clean'];
+const MOTION = ['none', 'titles', 'auto'];
 
 function send(res, status, body) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -138,6 +142,10 @@ function cleanSettings(input = {}) {
     length: Math.max(0, Math.min(900, Math.round(Number(input.length) || 0))),
     audio: AUDIO_MODES.includes(input.audio) ? input.audio : 'original',
     brief: String(input.brief || '').slice(0, 4000),
+    look: LOOKS.includes(input.look) ? input.look : 'none',
+    captions: CAPTIONS.includes(input.captions) ? input.captions : 'none',
+    motion: MOTION.includes(input.motion) ? input.motion : 'none',
+    review: Boolean(input.review),
   };
 }
 
@@ -156,6 +164,7 @@ async function health() {
     apiKeyIgnored: agent.strippedApiKey(),
     ffmpeg: ffmpeg && ffprobe ? ffmpeg : null,
     watchSkill: watch,
+    addons: tools.status(),
     dataDir: store.DATA_DIR,
   };
   healthCache = { at: Date.now(), value };

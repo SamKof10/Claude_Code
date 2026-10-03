@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Filmstrip + waveform (+ word labels when a transcript exists) for one time
+# range, from browser-use/video-use. Usage:
+#   ./tools/timeline-view <video> <start-s> <end-s> [--n-frames N]
+# Writes verify/<name>_<start>-<end>.png and prints the path — open it with Read.
+set -euo pipefail
+
+if [ $# -lt 3 ]; then
+  echo "Usage: ./tools/timeline-view <video> <start-s> <end-s> [--n-frames N]" >&2
+  exit 2
+fi
+vu="${CUTROOM_VIDEO_USE:-}"
+if [ -z "$vu" ] || [ ! -f "$vu/helpers/timeline_view.py" ]; then
+  echo "cutroom: video-use ist nicht installiert (npm run setup)." >&2
+  exit 3
+fi
+
+video="$1" start="$2" end="$3"
+shift 3
+name="$(basename "$video")"
+mkdir -p verify
+out="verify/${name%.*}_${start}-${end}.png"
+
+args=("$video" "$start" "$end" -o "$out" "$@")
+if [ -f "transcripts/${name}.json" ]; then
+  args+=(--transcript "transcripts/${name}.json")
+fi
+
+uv run --quiet --project "$vu" python "$vu/helpers/timeline_view.py" "${args[@]}" >/dev/null
+echo "$out"

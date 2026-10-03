@@ -16,7 +16,7 @@ jedem Push, der `fpv-portfolio-react/` ändert
 | [`mudroom/`](mudroom) | MUDROOM — Premium-Store für eine automatische Bike-Waschbox | Next.js 16, React 19, Tailwind 4, Motion |
 | [`gym-tracker/`](gym-tracker) | Gym Tracker — PWA für einen 5-Tage-Split, mit echtem Background-Push | Vanilla JS PWA + Node/Express |
 | [`studyhub/`](studyhub) | StudyHub — KI-gestützte Lernplattform: Anmeldung, Dokumente, Notizen, Karteikarten, Quizze, Prüfungspläne, Fokustimer und ein AI-Tutor | Next.js 16, React 19, Tailwind 4, Zustand, Tiptap, Recharts |
-| [`cutroom/`](cutroom) | Cutroom — Clips hochladen, Claude (Opus 5.5 übers Pro-Abo + `/watch`-Skill) schneidet, ffmpeg rendert | Node ohne Abhängigkeiten, Claude Code headless, ffmpeg |
+| [`cutroom/`](cutroom) | Cutroom — Clips hochladen, Claude (Opus 5.5 übers Pro-Abo + `/watch`-Skill) schneidet, ffmpeg rendert. Add-ons: video-use (Grades, Untertitel, Timeline-Check) und HyperFrames (Titel und Intros als Animation) | Node ohne Abhängigkeiten, Claude Code headless, ffmpeg |
 
 ## Fertige Seiten ohne Build
 
@@ -75,6 +75,7 @@ und liefert eine 404 statt der App. Der Rest läuft auf den Standardwerten.
 ```bash
 cd cutroom
 npm run check   # Claude-Login, ffmpeg, watch-skill prüfen
+npm run setup   # optional: video-use + HyperFrames installieren
 npm start       # http://localhost:4317
 ```
 

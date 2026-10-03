@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "type": "commonjs",
-  "description": "Local video editor: upload clips, Claude Code (on your Claude Pro plan) watches them with the /watch skill and writes the cut, ffmpeg renders it.",
+  "description": "Local video editor: upload clips, Claude Code (on your Claude Pro plan) watches them with the /watch skill and writes the cut; video-use and HyperFrames add grading, captions and motion graphics; ffmpeg renders it.",
   "main": "server.js",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "start": "node server.js",
+    "setup": "node scripts/setup.js",
     "check": "node scripts/check.js"
   }
 }
