@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cutroom</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff6b3d'/><path d='M10 9l12 14M22 9L10 23' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">✂</span>
+        <span>Cutroom</span>
+        <span class="tag">Claude schneidet, du entscheidest</span>
+      </div>
+      <div class="health" id="health" aria-live="polite"></div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <button class="btn btn-primary btn-block" id="newProject">+ Neues Projekt</button>
+        <nav class="projects" id="projectList" aria-label="Projekte"></nav>
+      </aside>
+
+      <main class="main">
+        <section class="empty" id="emptyState">
+          <div class="empty-inner">
+            <div class="empty-logo" aria-hidden="true">✂</div>
+            <h1>Clips rein, fertiger Schnitt raus.</h1>
+            <p>
+              Lade deine Rohclips hoch und sag kurz, was du willst. Claude sieht sich jeden Clip mit dem
+              <code>/watch</code>-Skill an, baut eine Schnittliste und die App rendert sie mit ffmpeg. Nicht zufrieden?
+              Sag, was anders soll, und es gibt eine neue Version.
+            </p>
+            <button class="btn btn-primary" id="emptyNew">Erstes Projekt anlegen</button>
+          </div>
+        </section>
+
+        <section class="project" id="project" hidden>
+          <div class="project-head">
+            <input class="project-name" id="projectName" aria-label="Projektname" maxlength="80" />
+            <button class="btn btn-ghost btn-danger" id="deleteProject" title="Projekt löschen">Löschen</button>
+          </div>
+
+          <div class="grid">
+            <div class="col">
+              <section class="card">
+                <h2><span class="num">1</span> Clips</h2>
+                <label class="drop" id="clipDrop">
+                  <input type="file" id="clipInput" accept="video/*,.mov,.mkv,.mts" multiple hidden />
+                  <strong>Clips hierher ziehen</strong>
+                  <span>oder klicken · MP4, MOV, MKV, WebM</span>
+                </label>
+                <ul class="clips" id="clipList"></ul>
+              </section>
+
+              <section class="card">
+                <h2><span class="num">2</span> Vorgaben</h2>
+
+                <div class="field">
+                  <span class="label">Format</span>
+                  <div class="seg" id="aspectSeg" role="radiogroup" aria-label="Format">
+                    <button data-v="9:16">9:16</button>
+                    <button data-v="16:9">16:9</button>
+                    <button data-v="1:1">1:1</button>
+                    <button data-v="4:5">4:5</button>
+                    <button data-v="source">Original</button>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <span class="label">Länge</span>
+                  <div class="seg" id="lengthSeg" role="radiogroup" aria-label="Länge">
+                    <button data-v="15">15 s</button>
+                    <button data-v="30">30 s</button>
+                    <button data-v="60">60 s</button>
+                    <button data-v="90">90 s</button>
+                    <button data-v="0">frei</button>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <span class="label">Musik <em>optional</em></span>
+                  <div class="music" id="music"></div>
+                  <div class="seg seg-sm" id="audioSeg" role="radiogroup" aria-label="Ton">
+                    <button data-v="original">Originalton</button>
+                    <button data-v="music">Nur Musik</button>
+                    <button data-v="mix">Mix</button>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label class="label" for="brief">Was willst du?</label>
+                  <textarea
+                    id="brief"
+                    rows="4"
+                    placeholder="z. B. Schnelles FPV-Reel, Hook mit dem Gap-Durchflug, Landung raus, Ende mit dem Sonnenuntergang."
+                  ></textarea>
+                </div>
+
+                <button class="btn btn-primary btn-block btn-lg" id="cutBtn">Schneiden lassen</button>
+                <p class="hint" id="cutHint"></p>
+              </section>
+            </div>
+
+            <div class="col">
+              <section class="card run" id="runCard" hidden>
+                <div class="run-head">
+                  <h2 id="runTitle">Läuft</h2>
+                  <button class="btn btn-ghost" id="cancelBtn">Abbrechen</button>
+                </div>
+                <ol class="steps" id="steps">
+                  <li data-step="watch">Ansehen</li>
+                  <li data-step="edit">Schnittliste</li>
+                  <li data-step="render">Rendern</li>
+                  <li data-step="done">Fertig</li>
+                </ol>
+                <div class="progress" id="progress" hidden><div class="bar" id="progressBar"></div></div>
+                <ul class="log" id="log" aria-live="polite"></ul>
+              </section>
+
+              <section class="card result" id="resultCard" hidden>
+                <div class="versions" id="versions" role="tablist" aria-label="Versionen"></div>
+                <div class="player">
+                  <video id="video" controls playsinline preload="metadata"></video>
+                </div>
+                <div class="timeline" id="timeline" aria-label="Segmente"></div>
+                <div class="result-meta">
+                  <h3 id="versionTitle"></h3>
+                  <a class="btn btn-ghost" id="downloadBtn" download>Download</a>
+                </div>
+                <p class="request" id="versionRequest"></p>
+                <p class="reply" id="versionReply"></p>
+                <details class="segments">
+                  <summary>Schnittliste</summary>
+                  <ol id="segmentList"></ol>
+                </details>
+
+                <div class="feedback">
+                  <label class="label" for="feedback">Was soll anders werden?</label>
+                  <div class="chips" id="feedbackChips">
+                    <button>Kürzer</button>
+                    <button>Schnelleres Tempo</button>
+                    <button>Stärkerer Hook am Anfang</button>
+                    <button>Mehr Zeitlupe bei den Highlights</button>
+                    <button>Ruhigeres Ende</button>
+                  </div>
+                  <textarea id="feedback" rows="3" placeholder="z. B. Clip 3 raus, dafür länger beim Sprung bleiben."></textarea>
+                  <button class="btn btn-primary btn-block" id="reviseBtn">Neue Version schneiden</button>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+    <script src="/app.js"></script>
+  </body>
+</html>
