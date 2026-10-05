@@ -104,6 +104,18 @@ async function probe(file) {
   return info;
 }
 
+// One JPEG frame for thumbnails. Skipped when the poster is newer than the
+// video, so re-renders get a fresh one.
+async function poster(video, out, at = 1) {
+  try {
+    if (fs.statSync(out).mtimeMs >= fs.statSync(video).mtimeMs) return out;
+  } catch {
+    // no poster yet
+  }
+  await run('ffmpeg', ['-y', '-v', 'error', '-ss', fmt(Math.max(0, at)), '-i', video, '-frames:v', '1', '-vf', 'scale=480:-2', '-q:v', '4', out]);
+  return out;
+}
+
 function outputSize(aspect, firstClip) {
   if (ASPECTS[aspect]) return ASPECTS[aspect];
   // "source": keep the first clip's shape, long side capped at 1920.
@@ -283,4 +295,4 @@ async function render({ dir, edit, clips, musicFile, srt, outFile, onProgress, t
   }
 }
 
-module.exports = { run, probe, render, outputSize, killTree, sourcePath, ASPECTS, GRADES };
+module.exports = { run, probe, render, poster, outputSize, killTree, sourcePath, ASPECTS, GRADES };

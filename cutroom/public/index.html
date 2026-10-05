@@ -9,31 +9,76 @@
   </head>
   <body>
     <header class="top">
-      <div class="brand">
+      <a class="brand" href="#" aria-label="Cutroom Home">
         <span class="logo" aria-hidden="true">✂</span>
         <span>Cutroom</span>
         <span class="tag">Claude schneidet, du entscheidest</span>
-      </div>
+      </a>
       <div class="health" id="health" aria-live="polite"></div>
     </header>
 
     <div class="layout">
       <aside class="sidebar">
         <button class="btn btn-primary btn-block" id="newProject">+ Neues Projekt</button>
+        <a class="home-link" id="homeLink" href="#"><span aria-hidden="true">⌂</span> Home</a>
+        <p class="side-label">Projekte</p>
         <nav class="projects" id="projectList" aria-label="Projekte"></nav>
       </aside>
 
       <main class="main">
-        <section class="empty" id="emptyState">
-          <div class="empty-inner">
-            <div class="empty-logo" aria-hidden="true">✂</div>
-            <h1>Clips rein, fertiger Schnitt raus.</h1>
-            <p>
-              Lade deine Rohclips hoch und sag kurz, was du willst. Claude sieht sich jeden Clip mit dem
-              <code>/watch</code>-Skill an, baut eine Schnittliste und die App rendert sie mit ffmpeg. Nicht zufrieden?
-              Sag, was anders soll, und es gibt eine neue Version.
-            </p>
-            <button class="btn btn-primary" id="emptyNew">Erstes Projekt anlegen</button>
+        <section class="home" id="home">
+          <header class="home-head">
+            <div>
+              <p class="eyebrow" id="homeDate"></p>
+              <h1 id="homeGreeting">Hallo</h1>
+            </div>
+            <button class="btn btn-primary" id="homeNew">+ Neues Projekt</button>
+          </header>
+
+          <a class="running" id="homeRunning" hidden>
+            <span class="pulse" aria-hidden="true"></span>
+            <span class="running-text">
+              <strong id="runningName"></strong>
+              <span id="runningLine"></span>
+            </span>
+            <span class="running-bar" aria-hidden="true"><span id="runningBar"></span></span>
+            <span class="running-open">Öffnen →</span>
+          </a>
+
+          <label class="drop drop-hero" id="homeDrop">
+            <input type="file" id="homeInput" accept="video/*,.mov,.mkv,.mts" multiple hidden />
+            <span class="drop-icon" aria-hidden="true">✂</span>
+            <strong>Clips hier reinziehen</strong>
+            <span>daraus wird sofort ein neues Projekt · oder klicken zum Auswählen</span>
+          </label>
+
+          <div class="kpis" id="kpis" aria-label="Überblick"></div>
+
+          <div class="home-grid">
+            <section class="card">
+              <div class="card-head">
+                <h2>Zuletzt geschnitten</h2>
+              </div>
+              <div class="renders" id="recentRenders"></div>
+            </section>
+
+            <div class="home-side">
+              <section class="card">
+                <div class="card-head">
+                  <h2>Projekte</h2>
+                  <span class="card-meta" id="projectCount"></span>
+                </div>
+                <ul class="project-rows" id="projectRows"></ul>
+              </section>
+
+              <section class="card">
+                <div class="card-head">
+                  <h2>System</h2>
+                </div>
+                <ul class="checks" id="systemChecks"></ul>
+                <div class="storage" id="storage"></div>
+              </section>
+            </div>
           </div>
         </section>
 

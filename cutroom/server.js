@@ -8,6 +8,7 @@ const jobs = require('./lib/jobs');
 const media = require('./lib/media');
 const agent = require('./lib/agent');
 const tools = require('./lib/tools');
+const { dashboard } = require('./lib/dashboard');
 
 const PORT = Number(process.env.PORT || 4317);
 // Local only: the app drives your personal Claude login, so it must never be
@@ -20,6 +21,7 @@ const MIME = {
   '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.svg': 'image/svg+xml',
+  '.jpg': 'image/jpeg',
   '.json': 'application/json',
   '.mp4': 'video/mp4',
   '.m4v': 'video/mp4',
@@ -173,6 +175,7 @@ async function health() {
 
 const routes = [
   ['GET', /^\/api\/health$/, async (req, res) => send(res, 200, await health())],
+  ['GET', /^\/api\/dashboard$/, async (req, res) => send(res, 200, await dashboard())],
   ['GET', /^\/api\/projects$/, async (req, res) => send(res, 200, { projects: store.list(), running: jobs.isRunning() })],
   [
     'POST',

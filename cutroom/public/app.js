@@ -51,6 +51,7 @@ function toast(message, isError = false) {
   toastTimer = setTimeout(() => (node.hidden = true), isError ? 7000 : 3500);
 }
 
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const secs = (n) => `${n.toFixed(1).replace('.', ',')} s`;
 const tc = (n) => {
   const m = Math.floor(n / 60);
@@ -109,6 +110,7 @@ function renderHealth() {
   );
   renderCutHint();
   if (state.project) renderSettings();
+  renderSystem();
 }
 
 function blocker() {
@@ -138,11 +140,11 @@ function renderProjects() {
         'a',
         { href: `#${p.id}`, class: p.id === state.project?.id ? 'active' : null },
         p.name,
-        el('small', { class: p.id === state.running ? 'running' : null }, p.id === state.running ? 'schneidet gerade …' : `${p.clips} Clips · ${p.versions} Versionen`),
+        el('small', { class: p.id === state.running ? 'running' : null }, p.id === state.running ? 'schneidet gerade …' : `${plural(p.clips, 'Clip', 'Clips')} · ${plural(p.versions, 'Version', 'Versionen')}`),
       ),
     ),
   );
-  $('#emptyState').hidden = Boolean(state.project);
+  $('#homeLink').classList.toggle('active', !state.project);
 }
 
 async function createProject() {
@@ -152,15 +154,43 @@ async function createProject() {
   location.hash = project.id;
 }
 
-async function openProject(id) {
+// Clips dropped on the home screen: new project, named by date, upload
+// starts as soon as it is open. Rename it later in the project header.
+async function quickCreate(files) {
+  if (!files.length) return;
+  const now = new Date();
+  const name = `Projekt ${now.toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}, ${now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`;
+  try {
+    const project = await api('/api/projects', { method: 'POST', body: { name } });
+    state.pendingFiles = files;
+    location.hash = project.id;
+  } catch (err) {
+    toast(err.message, true);
+  }
+}
+
+// #            → home
+// #<id>        → project
+// #<id>/v<n>   → project with version n selected
+function route() {
+  const [id, v] = location.hash.slice(1).split('/');
+  if (!id) return showHome();
+  openProject(id, Number((v || '').replace(/^v/, '')) || null);
+}
+
+function showHome() {
   state.events?.close();
   state.events = null;
-  if (!id) {
-    state.project = null;
-    $('#project').hidden = true;
-    renderProjects();
-    return;
-  }
+  state.project = null;
+  $('#project').hidden = true;
+  $('#home').hidden = false;
+  renderProjects();
+  loadDashboard();
+}
+
+async function openProject(id, version = null) {
+  state.events?.close();
+  state.events = null;
   try {
     state.project = await api(`/api/projects/${id}`);
   } catch (err) {
@@ -168,11 +198,19 @@ async function openProject(id) {
     location.hash = '';
     return;
   }
-  state.version = state.project.versions.at(-1)?.n ?? null;
+  const versions = state.project.versions;
+  state.version = versions.some((v) => v.n === version) ? version : versions.at(-1)?.n ?? null;
+  $('#home').hidden = true;
   $('#project').hidden = false;
   renderProjects();
   renderProject();
   listen(id);
+  if (version) $('#resultCard').scrollIntoView({ block: 'start' });
+  if (state.pendingFiles?.length) {
+    const files = state.pendingFiles;
+    state.pendingFiles = null;
+    uploadFiles('clips', files);
+  }
 }
 
 async function refreshProject() {
@@ -267,9 +305,11 @@ async function removeFile(kind, name) {
   loadProjects();
 }
 
-function setupDrop(zone, input, kind) {
+const ACCEPT = { clips: /^video\/|\.(mov|mkv|mts|m2ts|m4v)$/i, music: /^audio\/|\.(mp3|m4a|wav|flac|ogg|aac|opus)$/i };
+
+function setupDrop(zone, input, kind, onFiles = (files) => uploadFiles(kind, files)) {
   input.addEventListener('change', () => {
-    uploadFiles(kind, [...input.files]);
+    onFiles([...input.files]);
     input.value = '';
   });
   zone.addEventListener('dragover', (e) => {
@@ -280,9 +320,9 @@ function setupDrop(zone, input, kind) {
   zone.addEventListener('drop', (e) => {
     e.preventDefault();
     zone.classList.remove('over');
-    const files = [...e.dataTransfer.files].filter((f) => (kind === 'clips' ? /^video\/|\.(mov|mkv|mts|m2ts|m4v)$/i : /^audio\/|\.(mp3|m4a|wav|flac|ogg|aac|opus)$/i).test(f.type || f.name));
+    const files = [...e.dataTransfer.files].filter((f) => ACCEPT[kind].test(f.type || f.name));
     if (!files.length) return toast(kind === 'clips' ? 'Das sind keine Videos.' : 'Das ist keine Audiodatei.', true);
-    uploadFiles(kind, kind === 'music' ? files.slice(0, 1) : files);
+    onFiles(kind === 'music' ? files.slice(0, 1) : files);
   });
 }
 
@@ -592,10 +632,156 @@ $('#video').addEventListener('timeupdate', (e) => {
   for (const b of $('#timeline').children) b.classList.toggle('playing', t >= Number(b.dataset.start) && t < Number(b.dataset.end));
 });
 
+// ---------- home ----------
+
+const ago = (iso) => {
+  const min = (Date.now() - new Date(iso)) / 60000;
+  if (min < 1) return 'gerade eben';
+  if (min < 60) return `vor ${Math.round(min)} Min.`;
+  if (min < 24 * 60) return `vor ${Math.round(min / 60)} Std.`;
+  if (min < 48 * 60) return 'gestern';
+  return new Date(iso).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' });
+};
+
+const span = (seconds) => {
+  if (seconds < 60) return `${Math.round(seconds)} s`;
+  if (seconds < 3600) {
+    const m = seconds / 60;
+    return `${m < 10 ? m.toFixed(1).replace('.', ',') : Math.round(m)} min`;
+  }
+  const h = Math.floor(seconds / 3600);
+  return `${h} h ${Math.round((seconds - h * 3600) / 60)} min`;
+};
+
+const bytes = (n) => (n >= 1e12 ? `${(n / 1e12).toFixed(1)} TB` : n >= 1e9 ? `${(n / 1e9).toFixed(1)} GB` : `${Math.round(n / 1e6)} MB`).replace('.', ',');
+
+async function loadDashboard() {
+  try {
+    const before = state.running;
+    state.dashboard = await api('/api/dashboard');
+    state.running = state.dashboard.running?.id || null;
+    renderDashboard();
+    if (before !== state.running) loadProjects();
+  } catch (err) {
+    toast(err.message, true);
+  }
+}
+
+function renderDashboard() {
+  const d = state.dashboard;
+  if (!d) return;
+  const hour = new Date().getHours();
+  const hello = hour < 11 ? 'Guten Morgen' : hour < 18 ? 'Hallo' : 'Guten Abend';
+  $('#homeGreeting').textContent = d.name ? `${hello}, ${d.name}` : hello;
+  $('#homeDate').textContent = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  // Running job — the one thing worth jumping to.
+  const run = d.running;
+  $('#homeRunning').hidden = !run;
+  if (run) {
+    $('#homeRunning').href = `#${run.id}`;
+    $('#runningName').textContent = run.name;
+    $('#runningLine').textContent = [run.label, run.last].filter(Boolean).join(' · ');
+    const p = run.progress;
+    const fraction = p ? (p.step - 1 + (p.fraction ?? (p.step === p.steps ? 0 : 1))) / p.steps : null;
+    $('#runningBar').parentElement.hidden = fraction === null;
+    $('#runningBar').style.width = `${Math.round((fraction || 0) * 100)}%`;
+  }
+
+  const t = d.totals;
+  const tiles = [
+    { label: 'Projekte', value: String(t.projects), sub: plural(t.clips, 'Clip', 'Clips') },
+    { label: 'Fertige Videos', value: String(t.versions), sub: d.recent[0] ? `zuletzt ${ago(d.recent[0].createdAt)}` : 'noch keins' },
+    { label: 'Rohmaterial', value: span(t.rawSeconds), sub: 'hochgeladen' },
+    { label: 'Geschnitten', value: span(t.cutSeconds), sub: 'aktuelle Versionen' },
+  ];
+  $('#kpis').replaceChildren(
+    ...tiles.map((k) => el('div', { class: 'kpi' }, el('span', { class: 'kpi-label', text: k.label }), el('span', { class: 'kpi-value', text: k.value }), el('span', { class: 'kpi-sub', text: k.sub }))),
+  );
+
+  $('#recentRenders').replaceChildren(
+    ...(d.recent.length
+      ? d.recent.map((v) =>
+          el(
+            'a',
+            { class: 'render', href: `#${v.projectId}/v${v.n}`, title: v.request || v.title },
+            el(
+              'div',
+              { class: 'render-thumb' },
+              v.poster ? el('img', { src: `${v.poster}?t=${encodeURIComponent(v.createdAt)}`, alt: '', loading: 'lazy' }) : el('span', { class: 'thumb-empty', text: '✂' }),
+              el('span', { class: 'badge', text: span(v.duration) }),
+              v.height > v.width ? el('span', { class: 'badge badge-left', text: '9:16' }) : null,
+            ),
+            el('strong', { text: v.title }),
+            el('span', { class: 'render-meta', text: `${v.projectName} · v${v.n} · ${ago(v.createdAt)}` }),
+          ),
+        )
+      : [el('p', { class: 'muted-empty', text: 'Noch nichts geschnitten. Zieh oben ein paar Clips rein, dann legt Claude los.' })]),
+  );
+
+  $('#projectCount').textContent = d.projects.length ? String(d.projects.length) : '';
+  $('#projectRows').replaceChildren(
+    ...(d.projects.length
+      ? d.projects.map((p) =>
+          el(
+            'li',
+            {},
+            el(
+              'a',
+              { href: `#${p.id}`, class: 'project-row' },
+              p.poster ? el('img', { src: p.poster, alt: '', loading: 'lazy' }) : el('span', { class: 'row-thumb', text: '✂' }),
+              el(
+                'span',
+                { class: 'row-text' },
+                el('strong', { text: p.name }),
+                el('span', { text: `${plural(p.clips, 'Clip', 'Clips')} · ${plural(p.versions, 'Version', 'Versionen')} · ${ago(p.updatedAt)}` }),
+              ),
+              p.running ? el('span', { class: 'row-badge', text: 'schneidet' }) : null,
+            ),
+          ),
+        )
+      : [el('li', { class: 'muted-empty', text: 'Noch keine Projekte.' })]),
+  );
+
+  renderSystem();
+}
+
+// Status rows always carry an icon and a word, never colour alone.
+function renderSystem() {
+  const h = state.health;
+  const d = state.dashboard;
+  if (!h || !d) return;
+  const a = h.addons || {};
+  const row = (status, label, hint) =>
+    el('li', { class: `check-row ${status}` }, el('span', { class: 'check-icon', text: { ok: '✓', off: '–', bad: '!' }[status] }), el('span', {}, el('strong', { text: label }), hint ? el('span', { text: hint }) : null));
+  const c = h.claude;
+  $('#systemChecks').replaceChildren(
+    !c.installed
+      ? row('bad', 'Claude Code fehlt', 'npm install -g @anthropic-ai/claude-code')
+      : !c.loggedIn
+        ? row('bad', 'Claude nicht angemeldet', 'Terminal: claude auth login')
+        : row('ok', `Claude Pro · ${h.model}`, 'Bei „session expired“: claude auth login'),
+    h.watchSkill ? row('ok', `watch-skill ${h.watchSkill}`) : row('bad', 'watch-skill fehlt', 'siehe README'),
+    h.ffmpeg ? row('ok', `ffmpeg ${h.ffmpeg}`) : row('bad', 'ffmpeg fehlt', 'brew install ffmpeg'),
+    a.videoUse ? row('ok', 'video-use', 'Grades, Timeline-Check') : row('off', 'video-use', 'npm run setup'),
+    a.hyperframes ? row('ok', `HyperFrames ${a.hyperframesVersion}`, 'Animationen') : row('off', 'HyperFrames', a.nodeOk === false ? 'braucht Node 22+' : 'npm run setup'),
+    a.whisper || a.elevenLabs ? row('ok', a.elevenLabs ? 'Untertitel: ElevenLabs' : 'Untertitel: Whisper lokal') : row('off', 'Untertitel', a.hyperframes ? 'brew install whisper-cpp (schneller)' : 'npm run setup'),
+  );
+
+  const { used, free } = d.storage;
+  const low = free !== null && free < 10e9;
+  const share = free !== null ? used / (used + free) : 0;
+  $('#storage').replaceChildren(
+    el('div', { class: 'storage-head' }, el('span', { text: 'Speicher' }), el('span', { text: free !== null ? `${bytes(used)} belegt · ${bytes(free)} frei` : `${bytes(used)} belegt` })),
+    el('div', { class: `meter${low ? ' low' : ''}`, role: 'meter', 'aria-valuenow': String(Math.round(share * 100)), 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-label': 'Anteil von Cutroom am freien Speicher' }, el('span', { style: `width:${Math.max(1, share * 100)}%` })),
+    ...(low ? [el('p', { class: 'storage-warn', text: '! Speicher wird knapp — alte Projekte löschen oder Renders sichern.' })] : []),
+  );
+}
+
 // ---------- wiring ----------
 
 $('#newProject').addEventListener('click', createProject);
-$('#emptyNew').addEventListener('click', createProject);
+$('#homeNew').addEventListener('click', createProject);
 $('#cutBtn').addEventListener('click', startCut);
 $('#reviseBtn').addEventListener('click', startRevise);
 $('#cancelBtn').addEventListener('click', () => {
@@ -649,16 +835,20 @@ $('#feedbackChips').addEventListener('click', (e) => {
 });
 
 setupDrop($('#clipDrop'), $('#clipInput'), 'clips');
-window.addEventListener('hashchange', () => openProject(location.hash.slice(1)));
+setupDrop($('#homeDrop'), $('#homeInput'), 'clips', quickCreate);
+window.addEventListener('hashchange', route);
 
 (async function init() {
   await Promise.all([loadHealth(), loadProjects()]);
-  const id = location.hash.slice(1) || state.projects[0]?.id;
-  if (id) {
-    if (location.hash.slice(1) !== id) history.replaceState(null, '', `#${id}`);
-    openProject(id);
-  } else {
-    renderProjects();
-  }
+  route();
   setInterval(loadHealth, 60000);
+  // The home screen refreshes itself: a cheap check every 4 s for a job
+  // starting or finishing, the full dashboard while one runs or every 30 s.
+  let tick = 0;
+  setInterval(async () => {
+    if ($('#home').hidden) return;
+    tick += 1;
+    const { running } = await api('/api/projects').catch(() => ({}));
+    if (running || running !== (state.dashboard?.running?.id || null) || tick % 8 === 0) loadDashboard();
+  }, 4000);
 })();

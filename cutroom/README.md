@@ -73,6 +73,21 @@ npm start       # → http://localhost:4317
 Keine npm-Abhängigkeiten, nur Node ≥ 20 (für Animationen ≥ 22). Projekte, Clips und Renders liegen
 in `~/Cutroom/projects/<id>/` und nicht im Repo.
 
+## Home
+
+Die Startseite zeigt auf einen Blick:
+
+- einen laufenden Schnitt mit Live-Status (ein Klick öffnet ihn)
+- eine Ablage: **Clips aufs Home ziehen legt sofort ein neues Projekt an**
+  und lädt sie hoch
+- Kennzahlen: Projekte, fertige Videos, Rohmaterial und geschnittene Länge
+- die zuletzt geschnittenen Videos mit Vorschaubild (ein Klick springt
+  direkt zu dieser Version)
+- alle Projekte nach letzter Aktivität
+- den System-Check (Claude-Login, watch-skill, ffmpeg, Add-ons) und den
+  Speicherplatz. Rohclips sind groß, und bei weniger als 10 GB frei warnt
+  die App.
+
 ## So läuft ein Schnitt
 
 1. **Clips** reinziehen (MP4, MOV, MKV, WebM, beliebig groß).
@@ -158,6 +173,7 @@ dem nächsten Schnitt für alle Projekte.
 | `lib/captions.js` | Untertitel aus Wort-Transkripten, auf die Ausgabe-Timeline gerechnet |
 | `lib/transcribe.js` | Wort-Transkripte über Whisper (HyperFrames) oder ElevenLabs (video-use) |
 | `lib/tools.js` | findet die Add-ons und meldet ihren Status |
+| `lib/dashboard.js` | Daten fürs Home: Kennzahlen, letzte Renders mit Vorschaubild, Projekte, laufender Job, Speicher |
 | `lib/prompts.js` | Aufträge an Claude: neuer Schnitt, Überarbeitung, Korrektur, Selbstkontrolle |
 | `agent/` | wird in jedes Projekt kopiert: `CLAUDE.md`, der `watch`-Skill und `tools/` (Wrapper für timeline-view und HyperFrames) |
 | `scripts/setup.js` | `npm run setup`: installiert video-use und HyperFrames in fester Version |
