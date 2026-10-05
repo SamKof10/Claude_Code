@@ -96,7 +96,11 @@ Die Startseite zeigt auf einen Blick:
    was du willst. Dazu die Add-on-Schalter:
    - **Look**: Original, Clean, Cinematic oder „Claude entscheidet“
    - **Untertitel**: aus, BOLD (2–3 Wörter, Reels) oder Clean (Satzteile)
-   - **Animationen**: aus, Titel/Intro oder „Claude entscheidet“
+   - **Animationen**: aus, Titel, **Erklären** oder „Claude entscheidet“.
+     Bei „Erklären“ hält Claude den Clip an, schiebt ihn verkleinert zur
+     Seite, zeichnet Linie, Pfeil oder Kreis ein und schreibt kurz dazu,
+     worum es geht. Danach läuft der Clip weiter. Was er zeigen soll,
+     schreibst du ins Wunschfeld.
    - **Selbstkontrolle**: Claude schaut sich das fertige Video an jeder
      Schnittstelle an und bessert nach, bevor du es siehst
 3. **Schneiden lassen**: Im Live-Log siehst du, welchen Clip Claude gerade
@@ -141,6 +145,14 @@ dem nächsten Schnitt für alle Projekte.
 - **Erster Untertitel-Lauf dauert:** Whisper lädt einmalig das Modell
   `large-v3-turbo` (~1,6 GB). HyperFrames lädt beim ersten Rendern ein
   headless Chrome. Danach geht beides offline und schnell.
+- **Untertitel brauchen Sprache.** Bei FPV- oder Ski-Clips mit nur Wind und
+  Motor findet Whisper nichts. Steht der Ton auf „Nur Musik“, gibt es auch
+  keine, weil Untertitel nur dort erscheinen, wo man den Originalton hört.
+  Das Live-Log sagt jeweils, warum.
+- **Erklär-Szenen zeichnen auf einem Standbild.** Bewegte Objekte über
+  mehrere Frames zu verfolgen (Tracking) kann Claude nicht zuverlässig.
+  Deshalb wird angehalten. Die Punkte liest Claude von einem Raster-Bild ab
+  (`./tools/media grid`). Das ist recht genau, aber nicht pixelperfekt.
 - **Kein Beat-Sync:** Claude sieht Bilder und liest das Transcript, hört aber
   keine Musik. Die Musik liegt unter dem Schnitt, die Schnitte sitzen aber
   nicht auf dem Beat.
@@ -175,6 +187,6 @@ dem nächsten Schnitt für alle Projekte.
 | `lib/tools.js` | findet die Add-ons und meldet ihren Status |
 | `lib/dashboard.js` | Daten fürs Home: Kennzahlen, letzte Renders mit Vorschaubild, Projekte, laufender Job, Speicher |
 | `lib/prompts.js` | Aufträge an Claude: neuer Schnitt, Überarbeitung, Korrektur, Selbstkontrolle |
-| `agent/` | wird in jedes Projekt kopiert: `CLAUDE.md`, der `watch`-Skill und `tools/` (Wrapper für timeline-view und HyperFrames) |
+| `agent/` | wird in jedes Projekt kopiert: `CLAUDE.md`, der `watch`-Skill, `tools/` (timeline-view, HyperFrames, media) und `examples/explain-scene.html` (getestete Vorlage für Erklär-Szenen) |
 | `scripts/setup.js` | `npm run setup`: installiert video-use und HyperFrames in fester Version |
 | `public/` | Oberfläche (Vanilla JS) |

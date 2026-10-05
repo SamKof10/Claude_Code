@@ -1,0 +1,237 @@
+<!doctype html>
+<!--
+  Cutroom — Vorlage für eine Erklär-Szene (HyperFrames-Komposition).
+  Anlauf läuft → Stopp auf dem Standbild → Bild schrumpft zur Seite → Linie,
+  Pfeil, Kreis werden eingezeichnet → Text → zurück auf Vollbild.
+
+  Anpassen (nur der CONFIG-Block und die drei data-duration-Werte):
+    W, H        Leinwand = Ausgabegröße aus dem Auftrag (auch in data-width/height)
+    SW, SH      Größe von assets/still.png (gibt ./tools/media still aus)
+    RUN         Länge von assets/run.mp4 in Sekunden
+    DRAW        was eingezeichnet wird, Koordinaten in PROZENT des Standbilds
+                (direkt aus grid.png ablesen)
+    TITLE, SUB  Text in der freien Fläche
+  Die Gesamtlänge steht nach dem Laden in window.__sceneDuration — trag sie
+  auf #root und (minus RUN) auf #freeze als data-duration ein.
+-->
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        background: #0b0b0d;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+      }
+      #backdrop {
+        position: absolute;
+        inset: -60px;
+        width: calc(100% + 120px);
+        height: calc(100% + 120px);
+        object-fit: cover;
+        filter: blur(30px) brightness(0.45);
+        opacity: 0;
+      }
+      #stage {
+        position: absolute;
+        overflow: hidden;
+        transform-origin: 50% 50%;
+        will-change: transform;
+      }
+      #stage video,
+      #stage img,
+      #stage svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      #stage video,
+      #stage img {
+        object-fit: cover;
+      }
+      #flash {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        opacity: 0;
+      }
+      .ink {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      #label {
+        position: absolute;
+        color: #fff;
+        opacity: 0;
+      }
+      #label h2 {
+        margin: 0 0 0.25em;
+        font-weight: 800;
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+      }
+      #label p {
+        margin: 0;
+        font-weight: 500;
+        line-height: 1.3;
+        color: rgba(255, 255, 255, 0.75);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="explain" data-start="0" data-width="1080" data-height="1920" data-duration="6">
+      <img id="backdrop" class="clip" src="assets/still.png" alt="" data-start="1.2" data-duration="4.8" />
+      <div id="stage">
+        <video id="run" src="assets/run.mp4" data-start="0" data-duration="1.2" data-has-audio="true" playsinline></video>
+        <img id="freeze" class="clip" src="assets/still.png" alt="" data-start="1.2" data-duration="4.8" />
+        <svg id="ink" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div id="flash"></div>
+      <div id="label"><h2 id="title"></h2><p id="sub"></p></div>
+    </div>
+
+    <script>
+      // ---------------- CONFIG ----------------
+      const W = 1080, H = 1920; // Leinwand
+      const SW = 1920, SH = 1080; // Standbild
+      const RUN = 1.2; // Anlauf in s
+      const ACCENT = '#ffd400';
+      const DRAW = [
+        // Linie (Prozent des Standbilds), optional mit Pfeilspitze am Ende
+        { type: 'line', points: [[18, 78], [38, 62], [55, 50], [72, 42]], arrow: true },
+        // Kreis um ein Detail: Mittelpunkt in %, Radius in % der Bildbreite
+        { type: 'circle', at: [75, 40], r: 7 },
+      ];
+      const TITLE = 'Durch die Lücke';
+      const SUB = 'Linie halten, erst danach Gas';
+      const RETURN = true; // am Ende zurück auf Vollbild
+      // ----------------------------------------
+
+      const $ = (s) => document.querySelector(s);
+      const NS = 'http://www.w3.org/2000/svg';
+      const px = ([x, y]) => [(x / 100) * SW, (y / 100) * SH];
+
+      // Bühne mit exakt dem Seitenverhältnis des Standbilds, füllt die Leinwand.
+      const s0 = Math.max(W / SW, H / SH);
+      const stageW = SW * s0, stageH = SH * s0;
+      Object.assign($('#stage').style, {
+        width: `${stageW}px`,
+        height: `${stageH}px`,
+        left: `${(W - stageW) / 2}px`,
+        top: `${(H - stageH) / 2}px`,
+      });
+
+      // Wohin die Bühne schrumpft und wo der Text steht.
+      const landscape = W >= H;
+      const region = landscape ? { x: 0.04 * W, y: 0.1 * H, w: 0.6 * W, h: 0.8 * H } : { x: 0.05 * W, y: 0.07 * H, w: 0.9 * W, h: 0.52 * H };
+      const k = Math.min(region.w / stageW, region.h / stageH);
+      const dx = region.x + region.w / 2 - W / 2;
+      const dy = region.y + region.h / 2 - H / 2;
+      const text = landscape
+        ? { left: 0.67 * W, top: 0.5 * H, width: 0.29 * W, size: 0.05 * H }
+        : { left: 0.07 * W, top: region.y + (stageH * k + region.h) / 2 + 0.06 * H, width: 0.86 * W, size: 0.042 * H };
+      Object.assign($('#label').style, {
+        left: `${text.left}px`,
+        top: `${text.top}px`,
+        width: `${text.width}px`,
+        transform: landscape ? 'translateY(-50%)' : 'none',
+      });
+      $('#title').textContent = TITLE;
+      $('#title').style.fontSize = `${text.size}px`;
+      $('#sub').textContent = SUB;
+      $('#sub').style.fontSize = `${text.size * 0.45}px`;
+
+      // Zeichnung in Standbild-Pixeln: steckt in der Bühne, bewegt sich also mit.
+      const svg = $('#ink');
+      svg.setAttribute('viewBox', `0 0 ${SW} ${SH}`);
+      const stroke = SW * 0.012;
+      const shapes = [];
+      const add = (tag, attrs) => {
+        const el = document.createElementNS(NS, tag);
+        for (const [a, v] of Object.entries(attrs)) el.setAttribute(a, v);
+        svg.appendChild(el);
+        return el;
+      };
+      // Weiche Kurve durch alle Punkte (Catmull-Rom → kubische Bézier).
+      const smooth = (pts) => {
+        let d = `M ${pts[0][0]} ${pts[0][1]}`;
+        for (let i = 0; i < pts.length - 1; i++) {
+          const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+          const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+          const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+          d += ` C ${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${p2[0]} ${p2[1]}`;
+        }
+        return d;
+      };
+      for (const item of DRAW) {
+        let d;
+        if (item.type === 'circle') {
+          const [cx, cy] = px(item.at);
+          const r = (item.r / 100) * SW;
+          d = `M ${cx} ${cy - r} a ${r} ${r} 0 1 1 -0.01 0`;
+        } else {
+          d = smooth(item.points.map(px));
+        }
+        // Dunkle Kontur darunter, damit die Linie auf jedem Hintergrund lesbar ist.
+        const under = add('path', { d, class: 'ink', stroke: 'rgba(0,0,0,.55)', 'stroke-width': stroke * 1.9 });
+        const line = add('path', { d, class: 'ink', stroke: ACCENT, 'stroke-width': stroke });
+        let head = null;
+        if (item.arrow) {
+          const pts = item.points.map(px);
+          const [a, b] = pts.slice(-2);
+          const ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+          const L = stroke * 3.2;
+          const tip = b, left = [b[0] - L * Math.cos(ang - 0.5), b[1] - L * Math.sin(ang - 0.5)], right = [b[0] - L * Math.cos(ang + 0.5), b[1] - L * Math.sin(ang + 0.5)];
+          head = add('path', { d: `M ${left[0]} ${left[1]} L ${tip[0]} ${tip[1]} L ${right[0]} ${right[1]}`, class: 'ink', stroke: ACCENT, 'stroke-width': stroke, opacity: 0 });
+        }
+        for (const p of [under, line]) {
+          const len = p.getTotalLength();
+          p.style.strokeDasharray = `${len}`;
+          p.style.strokeDashoffset = `${len}`;
+        }
+        shapes.push({ under, line, head });
+      }
+
+      // ---------------- Timeline ----------------
+      const tl = gsap.timeline({ paused: true });
+      let t = RUN;
+      tl.set('#flash', { opacity: 0.85 }, t).to('#flash', { opacity: 0, duration: 0.12 }, t);
+      tl.to('#backdrop', { opacity: 1, duration: 0.5, ease: 'power2.out' }, t);
+      tl.to('#stage', { scale: k, x: dx, y: dy, borderRadius: 24 / k + 'px', boxShadow: '0 30px 80px rgba(0,0,0,.55)', duration: 0.6, ease: 'power3.inOut' }, t + 0.05);
+      t += 0.7;
+      shapes.forEach((s, i) => {
+        tl.to([s.under, s.line], { strokeDashoffset: 0, duration: 1.0, ease: 'power2.out' }, t);
+        if (s.head) tl.to(s.head, { opacity: 1, duration: 0.15 }, t + 0.95);
+        if (i === 0) tl.fromTo('#label', { opacity: 0, x: landscape ? 30 : 0, y: landscape ? 0 : 30 }, { opacity: 1, x: 0, y: 0, duration: 0.5, ease: 'power3.out' }, t + 0.3);
+        t += 1.15;
+      });
+      t += 1.2; // stehen lassen
+      if (RETURN) {
+        tl.to(['#ink', '#label'], { opacity: 0, duration: 0.3 }, t);
+        tl.to('#stage', { scale: 1, x: 0, y: 0, borderRadius: 0, boxShadow: '0 0 0 rgba(0,0,0,0)', duration: 0.5, ease: 'power3.inOut' }, t + 0.1);
+        tl.to('#backdrop', { opacity: 0, duration: 0.4 }, t + 0.2);
+        t += 0.6;
+      }
+      window.__sceneDuration = Math.round(t * 10) / 10;
+      const declared = Number($('#root').dataset.duration);
+      if (Math.abs(declared - window.__sceneDuration) > 0.05) {
+        console.warn(`data-duration auf #root ist ${declared}, die Szene ist ${window.__sceneDuration} s lang — anpassen.`);
+      }
+      window.__timelines['explain'] = tl;
+    </script>
+  </body>
+</html>

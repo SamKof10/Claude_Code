@@ -237,7 +237,7 @@ async function render({ dir, edit, clips, musicFile, srt, outFile, onProgress, t
 
     // Captions last, so no overlay can hide them. The file sits next to the
     // ffmpeg working dir, which avoids escaping the absolute path.
-    if (srt && filters.subtitles) {
+    if (srt?.text && filters.subtitles) {
       fs.writeFileSync(path.join(tmp, 'captions.srt'), srt.text);
       graph.push(`${video}subtitles=filename=captions.srt:force_style='${srt.style}'[vs]`);
       video = '[vs]';

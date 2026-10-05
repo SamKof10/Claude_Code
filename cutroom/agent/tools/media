@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Footage helpers for explainer scenes. Outputs may only go under overlays/.
+#   ./tools/media still <clip> <t> <out.png>        exact frame at t seconds (freeze frame)
+#   ./tools/media grid  <clip> <t> <out.png>        same frame with a 10 % grid + labels,
+#                                                   to read coordinates for drawings
+#   ./tools/media cut   <clip> <start> <end> <out.mp4>   piece of a clip for a composition
+# Prints the output path and its pixel size.
+set -euo pipefail
+
+usage() { sed -n '2,7p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
+[ $# -ge 4 ] || usage
+cmd="$1" src="$2"
+out="${!#}"
+case "$out" in
+  overlays/*) ;;
+  *) echo "cutroom: Ausgabe muss unter overlays/ liegen." >&2; exit 2 ;;
+esac
+case "$out" in *..*) echo "cutroom: kein .. im Pfad." >&2; exit 2 ;; esac
+[ -f "$src" ] || { echo "cutroom: $src nicht gefunden." >&2; exit 2; }
+mkdir -p "$(dirname "$out")"
+
+# Long side at most 1920 px, so stills and cuts stay light.
+fit="scale='if(gt(iw,ih),min(1920,iw),-2)':'if(gt(iw,ih),-2,min(1920,ih))'"
+
+case "$cmd" in
+  still)
+    ffmpeg -v error -y -ss "$3" -i "$src" -frames:v 1 -vf "$fit" "$out"
+    ;;
+  grid)
+    labels=""
+    # Read the list first: grep -q on a pipe would SIGPIPE ffmpeg and trip pipefail.
+    filters="$(ffmpeg -hide_banner -filters 2>/dev/null || true)"
+    if grep -q " drawtext " <<<"$filters"; then
+      for p in 10 20 30 40 50 60 70 80 90; do
+        labels+=",drawtext=text='${p}':x=w*${p}/100+4:y=4:fontsize=h/40:fontcolor=yellow:box=1:boxcolor=black@0.6"
+        labels+=",drawtext=text='${p}':x=4:y=h*${p}/100+4:fontsize=h/40:fontcolor=yellow:box=1:boxcolor=black@0.6"
+      done
+    fi
+    ffmpeg -v error -y -ss "$3" -i "$src" -frames:v 1 \
+      -vf "$fit,drawgrid=w=iw/10:h=ih/10:t=1:c=yellow@0.55,drawgrid=w=iw/2:h=ih/2:t=3:c=yellow@0.8${labels}" "$out"
+    ;;
+  cut)
+    [ $# -ge 5 ] || usage
+    len=$(awk -v a="$3" -v b="$4" 'BEGIN { printf "%.3f", b - a }')
+    ffmpeg -v error -y -ss "$3" -i "$src" -t "$len" -vf "$fit" \
+      -c:v libx264 -preset veryfast -crf 18 -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart "$out"
+    ;;
+  *) usage ;;
+esac
+
+size=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$out")
+echo "$out ($size px)"

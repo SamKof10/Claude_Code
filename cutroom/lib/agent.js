@@ -22,6 +22,7 @@ const ALLOWED_TOOLS = [
   'Bash(ffprobe:*)',
   'Bash(./tools/timeline-view:*)',
   'Bash(./tools/hyperframes:*)',
+  'Bash(./tools/media:*)',
   'Read',
   'Write',
   'Edit',
@@ -89,6 +90,11 @@ function describeTool(name, input = {}) {
     if (/ffprobe/.test(cmd)) return { icon: 'tool', text: 'Misst Clipdauer' };
     const tv = cmd.match(/timeline-view\s+["']?(?:clips\/|renders\/)?([^"'\s]+)["']?\s+([\d.]+)\s+([\d.]+)/);
     if (tv) return { icon: 'watch', text: `Prüft Schnittstelle: ${tv[1]} ${tv[2]}–${tv[3]} s (Filmstreifen + Waveform)` };
+    const media = cmd.match(/tools\/media\s+(still|grid|cut)\s+["']?(?:clips\/)?([^"'\s]+)["']?\s+([\d.]+)/);
+    if (media) {
+      const what = { still: 'Holt Standbild', grid: 'Vermisst Bild für Zeichnung', cut: 'Schneidet Ausschnitt für Animation' }[media[1]];
+      return { icon: 'motion', text: `${what}: ${media[2]} @ ${media[3]} s` };
+    }
     const hf = cmd.match(/tools\/hyperframes\s+(\w+)(?:\s+["']?([^"'\s]+))?/);
     if (hf) {
       const verb = { init: 'Legt Animation an', lint: 'Prüft Animation', validate: 'Prüft Animation', check: 'Prüft Animation', render: 'Rendert Animation', snapshot: 'Macht Vorschaubilder der Animation' }[hf[1]];

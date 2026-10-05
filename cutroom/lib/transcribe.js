@@ -66,7 +66,7 @@ function engine() {
 
 // Transcribes every clip with sound that has no fresh transcript yet.
 // Returns { name: words[] } for all clips that have one.
-async function ensureTranscripts({ dir, clips, onLog, track }) {
+async function ensureTranscripts({ dir, clips, onLog, track, summary = true }) {
   const outDir = path.join(dir, 'transcripts');
   fs.mkdirSync(outDir, { recursive: true });
   const result = {};
@@ -97,6 +97,8 @@ async function ensureTranscripts({ dir, clips, onLog, track }) {
   }
 
   fs.writeFileSync(path.join(outDir, 'packed.md'), pack(result, clips));
+  const lines = Object.entries(result).map(([name, words]) => `${name}: ${words.length ? `${words.length} Wörter` : 'keine Sprache'}`);
+  if (summary && lines.length) onLog?.({ icon: 'tool', text: `Transkript — ${lines.join(' · ')}` });
   return result;
 }
 

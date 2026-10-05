@@ -174,11 +174,16 @@ async function execute(j, project, opts) {
 
   // Reads edit.json and checks it against the clips plus whatever overlays
   // Claude rendered under overlays/.
+  // Your switches win: captions always follow the toggle, and the look does
+  // unless it is set to "Claude decides".
   const defaults = { captions: settings.captions, grade: settings.look === 'auto' ? 'none' : settings.look };
   const readEdit = async () => {
     const all = { ...clips, ...(await overlayClips(dir)) };
     try {
-      return { all, ...validate(JSON.parse(fs.readFileSync(editPath, 'utf8')), all, defaults) };
+      const result = validate(JSON.parse(fs.readFileSync(editPath, 'utf8')), all, defaults);
+      result.edit.captions = settings.captions;
+      if (settings.look !== 'auto') result.edit.output.grade = settings.look;
+      return { all, ...result };
     } catch (err) {
       return { all, errors: [`edit.json fehlt oder ist kein gültiges JSON (${err.message}).`] };
     }
@@ -207,6 +212,7 @@ async function execute(j, project, opts) {
     ].filter(Boolean);
     log(j, { icon: 'cut', text: `Rendert ${edit.segments.length} Segmente · ${edit.duration.toFixed(1)} s${extras.length ? ` · ${extras.join(' · ')}` : ''}` });
     const srt = await captionsFor({ dir, edit, all, j, track });
+    captionCount = srt ? srt.count : null;
     return render({
       dir,
       edit,
@@ -222,6 +228,7 @@ async function execute(j, project, opts) {
     });
   };
 
+  let captionCount = null;
   let result = await renderEdit(checked);
   let review = null;
 
@@ -268,6 +275,7 @@ async function execute(j, project, opts) {
     height: result.height,
     grade: edit.output.grade,
     captions: edit.captions,
+    captionCount,
     overlays: edit.overlays,
     segments: edit.segments,
   };
@@ -283,9 +291,9 @@ async function execute(j, project, opts) {
 }
 
 // Transcription is a nice-to-have: if it fails, the cut still happens.
-async function transcribeSafely({ dir, clips, j, track }) {
+async function transcribeSafely({ dir, clips, j, track, summary = true }) {
   try {
-    return await ensureTranscripts({ dir, clips, track, onLog: (e) => log(j, e) });
+    return await ensureTranscripts({ dir, clips, track, summary, onLog: (e) => log(j, e) });
   } catch (err) {
     if (j.cancelled) throw err;
     log(j, { icon: 'error', text: `Transkription fehlgeschlagen — ohne Untertitel weiter (${err.message.slice(0, 160)})` });
@@ -300,11 +308,24 @@ async function captionsFor({ dir, edit, all, j, track }) {
     return null;
   }
   const uploaded = Object.fromEntries(Object.entries(all).filter(([k]) => !k.startsWith('overlays/')));
-  const transcripts = await transcribeSafely({ dir, clips: uploaded, j, track });
-  const built = transcripts && buildSrt(edit, transcripts);
-  if (!built) return null;
+  // Usually cached from the start of the run — no second summary line.
+  const transcripts = await transcribeSafely({ dir, clips: uploaded, j, track, summary: false });
+  if (!transcripts) return { count: 0 };
+  const built = buildSrt(edit, transcripts);
+  if (!built) {
+    const used = new Set(edit.segments.map((s) => s.clip));
+    const spoken = [...used].some((c) => transcripts[c]?.length);
+    const reason = !spoken
+      ? 'In den verwendeten Clips wurde keine Sprache erkannt'
+      : edit.audio.original <= 0.05
+        ? 'Der Originalton ist stumm (Ton: „Nur Musik“) — Untertitel gibt es nur, wo man die Sprache hört'
+        : 'An den geschnittenen Stellen wird nicht gesprochen';
+    log(j, { icon: 'error', text: `Keine Untertitel: ${reason}` });
+    return { count: 0 };
+  }
+  log(j, { icon: 'tool', text: `Untertitel: ${built.count} Zeilen` });
   const [W, H] = outputSize(edit.output.aspect, all[edit.segments[0].clip]);
-  return { text: built.srt, style: forceStyle(edit.captions, W, H) };
+  return { text: built.srt, style: forceStyle(edit.captions, W, H), count: built.count };
 }
 
 // Videos the agent rendered with HyperFrames (overlays/<id>/…). They can be

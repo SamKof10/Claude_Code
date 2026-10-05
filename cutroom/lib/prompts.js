@@ -43,7 +43,7 @@ function extras({ settings, size, tools, transcripts }) {
   lines.push(`- Look: ${LOOK_LABEL[settings.look] || LOOK_LABEL.none}`);
   if (settings.captions !== 'none' && transcripts) {
     lines.push(
-      `- Untertitel: captions "${settings.captions}". Die App brennt sie aus den Transkripten ein — du lieferst nur die Schnitte.`,
+      `- Untertitel: captions "${settings.captions}" (vom User festgelegt). Die App brennt sie aus den Transkripten ein — du lieferst nur die Schnitte.`,
       '  Wortgenaue Transkripte liegen in transcripts/packed.md (Phrasen mit Zeiten). Lies sie zuerst und schneide auf Wortgrenzen.',
     );
   } else {
@@ -54,7 +54,12 @@ function extras({ settings, size, tools, transcripts }) {
   } else if (!tools.hyperframes) {
     lines.push('- Animationen: gewünscht, aber HyperFrames ist nicht installiert — overlays bleibt leer. Erwähne das in deiner Antwort.');
   } else {
-    const what = settings.motion === 'titles' ? 'einen Titel oder ein Intro (max. 2 Overlays, je höchstens 4 s)' : 'nur dort, wo sie den Schnitt wirklich besser machen (max. 3 Overlays)';
+    const what = {
+      titles: 'einen Titel oder ein Intro (max. 2 Overlays, je höchstens 4 s)',
+      explain:
+        '1–2 Erklär-Szenen („Erklär-Szene“ in CLAUDE.md): Clip anhalten, verkleinern und zur Seite schieben, einzeichnen, was gemeint ist (Linie, Pfeil, Kreis, kurzer Text), dann weiter. Was erklärt werden soll, steht im Wunsch — sonst nimm den spannendsten Moment',
+      auto: 'nur dort, wo sie den Schnitt wirklich besser machen (max. 3)',
+    }[settings.motion] || 'nur wo sinnvoll';
     lines.push(`- Animationen mit HyperFrames: ${what}. Leinwand ${W}×${H}, ${settings.fps || 30} fps, Ablauf siehe CLAUDE.md.`);
   }
   if (tools.videoUse) lines.push('- Schnittpunkte prüfen: ./tools/timeline-view (Filmstreifen + Waveform) an kniffligen Stellen.');

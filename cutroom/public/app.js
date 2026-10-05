@@ -391,6 +391,7 @@ function renderSettings() {
   $('#captionsHint').textContent = !state.health ? '' : canCaption ? (a.filters?.subtitles === false ? 'Dein ffmpeg kann keine Untertitel einbrennen (libass fehlt).' : '') : 'Braucht HyperFrames (lokales Whisper) — npm run setup';
   $('#motionHint').textContent = !state.health || a.hyperframes ? '' : a.nodeOk === false ? 'HyperFrames braucht Node 22+.' : 'Nicht installiert — npm run setup';
   $('#reviewToggle').checked = Boolean(s.review);
+  $('#motionNote').hidden = segValue('motionSeg') !== 'explain';
   renderMusic();
   renderCutHint();
 }
@@ -578,7 +579,7 @@ function renderResult() {
   $('#versionReview').textContent = v.review ? `Selbstkontrolle: ${v.review}` : '';
   const extras = [
     v.grade && v.grade !== 'none' && `Look: ${LOOK_NAMES[v.grade] || (v.grade.length > 24 ? 'eigener Filter' : v.grade)}`,
-    v.captions && v.captions !== 'none' && `Untertitel: ${v.captions === 'bold' ? 'BOLD' : 'Clean'}`,
+    v.captions && v.captions !== 'none' && (v.captionCount === 0 ? 'Untertitel: keine Sprache gefunden' : `Untertitel: ${v.captions === 'bold' ? 'BOLD' : 'Clean'}${v.captionCount ? ` · ${v.captionCount} Zeilen` : ''}`),
     v.overlays?.length && `${v.overlays.length} Animation${v.overlays.length > 1 ? 'en' : ''}`,
   ].filter(Boolean);
   $('#versionExtras').replaceChildren(...extras.map((t) => el('span', { text: t })));
@@ -821,6 +822,7 @@ for (const id of ['aspectSeg', 'lengthSeg', 'audioSeg', 'lookSeg', 'captionsSeg'
     const b = e.target.closest('button');
     if (!b || b.disabled) return;
     setSeg(id, b.dataset.v);
+    if (id === 'motionSeg') $('#motionNote').hidden = b.dataset.v !== 'explain';
     saveSettings();
   });
 }

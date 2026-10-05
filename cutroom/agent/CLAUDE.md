@@ -46,9 +46,9 @@ naheliegendste Entscheidung und nenne sie in deiner Antwort. Keine Subagents.
 {
   "title": "Kurzer Titel für diese Version",
   "summary": "2–4 Sätze: Aufbau des Schnitts und warum so",
-  "output": { "aspect": "9:16", "fps": 30, "fadeOut": 0.4, "grade": "none" },
+  "output": { "aspect": "9:16", "fps": 30, "fadeOut": 0.4, "grade": "neutral_punch" },
   "audio": { "original": 1.0, "music": 0.0 },
-  "captions": "none",
+  "captions": "bold",
   "segments": [
     {
       "clip": "datei.mp4",
@@ -76,13 +76,15 @@ naheliegendste Entscheidung und nenne sie in deiner Antwort. Keine Subagents.
   Oder eine eigene Kette aus `eq`, `curves`, `colorbalance`,
   `colortemperature`, `hue`, `vibrance`, `colorchannelmixer`, `colorlevels`,
   `unsharp`, z. B. `"eq=contrast=1.08:saturation=1.1,colortemperature=temperature=5800"`.
-  Nie aggressiv: Hauttöne prüfen, lieber subtil.
+  Nie aggressiv: Hauttöne prüfen, lieber subtil. Gibt der Auftrag einen Look
+  vor, gilt der.
 - `audio.original` / `audio.music`: Lautstärke 0–1 für Originalton und
   Musiktrack. `music` wirkt nur, wenn ein Track in `music/` liegt. Die App
   normalisiert am Ende auf -14 LUFS — du musst nicht nachregeln.
 - `captions`: `"none"`, `"bold"` (2–3 Wörter, GROSS — Reels/TikTok) oder
-  `"clean"` (ganze Satzteile — Talks, Erklärvideos). Die App brennt sie aus
-  den Transkripten ein; Untertitel werden nur gezeigt, wo der Originalton
+  `"clean"` (ganze Satzteile — Talks, Erklärvideos). **Immer den Wert aus
+  dem Auftrag übernehmen** — der User stellt ihn per Schalter ein, die App
+  setzt ihn ohnehin durch. Untertitel erscheinen nur, wo der Originalton
   hörbar ist.
 - `segments` laufen in dieser Reihenfolge ab. `clip` ist der Dateiname in
   `clips/` — oder eine gerenderte Animation unter `overlays/…`, wenn sie
@@ -138,7 +140,9 @@ Workflow-Schritte mit Subagents, Rückfragen und Freigaben gelten hier
    Hintergrund** (kein Vollflächen-Fill); für Vollbild-Karten ein
    Hintergrund auf einem Kind-Element. Eine `gsap.timeline({ paused: true })`,
    registriert unter `window.__timelines["<composition-id>"]`. Easing nie
-   `linear` — `power3.out` für Auftritte. Keine Netzwerk-Ressourcen, keine
+   `linear` — `power3.out` für Auftritte. Außer dem GSAP-Script, das `init`
+   einbindet, nichts aus dem Netz laden (keine Web-Fonts, keine Bilder per
+   URL — Systemschrift wie `"Helvetica Neue", Arial, sans-serif`), keine
    Zufallswerte.
 3. Prüfen: `./tools/hyperframes lint overlays/<id>` — Fehler beheben.
 4. Rendern: `./tools/hyperframes render overlays/<id> -o overlays/<id>/render.mov --format mov --quiet`
@@ -152,6 +156,55 @@ Stil: kurz und klar. Titel 1,5–3 s, Lower-Thirds 2–4 s, letzter Frame
 Schrift (auf dem Handy lesbar), Text nicht in die unteren 25 % bei 9:16
 (da liegen Untertitel und App-Buttons). Text, den der User nicht vorgegeben
 hat, kurz halten — lieber ein starkes Wort als ein Satz.
+
+## Erklär-Szene (Clip anhalten, verkleinern, einzeichnen)
+
+Wenn der Auftrag „Erklären“ verlangt: ein Moment wird angehalten, das Bild
+schrumpft zur Seite, und du zeichnest ein, worum es geht — eine Linie durch
+die Lücke, einen Pfeil auf die Kante, einen Kreis um das Detail — plus ein
+kurzer Text. Wie eine Sport-Analyse. Pro Szene ein Gedanke.
+
+**Vorbereiten** (Zeitpunkt `t` = der Frame, auf dem angehalten wird):
+
+```
+./tools/media cut   clips/<datei> <t-1.2> <t> overlays/<id>/assets/run.mp4   # Anlauf bis zum Stopp
+./tools/media still clips/<datei> <t> overlays/<id>/assets/still.png         # Standbild (gibt Größe sw×sh aus)
+./tools/media grid  clips/<datei> <t> overlays/<id>/grid.png                  # dasselbe mit 10-%-Raster
+```
+
+`grid.png` mit Read ansehen und die Punkte für deine Zeichnung in Prozent
+ablesen (gelbe Linien = 10 %, dicke = 50 %) — die Vorlage rechnet sie selbst
+in Pixel um. Nur zeichnen, was klar im Bild zu sehen ist.
+Das Bild steht still — es gibt kein Tracking bewegter Objekte.
+
+**Aufbau — mit der fertigen Vorlage.** Nach `./tools/hyperframes init overlays/<id> …`
+liest du `examples/explain-scene.html` und schreibst eine angepasste Kopie nach
+`overlays/<id>/index.html`. Ändern musst du nur:
+
+- den `CONFIG`-Block: `W`/`H` (Leinwand aus dem Auftrag, auch in
+  `data-width`/`data-height`), `SW`/`SH` (Standbildgröße), `RUN` (Länge von
+  run.mp4), `DRAW` (Linien mit `points`, optional `arrow: true`, Kreise mit
+  `at` und `r` — alles in **Prozent**, direkt aus `grid.png`), `TITLE`, `SUB`,
+  `RETURN`
+- die `data-duration`-Werte: mit 2 Zeichen-Elementen und Rückweg 6 s auf
+  `#root` und 4,8 s auf `#freeze` und `#backdrop`. Jedes Element mehr oder
+  weniger ±1,15 s, ohne Rückweg −0,6 s. Die Vorlage warnt in der Konsole,
+  wenn `#root` nicht zur Szene passt.
+
+Die Vorlage erledigt den Rest: Bühne mit dem Seitenverhältnis des Standbilds,
+Verkleinern und Verschieben (16:9 nach links, 9:16 nach oben), Zeichnen per
+`stroke-dashoffset` mit dunkler Kontur (lesbar auf jedem Hintergrund),
+Pfeilspitze, Text in der freien Fläche, unscharfer Hintergrund, Rückweg.
+Weil Bild und Zeichnung im selben Container stecken, bleiben die Striche
+beim Verkleinern exakt auf dem Bild. Mehr als drei Zeichen-Elemente pro
+Szene werden unübersichtlich.
+
+**Rendern** als Vollbild-Segment ohne Transparenz:
+`./tools/hyperframes render overlays/<id> -o overlays/<id>/render.mp4 --quiet`
+
+**In `edit.json`:** Das Segment davor endet in der Quelle bei `t − 1,2`,
+dann kommt `{ "clip": "overlays/<id>/render.mp4", "start": 0, "end": <Szenenlänge> }`,
+und wenn es weitergehen soll, setzt das nächste Segment bei `t` fort.
 
 ## Überarbeitungen
 

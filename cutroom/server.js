@@ -39,7 +39,7 @@ const ASPECTS = ['9:16', '16:9', '1:1', '4:5', 'source'];
 const AUDIO_MODES = ['original', 'music', 'mix'];
 const LOOKS = ['none', 'auto', 'neutral_punch', 'warm_cinematic'];
 const CAPTIONS = ['none', 'bold', 'clean'];
-const MOTION = ['none', 'titles', 'auto'];
+const MOTION = ['none', 'titles', 'explain', 'auto'];
 
 function send(res, status, body) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
