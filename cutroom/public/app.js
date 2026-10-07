@@ -91,7 +91,7 @@ function renderHealth() {
   if (!h) return box.append(el('span', { class: 'pill err', text: 'Server nicht erreichbar' }));
 
   const c = h.claude;
-  if (!c.installed) box.append(el('span', { class: 'pill err', text: 'Claude Code fehlt', title: 'npm i -g @anthropic-ai/claude-code' }));
+  if (!c.ok) box.append(el('span', { class: 'pill err', text: claudeProblem(c).short, title: claudeProblem(c).fix }));
   else if (!c.loggedIn) box.append(el('span', { class: 'pill err', text: 'Claude nicht angemeldet', title: 'Im Terminal: claude → /login' }));
   else if (!c.subscription) box.append(el('span', { class: 'pill warn', text: `Claude via ${c.method}`, title: 'Läuft nicht über das Abo — mit /login dein Pro-Konto verbinden' }));
   else box.append(el('span', { class: 'pill ok', text: `Claude Pro · ${h.model}`, title: `Claude Code ${c.version} · ${c.method}` }));
@@ -113,10 +113,17 @@ function renderHealth() {
   renderSystem();
 }
 
+// Why the Claude probe failed, in words — "missing" is rarely the truth.
+function claudeProblem(c) {
+  if (c.reason === 'missing') return { short: 'Claude Code nicht gefunden', fix: 'Im Terminal „which claude“ prüfen; ist es da, Cutroom aus demselben Terminal neu starten' };
+  if (c.reason === 'timeout') return { short: 'Claude antwortet nicht', fix: 'Läuft vielleicht gerade ein Update — kurz warten, die Anzeige prüft von selbst neu' };
+  return { short: 'Claude Code meldet einen Fehler', fix: c.detail || 'Im Terminal „claude --version“ ausführen und die Meldung ansehen' };
+}
+
 function blocker() {
   const h = state.health;
   if (!h) return 'Server nicht erreichbar.';
-  if (!h.claude.installed) return 'Claude Code ist nicht installiert (siehe README).';
+  if (!h.claude.ok) return `${claudeProblem(h.claude).short}: ${claudeProblem(h.claude).fix}`;
   if (!h.claude.loggedIn) return 'Claude Code ist nicht angemeldet: im Terminal `claude` starten, /login.';
   if (!h.watchSkill) return 'watch-skill fehlt (siehe README).';
   if (!h.ffmpeg) return 'ffmpeg fehlt: brew install ffmpeg.';
@@ -757,8 +764,8 @@ function renderSystem() {
     el('li', { class: `check-row ${status}` }, el('span', { class: 'check-icon', text: { ok: '✓', off: '–', bad: '!' }[status] }), el('span', {}, el('strong', { text: label }), hint ? el('span', { text: hint }) : null));
   const c = h.claude;
   $('#systemChecks').replaceChildren(
-    !c.installed
-      ? row('bad', 'Claude Code fehlt', 'npm install -g @anthropic-ai/claude-code')
+    !c.ok
+      ? row('bad', claudeProblem(c).short, claudeProblem(c).fix)
       : !c.loggedIn
         ? row('bad', 'Claude nicht angemeldet', 'Terminal: claude auth login')
         : row('ok', `Claude Pro · ${h.model}`, 'Bei „session expired“: claude auth login'),

@@ -17,10 +17,11 @@ const bad = (msg, fix) => {
   major >= 20 ? ok(`Node ${process.versions.node}`) : bad(`Node ${process.versions.node} ist zu alt`, 'Node 20 oder neuer installieren (brew install node)');
 
   const claude = await authStatus();
-  if (!claude.installed) bad('Claude Code nicht gefunden', 'npm install -g @anthropic-ai/claude-code');
+  if (!claude.ok && claude.reason === 'missing') bad('Claude Code nicht gefunden', 'npm install -g @anthropic-ai/claude-code (oder: which claude)');
+  else if (!claude.ok) bad(`Claude Code antwortet nicht richtig (${claude.reason})`, claude.detail || 'claude --version im Terminal ausführen');
   else if (!claude.loggedIn) bad('Claude Code nicht angemeldet', 'im Terminal `claude` starten und /login mit deinem Pro-Konto');
   else if (!claude.subscription) bad(`Claude Code nutzt ${claude.method}, nicht dein Abo`, '`claude` starten, /logout, dann /login mit dem Pro-Konto');
-  else ok(`Claude Code ${claude.version} · angemeldet über ${claude.method}`);
+  else ok(`Claude Code ${claude.version} · angemeldet über ${claude.method} · ${claude.bin}`);
   if (strippedApiKey()) console.log('  i ANTHROPIC_API_KEY ist gesetzt — Cutroom blendet ihn aus, damit alles übers Abo läuft');
 
   for (const tool of ['ffmpeg', 'ffprobe']) {

@@ -169,7 +169,9 @@ async function health() {
     addons: tools.status(),
     dataDir: store.DATA_DIR,
   };
-  healthCache = { at: Date.now(), value };
+  // A failed Claude probe is often momentary (update, slow start) — only a
+  // healthy answer is cached, so the next poll checks again.
+  healthCache = claude.ok ? { at: Date.now(), value } : null;
   return value;
 }
 

@@ -6,7 +6,6 @@ const { spawn, execFile } = require('child_process');
 const { killTree } = require('./media');
 const tools = require('./tools');
 
-const CLAUDE_BIN = process.env.CUTROOM_CLAUDE_BIN || 'claude';
 const MODEL = process.env.CUTROOM_MODEL || 'opus';
 const TIMEOUT_MS = Number(process.env.CUTROOM_TIMEOUT_MIN || 45) * 60 * 1000;
 const WATCH_HOME = path.join(os.homedir(), '.watch-skill');
@@ -44,18 +43,43 @@ function strippedApiKey() {
   return API_ENV.slice(0, 2).some((key) => process.env[key]);
 }
 
-function exec(cmd, args, timeout = 15000) {
+// Where `claude` lives. The server's PATH is frozen at start, but Claude
+// Code can move itself (the native installer and its updates put it in
+// ~/.local/bin), so the usual install locations are checked too.
+function claudeBin() {
+  if (process.env.CUTROOM_CLAUDE_BIN) return process.env.CUTROOM_CLAUDE_BIN;
+  const home = os.homedir();
+  return (
+    tools.which('claude', [
+      path.join(home, '.local', 'bin'),
+      path.join(home, '.claude', 'local'),
+      '/opt/homebrew/bin',
+      '/usr/local/bin',
+      path.join(home, '.npm-global', 'bin'),
+    ]) || 'claude'
+  );
+}
+
+const PROBE_MS = Number(process.env.CUTROOM_PROBE_TIMEOUT_MS || 20000);
+
+function exec(cmd, args, timeout = PROBE_MS) {
   return new Promise((resolve) => {
     execFile(cmd, args, { env: subscriptionEnv(), timeout }, (error, stdout, stderr) => {
-      resolve({ ok: !error, out: String(stdout || stderr || error?.message || '').trim() });
+      const reason = !error ? null : error.code === 'ENOENT' ? 'missing' : error.killed || error.signal ? 'timeout' : 'error';
+      resolve({ ok: !error, reason, out: String(stdout || stderr || error?.message || '').trim() });
     });
   });
 }
 
 async function authStatus() {
-  const version = await exec(CLAUDE_BIN, ['--version']);
-  if (!version.ok) return { installed: false };
-  const status = await exec(CLAUDE_BIN, ['auth', 'status', '--json']);
+  const bin = claudeBin();
+  const version = await exec(bin, ['--version']);
+  if (!version.ok) {
+    // "missing" = not found at all; "timeout" = found but did not answer
+    // (often mid-update); "error" = it ran and failed.
+    return { installed: version.reason !== 'missing', ok: false, reason: version.reason, detail: version.out.slice(0, 300), bin };
+  }
+  const status = await exec(bin, ['auth', 'status', '--json']);
   let auth = {};
   try {
     auth = JSON.parse(status.out);
@@ -66,6 +90,8 @@ async function authStatus() {
   const method = String(auth.authMethod || '');
   return {
     installed: true,
+    ok: true,
+    bin,
     version: version.out.split(' ')[0],
     loggedIn: Boolean(auth.loggedIn),
     subscription: auth.loggedIn && !/api.?key/i.test(method),
@@ -144,7 +170,7 @@ function runClaude({ cwd, prompt, resume, onEvent, track }) {
     ];
     if (resume) args.push('--resume', resume);
 
-    const child = spawn(CLAUDE_BIN, args, { cwd, env: subscriptionEnv(), stdio: ['pipe', 'pipe', 'pipe'], detached: true });
+    const child = spawn(claudeBin(), args, { cwd, env: subscriptionEnv(), stdio: ['pipe', 'pipe', 'pipe'], detached: true });
     track?.(child);
     // The prompt goes over stdin so no variadic flag can swallow it.
     child.stdin.end(prompt);
