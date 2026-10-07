@@ -24,7 +24,8 @@ const bad = (msg, fix) => {
   else ok(`Claude Code ${claude.version} · angemeldet über ${claude.method} · ${claude.bin}`);
   if (strippedApiKey()) console.log('  i ANTHROPIC_API_KEY ist gesetzt — Cutroom blendet ihn aus, damit alles übers Abo läuft');
 
-  for (const tool of ['ffmpeg', 'ffprobe']) {
+  const tools = require('../lib/tools');
+  for (const tool of [tools.ffmpegBin(), tools.ffprobeBin()]) {
     await run(tool, ['-version']).then(
       (out) => ok(out.split('\n')[0].split(' ').slice(0, 3).join(' ')),
       () => bad(`${tool} fehlt`, 'brew install ffmpeg'),
@@ -48,8 +49,9 @@ const bad = (msg, fix) => {
   opt(addons.hyperframes, `HyperFrames ${addons.hyperframesVersion} — Animationen, lokale Untertitel`, addons.nodeOk ? 'npm run setup' : 'Node 22+ nötig, dann npm run setup');
   opt(addons.whisper, 'whisper-cli — schnelle lokale Transkription', 'brew install whisper-cpp');
   opt(addons.elevenLabs, 'ElevenLabs-Key — beste Untertitel (kostet)', 'optional: ELEVENLABS_API_KEY in vendor/video-use/.env');
-  opt(addons.filters.subtitles, 'ffmpeg mit libass — Untertitel einbrennen', 'brew reinstall ffmpeg');
-  opt(addons.filters.zscale, 'ffmpeg mit zimg — HDR-Clips (iPhone) korrekt umwandeln', 'brew reinstall ffmpeg');
+  opt(addons.filters.subtitles, 'ffmpeg mit libass — Untertitel einbrennen', 'brew install ffmpeg-full (Cutroom nimmt es automatisch)');
+  opt(addons.filters.zscale, 'ffmpeg mit zimg — HDR-Clips (iPhone) korrekt umwandeln', 'brew install ffmpeg-full');
+  opt(addons.filters.drawtext, 'ffmpeg mit freetype — Raster-Beschriftung für Erklär-Szenen', 'brew install ffmpeg-full');
 
   console.log(process.exitCode ? '\nNoch nicht startklar.\n' : '\nAlles bereit: npm start\n');
 })();

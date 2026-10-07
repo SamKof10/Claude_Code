@@ -395,7 +395,13 @@ function renderSettings() {
   setSeg('motionSeg', a.hyperframes ? s.motion || 'none' : 'none');
   for (const b of $('#captionsSeg').querySelectorAll('button')) b.disabled = !canCaption && b.dataset.v !== 'none';
   for (const b of $('#motionSeg').querySelectorAll('button')) b.disabled = !a.hyperframes && b.dataset.v !== 'none';
-  $('#captionsHint').textContent = !state.health ? '' : canCaption ? (a.filters?.subtitles === false ? 'Dein ffmpeg kann keine Untertitel einbrennen (libass fehlt).' : '') : 'Braucht HyperFrames (lokales Whisper) — npm run setup';
+  $('#captionsHint').textContent = !state.health
+    ? ''
+    : !canCaption
+      ? 'Braucht HyperFrames (lokales Whisper) — npm run setup'
+      : a.filters?.subtitles === false
+        ? 'Dein ffmpeg kann keine Untertitel einbrennen. Im Terminal: brew install ffmpeg-full — Cutroom nimmt es dann automatisch.'
+        : '';
   $('#motionHint').textContent = !state.health || a.hyperframes ? '' : a.nodeOk === false ? 'HyperFrames braucht Node 22+.' : 'Nicht installiert — npm run setup';
   $('#reviewToggle').checked = Boolean(s.review);
   $('#motionNote').hidden = segValue('motionSeg') !== 'explain';
@@ -586,7 +592,7 @@ function renderResult() {
   $('#versionReview').textContent = v.review ? `Selbstkontrolle: ${v.review}` : '';
   const extras = [
     v.grade && v.grade !== 'none' && `Look: ${LOOK_NAMES[v.grade] || (v.grade.length > 24 ? 'eigener Filter' : v.grade)}`,
-    v.captions && v.captions !== 'none' && (v.captionCount === 0 ? 'Untertitel: keine Sprache gefunden' : `Untertitel: ${v.captions === 'bold' ? 'BOLD' : 'Clean'}${v.captionCount ? ` · ${v.captionCount} Zeilen` : ''}`),
+    v.captions && v.captions !== 'none' && (v.captionIssue === 'ffmpeg' ? 'Untertitel: ffmpeg-full fehlt' : v.captionCount === 0 ? 'Untertitel: keine Sprache gefunden' : `Untertitel: ${v.captions === 'bold' ? 'BOLD' : 'Clean'}${v.captionCount ? ` · ${v.captionCount} Zeilen` : ''}`),
     v.overlays?.length && `${v.overlays.length} Animation${v.overlays.length > 1 ? 'en' : ''}`,
   ].filter(Boolean);
   $('#versionExtras').replaceChildren(...extras.map((t) => el('span', { text: t })));
@@ -774,6 +780,9 @@ function renderSystem() {
     a.videoUse ? row('ok', 'video-use', 'Grades, Timeline-Check') : row('off', 'video-use', 'npm run setup'),
     a.hyperframes ? row('ok', `HyperFrames ${a.hyperframesVersion}`, 'Animationen') : row('off', 'HyperFrames', a.nodeOk === false ? 'braucht Node 22+' : 'npm run setup'),
     a.whisper || a.elevenLabs ? row('ok', a.elevenLabs ? 'Untertitel: ElevenLabs' : 'Untertitel: Whisper lokal') : row('off', 'Untertitel', a.hyperframes ? 'brew install whisper-cpp (schneller)' : 'npm run setup'),
+    a.filters?.subtitles === false || a.filters?.zscale === false
+      ? row('bad', 'ffmpeg ist die schlanke Version', 'Ohne Untertitel/HDR/Text — Fix: brew install ffmpeg-full')
+      : row('ok', `ffmpeg: Untertitel, HDR, Text${a.filters?.full ? ' (ffmpeg-full)' : ''}`),
   );
 
   const { used, free } = d.storage;

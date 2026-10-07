@@ -213,6 +213,7 @@ async function execute(j, project, opts) {
     log(j, { icon: 'cut', text: `Rendert ${edit.segments.length} Segmente · ${edit.duration.toFixed(1)} s${extras.length ? ` · ${extras.join(' · ')}` : ''}` });
     const srt = await captionsFor({ dir, edit, all, j, track });
     captionCount = srt ? srt.count : null;
+    captionIssue = srt?.issue || null;
     return render({
       dir,
       edit,
@@ -229,6 +230,7 @@ async function execute(j, project, opts) {
   };
 
   let captionCount = null;
+  let captionIssue = null;
   let result = await renderEdit(checked);
   let review = null;
 
@@ -276,6 +278,7 @@ async function execute(j, project, opts) {
     grade: edit.output.grade,
     captions: edit.captions,
     captionCount,
+    captionIssue,
     overlays: edit.overlays,
     segments: edit.segments,
   };
@@ -304,8 +307,8 @@ async function transcribeSafely({ dir, clips, j, track, summary = true }) {
 async function captionsFor({ dir, edit, all, j, track }) {
   if (edit.captions === 'none') return null;
   if (!tools.ffmpegFilters().subtitles) {
-    log(j, { icon: 'error', text: 'Dein ffmpeg kann keine Untertitel einbrennen (libass fehlt) — sie fallen weg' });
-    return null;
+    log(j, { icon: 'error', text: 'Keine Untertitel: dein ffmpeg ist die schlanke Homebrew-Version ohne libass. Fix: brew install ffmpeg-full (Cutroom nimmt es dann automatisch)' });
+    return { count: 0, issue: 'ffmpeg' };
   }
   const uploaded = Object.fromEntries(Object.entries(all).filter(([k]) => !k.startsWith('overlays/')));
   // Usually cached from the start of the run — no second summary line.

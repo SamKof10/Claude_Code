@@ -36,7 +36,7 @@ Dazu kommen zwei Open-Source-Projekte als Add-ons:
 ## Einrichten (macOS, einmalig)
 
 ```bash
-brew install node ffmpeg uv
+brew install node ffmpeg-full uv
 npm install -g @anthropic-ai/claude-code
 uv tool install "watch-skill[perceive,whisper,ocr]"
 
@@ -45,6 +45,12 @@ claude            # einmal starten, /login, mit dem Pro-Konto anmelden, /exit
 
 `perceive`, `whisper` und `ocr` sind Pflicht. Ohne sie bricht `watch-skill`
 ab oder liefert kein Transcript.
+
+**Wichtig: `ffmpeg-full`, nicht nur `ffmpeg`.** Seit Januar 2026 ist das
+normale Homebrew-`ffmpeg` eine schlanke Version ohne libass (Untertitel),
+zimg (HDR) und freetype (Text im Bild). Cutroom findet `ffmpeg-full`
+automatisch, auch wenn es nicht verlinkt ist. Das normale `ffmpeg` darf
+daneben installiert bleiben.
 
 **Add-ons (optional, für Look, Untertitel, Animationen, Selbstkontrolle):**
 

@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 
-const { ffmpegFilters } = require('./tools');
+const { ffmpegFilters, ffmpegBin, ffprobeBin } = require('./tools');
 
 const ASPECTS = {
   '9:16': [1080, 1920],
@@ -77,7 +77,7 @@ async function probe(file) {
   const key = `${file}:${stat.size}:${stat.mtimeMs}`;
   if (probeCache.has(key)) return probeCache.get(key);
 
-  const out = await run('ffprobe', [
+  const out = await run(ffprobeBin(), [
     '-v', 'error',
     '-show_entries', 'format=duration:stream=codec_type,width,height,color_transfer:stream_tags=rotate:stream_side_data=rotation',
     '-of', 'json',
@@ -112,7 +112,7 @@ async function poster(video, out, at = 1) {
   } catch {
     // no poster yet
   }
-  await run('ffmpeg', ['-y', '-v', 'error', '-ss', fmt(Math.max(0, at)), '-i', video, '-frames:v', '1', '-vf', 'scale=480:-2', '-q:v', '4', out]);
+  await run(ffmpegBin(), ['-y', '-v', 'error', '-ss', fmt(Math.max(0, at)), '-i', video, '-frames:v', '1', '-vf', 'scale=480:-2', '-q:v', '4', out]);
   return out;
 }
 
@@ -206,7 +206,7 @@ async function render({ dir, edit, clips, musicFile, srt, outFile, onProgress, t
         '-t', fmt(length),
         part,
       );
-      await run('ffmpeg', args, { track });
+      await run(ffmpegBin(), args, { track });
       parts.push(part);
       total += length;
     }
@@ -265,7 +265,7 @@ async function render({ dir, edit, clips, musicFile, srt, outFile, onProgress, t
 
     const partial = `${outFile}.part.mp4`;
     await run(
-      'ffmpeg',
+      ffmpegBin(),
       [
         '-y', '-v', 'error', '-nostats', '-progress', 'pipe:1',
         ...inputs,

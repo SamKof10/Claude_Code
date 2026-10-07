@@ -59,21 +59,38 @@ function elevenLabsKey() {
   }
 }
 
-let filterCache = null;
-// Captions need libass, HDR tone mapping needs zimg. Homebrew's ffmpeg has
-// both, but a minimal build might not, so the renderer asks first.
+// Since January 2026 Homebrew's `ffmpeg` is a slim build without libass
+// (captions), zimg (HDR tone mapping) and freetype (text in frames); the
+// complete build is the keg-only `ffmpeg-full`. Prefer it whenever it is
+// installed, so `brew install ffmpeg-full` is all it takes.
+const FULL_KEGS = ['/opt/homebrew/opt/ffmpeg-full/bin', '/usr/local/opt/ffmpeg-full/bin'];
+
+function ffmpegDir() {
+  if (process.env.CUTROOM_FFMPEG_DIR) return process.env.CUTROOM_FFMPEG_DIR;
+  return FULL_KEGS.find((dir) => fs.existsSync(path.join(dir, 'ffmpeg'))) || null;
+}
+
+const ffmpegBin = () => (ffmpegDir() ? path.join(ffmpegDir(), 'ffmpeg') : 'ffmpeg');
+const ffprobeBin = () => (ffmpegDir() && fs.existsSync(path.join(ffmpegDir(), 'ffprobe')) ? path.join(ffmpegDir(), 'ffprobe') : 'ffprobe');
+
+const filterCache = new Map();
 function ffmpegFilters() {
-  if (filterCache) return filterCache;
+  const bin = ffmpegBin();
+  if (filterCache.has(bin)) return filterCache.get(bin);
+  let result;
   try {
-    const out = execFileSync('ffmpeg', ['-hide_banner', '-filters'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-    filterCache = {
+    const out = execFileSync(bin, ['-hide_banner', '-filters'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    result = {
       subtitles: /\ssubtitles\s/.test(out),
       zscale: /\szscale\s/.test(out) && /\stonemap\s/.test(out),
+      drawtext: /\sdrawtext\s/.test(out),
     };
   } catch {
-    filterCache = { subtitles: false, zscale: false };
+    result = { subtitles: false, zscale: false, drawtext: false };
   }
-  return filterCache;
+  result.full = Boolean(ffmpegDir());
+  filterCache.set(bin, result);
+  return result;
 }
 
 function status() {
@@ -96,7 +113,10 @@ function status() {
 // Extra environment for the headless agent so the wrappers in agent/tools
 // find the add-ons. Telemetry stays off.
 function agentEnv() {
+  const dir = ffmpegDir();
   return {
+    // The wrappers in agent/tools call plain `ffmpeg`; put the full build first.
+    ...(dir ? { PATH: `${dir}${path.delimiter}${process.env.PATH || ''}` } : {}),
     CUTROOM_VIDEO_USE: VIDEO_USE_DIR,
     CUTROOM_HYPERFRAMES_VERSION: HYPERFRAMES_VERSION,
     HYPERFRAMES_NO_TELEMETRY: '1',
@@ -116,6 +136,8 @@ module.exports = {
   which,
   elevenLabsKey,
   ffmpegFilters,
+  ffmpegBin,
+  ffprobeBin,
   status,
   agentEnv,
 };

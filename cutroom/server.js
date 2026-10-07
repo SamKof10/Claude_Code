@@ -156,8 +156,8 @@ async function health() {
   if (healthCache && Date.now() - healthCache.at < 30000) return healthCache.value;
   const [claude, ffmpeg, ffprobe, watch] = await Promise.all([
     agent.authStatus(),
-    media.run('ffmpeg', ['-version']).then((o) => o.split('\n')[0].split(' ')[2], () => null),
-    media.run('ffprobe', ['-version']).then(() => true, () => false),
+    media.run(tools.ffmpegBin(), ['-version']).then((o) => o.split('\n')[0].split(' ')[2] + (tools.ffmpegFilters().full ? ' (full)' : ''), () => null),
+    media.run(tools.ffprobeBin(), ['-version']).then(() => true, () => false),
     media.run('watch-skill', ['--version']).then((o) => o.trim().split(/\s+/).pop(), () => null),
   ]);
   const value = {
