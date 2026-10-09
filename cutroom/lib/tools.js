@@ -65,9 +65,26 @@ function elevenLabsKey() {
 // installed, so `brew install ffmpeg-full` is all it takes.
 const FULL_KEGS = ['/opt/homebrew/opt/ffmpeg-full/bin', '/usr/local/opt/ffmpeg-full/bin'];
 
+// Homebrew can also live elsewhere; ask it once where ffmpeg-full is.
+let brewPrefix;
+function brewFullDir() {
+  if (brewPrefix === undefined) {
+    brewPrefix = null;
+    const brew = which('brew', ['/opt/homebrew/bin', '/usr/local/bin']);
+    if (brew) {
+      try {
+        brewPrefix = execFileSync(brew, ['--prefix', 'ffmpeg-full'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 10000 }).trim() || null;
+      } catch {
+        // brew not answering — the fixed paths still apply
+      }
+    }
+  }
+  return brewPrefix ? path.join(brewPrefix, 'bin') : null;
+}
+
 function ffmpegDir() {
   if (process.env.CUTROOM_FFMPEG_DIR) return process.env.CUTROOM_FFMPEG_DIR;
-  return FULL_KEGS.find((dir) => fs.existsSync(path.join(dir, 'ffmpeg'))) || null;
+  return [...FULL_KEGS, brewFullDir()].find((dir) => dir && fs.existsSync(path.join(dir, 'ffmpeg'))) || null;
 }
 
 const ffmpegBin = () => (ffmpegDir() ? path.join(ffmpegDir(), 'ffmpeg') : 'ffmpeg');
@@ -79,17 +96,21 @@ function ffmpegFilters() {
   if (filterCache.has(bin)) return filterCache.get(bin);
   let result;
   try {
-    const out = execFileSync(bin, ['-hide_banner', '-filters'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    const out = execFileSync(bin, ['-hide_banner', '-filters'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 15000 });
     result = {
       subtitles: /\ssubtitles\s/.test(out),
       zscale: /\szscale\s/.test(out) && /\stonemap\s/.test(out),
       drawtext: /\sdrawtext\s/.test(out),
     };
-  } catch {
-    result = { subtitles: false, zscale: false, drawtext: false };
+  } catch (err) {
+    // Remember why — "found but crashes" needs a different fix than "missing".
+    const why = String(err.stderr || err.message || '').trim().split('\n').slice(-2).join(' ').slice(0, 240);
+    result = { subtitles: false, zscale: false, drawtext: false, error: why };
   }
   result.full = Boolean(ffmpegDir());
-  filterCache.set(bin, result);
+  result.bin = bin;
+  // Only cache a working answer; a failing binary is re-checked next time.
+  if (!result.error) filterCache.set(bin, result);
   return result;
 }
 

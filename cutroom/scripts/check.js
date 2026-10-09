@@ -49,7 +49,9 @@ const bad = (msg, fix) => {
   opt(addons.hyperframes, `HyperFrames ${addons.hyperframesVersion} — Animationen, lokale Untertitel`, addons.nodeOk ? 'npm run setup' : 'Node 22+ nötig, dann npm run setup');
   opt(addons.whisper, 'whisper-cli — schnelle lokale Transkription', 'brew install whisper-cpp');
   opt(addons.elevenLabs, 'ElevenLabs-Key — beste Untertitel (kostet)', 'optional: ELEVENLABS_API_KEY in vendor/video-use/.env');
-  opt(addons.filters.subtitles, 'ffmpeg mit libass — Untertitel einbrennen', 'brew install ffmpeg-full (Cutroom nimmt es automatisch)');
+  const f = addons.filters;
+  console.log(`  i ffmpeg für Cutroom: ${f.bin}${f.full ? ' (ffmpeg-full)' : ' (kein ffmpeg-full gefunden)'}${f.error ? `\n      startet nicht: ${f.error}` : ''}`);
+  opt(f.subtitles, 'ffmpeg mit libass — Untertitel einbrennen', f.full ? (f.error ? 'brew reinstall ffmpeg-full' : 'ffmpeg-full meldet keinen subtitles-Filter') : 'brew install ffmpeg-full (Cutroom nimmt es automatisch)');
   opt(addons.filters.zscale, 'ffmpeg mit zimg — HDR-Clips (iPhone) korrekt umwandeln', 'brew install ffmpeg-full');
   opt(addons.filters.drawtext, 'ffmpeg mit freetype — Raster-Beschriftung für Erklär-Szenen', 'brew install ffmpeg-full');
 

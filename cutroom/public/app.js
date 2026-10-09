@@ -113,6 +113,14 @@ function renderHealth() {
   renderSystem();
 }
 
+// What is wrong with ffmpeg, if anything — each case has its own fix.
+function ffmpegProblem(f = {}) {
+  if (f.subtitles && f.zscale) return null;
+  if (!f.full) return { short: 'ffmpeg-full nicht gefunden', fix: `Cutroom nutzt ${f.bin || 'ffmpeg'} (schlank). Im Terminal: brew install ffmpeg-full — und schauen, ob es ohne Fehler durchläuft (brew list ffmpeg-full).` };
+  if (f.error) return { short: 'ffmpeg-full startet nicht', fix: `${f.error} — Fix: brew reinstall ffmpeg-full` };
+  return { short: 'ffmpeg-full ohne Untertitel-Filter', fix: `${f.bin} meldet keinen subtitles-Filter — bitte die Ausgabe hiervon prüfen: ${f.bin} -hide_banner -filters | grep -E "subtitles|zscale"` };
+}
+
 // Why the Claude probe failed, in words — "missing" is rarely the truth.
 function claudeProblem(c) {
   if (c.reason === 'missing') return { short: 'Claude Code nicht gefunden', fix: 'Im Terminal „which claude“ prüfen; ist es da, Cutroom aus demselben Terminal neu starten' };
@@ -400,7 +408,7 @@ function renderSettings() {
     : !canCaption
       ? 'Braucht HyperFrames (lokales Whisper) — npm run setup'
       : a.filters?.subtitles === false
-        ? 'Dein ffmpeg kann keine Untertitel einbrennen. Im Terminal: brew install ffmpeg-full — Cutroom nimmt es dann automatisch.'
+        ? `${ffmpegProblem(a.filters).short}: ${ffmpegProblem(a.filters).fix}`
         : '';
   $('#motionHint').textContent = !state.health || a.hyperframes ? '' : a.nodeOk === false ? 'HyperFrames braucht Node 22+.' : 'Nicht installiert — npm run setup';
   $('#reviewToggle').checked = Boolean(s.review);
@@ -780,8 +788,8 @@ function renderSystem() {
     a.videoUse ? row('ok', 'video-use', 'Grades, Timeline-Check') : row('off', 'video-use', 'npm run setup'),
     a.hyperframes ? row('ok', `HyperFrames ${a.hyperframesVersion}`, 'Animationen') : row('off', 'HyperFrames', a.nodeOk === false ? 'braucht Node 22+' : 'npm run setup'),
     a.whisper || a.elevenLabs ? row('ok', a.elevenLabs ? 'Untertitel: ElevenLabs' : 'Untertitel: Whisper lokal') : row('off', 'Untertitel', a.hyperframes ? 'brew install whisper-cpp (schneller)' : 'npm run setup'),
-    a.filters?.subtitles === false || a.filters?.zscale === false
-      ? row('bad', 'ffmpeg ist die schlanke Version', 'Ohne Untertitel/HDR/Text — Fix: brew install ffmpeg-full')
+    ffmpegProblem(a.filters)
+      ? row('bad', ffmpegProblem(a.filters).short, ffmpegProblem(a.filters).fix)
       : row('ok', `ffmpeg: Untertitel, HDR, Text${a.filters?.full ? ' (ffmpeg-full)' : ''}`),
   );
 
