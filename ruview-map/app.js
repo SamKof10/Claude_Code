@@ -1,0 +1,1358 @@
+// RuView Map — zeigt Personen aus RuView live auf einem 3D-Grundriss.
+// Kein Build: Three.js kommt per Import-Map vom CDN, der Grundriss aus config.js.
+
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+const CFG = window.RUVIEW_MAP || { rooms: [], doors: [], nodes: [] };
+const STORE_KEY = 'ruview-map:settings';
+const EPS = 0.01;
+const WALL_T = 0.12;
+const NODE_TIMEOUT_MS = 5000;
+const STALE_MS = 4000;
+const POSE_WORD = { walking: 'geht', standing: 'steht', sitting: 'sitzt', lying: 'liegt' };
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const num1 = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+const $ = (sel) => document.querySelector(sel);
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+const near = (a, b) => Math.abs(a - b) < EPS;
+const rand = (lo, hi) => lo + Math.random() * (hi - lo);
+const finite = (v) => (Number.isFinite(Number(v)) && v !== null && v !== '' ? Number(v) : null);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+function gauss() {
+  let u = 0;
+  let v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+/* ------------------------------------------------------------------ */
+/* Grundriss                                                           */
+/* ------------------------------------------------------------------ */
+
+function sideEdge(r, side) {
+  switch (side) {
+    case 'north': return { axis: 'x', c: r.z, s: r.x, e: r.x + r.w };
+    case 'south': return { axis: 'x', c: r.z + r.d, s: r.x, e: r.x + r.w };
+    case 'west': return { axis: 'z', c: r.x, s: r.z, e: r.z + r.d };
+    case 'east': return { axis: 'z', c: r.x + r.w, s: r.z, e: r.z + r.d };
+    default: return null;
+  }
+}
+
+// The wall two rectangles share, as a line segment. axis 'x' = the line runs
+// along x at z = c; axis 'z' = it runs along z at x = c.
+function sharedEdge(a, b) {
+  const lines = [];
+  if (near(a.x + a.w, b.x)) lines.push({ axis: 'z', c: b.x });
+  if (near(b.x + b.w, a.x)) lines.push({ axis: 'z', c: a.x });
+  if (near(a.z + a.d, b.z)) lines.push({ axis: 'x', c: b.z });
+  if (near(b.z + b.d, a.z)) lines.push({ axis: 'x', c: a.z });
+  for (const l of lines) {
+    const [a0, a1] = l.axis === 'z' ? [a.z, a.z + a.d] : [a.x, a.x + a.w];
+    const [b0, b1] = l.axis === 'z' ? [b.z, b.z + b.d] : [b.x, b.x + b.w];
+    const s = Math.max(a0, b0);
+    const e = Math.min(a1, b1);
+    if (e - s > EPS) return { ...l, s, e };
+  }
+  return null;
+}
+
+function resolveDoor(d, byId) {
+  const width = d.width || 0.9;
+  let a;
+  let b = null;
+  let edge;
+  if (Array.isArray(d.between)) {
+    [a, b] = d.between.map((id) => byId.get(id));
+    if (!a || !b) return `Tür ${d.between.join('–')}: unbekannte Raum-ID.`;
+    edge = sharedEdge(a, b);
+    if (!edge) return `Tür ${a.name}–${b.name}: Die beiden Räume teilen sich keine Wand.`;
+  } else {
+    a = byId.get(d.room);
+    if (!a) return `Tür an „${d.room}“: unbekannte Raum-ID.`;
+    edge = sideEdge(a, d.side);
+    if (!edge) return `Tür an ${a.name}: side muss north, south, east oder west sein.`;
+  }
+  const len = edge.e - edge.s;
+  if (width > len + EPS) return `Tür an ${a.name}: ${num1.format(width)} m breit, die Wand ist nur ${num1.format(len)} m lang.`;
+  const mid = clamp(edge.s + (finite(d.at) ?? len / 2), edge.s + width / 2, edge.e - width / 2);
+  const point = edge.axis === 'x' ? { x: mid, z: edge.c } : { x: edge.c, z: mid };
+  // Normal pointing into room a.
+  const n = edge.axis === 'x'
+    ? { x: 0, z: near(a.z + a.d, edge.c) ? -1 : 1 }
+    : { x: near(a.x + a.w, edge.c) ? -1 : 1, z: 0 };
+  return { axis: edge.axis, c: edge.c, s: mid - width / 2, e: mid + width / 2, width, point, n, a: a.id, b: b ? b.id : null, label: d.label || null };
+}
+
+function buildPlan(cfg) {
+  const warnings = [];
+  const rooms = (cfg.rooms || []).map((r) => ({
+    ...r, outdoor: !!r.outdoor, cx: r.x + r.w / 2, cz: r.z + r.d / 2, area: r.w * r.d,
+  }));
+  if (!rooms.length) {
+    warnings.push('In config.js stehen keine Räume.');
+    rooms.push({ id: 'raum', name: 'Raum', x: 0, z: 0, w: 4, d: 4, outdoor: false, cx: 2, cz: 2, area: 16 });
+  }
+  const byId = new Map(rooms.map((r) => [r.id, r]));
+  const doors = [];
+  for (const d of cfg.doors || []) {
+    const door = resolveDoor(d, byId);
+    if (typeof door === 'string') warnings.push(door);
+    else doors.push(door);
+  }
+  const b = { minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity };
+  for (const r of rooms) {
+    b.minX = Math.min(b.minX, r.x);
+    b.maxX = Math.max(b.maxX, r.x + r.w);
+    b.minZ = Math.min(b.minZ, r.z);
+    b.maxZ = Math.max(b.maxZ, r.z + r.d);
+  }
+  return {
+    name: cfg.name || 'Wohnung',
+    wallHeight: cfg.wallHeight || 1.1,
+    rooms,
+    byId,
+    doors,
+    nodes: cfg.nodes || [],
+    bounds: b,
+    center: { x: (b.minX + b.maxX) / 2, z: (b.minZ + b.maxZ) / 2 },
+    size: { w: b.maxX - b.minX, d: b.maxZ - b.minZ },
+    indoorArea: rooms.filter((r) => !r.outdoor).reduce((sum, r) => sum + r.area, 0),
+    warnings,
+  };
+}
+
+const inRoom = (r, x, z) => x >= r.x - EPS && x <= r.x + r.w + EPS && z >= r.z - EPS && z <= r.z + r.d + EPS;
+
+function roomAt(plan, x, z) {
+  return plan.rooms.find((r) => !r.outdoor && inRoom(r, x, z)) || plan.rooms.find((r) => r.outdoor && inRoom(r, x, z)) || null;
+}
+
+function nearestRoom(plan, x, z) {
+  let best = plan.rooms[0];
+  let bestD = Infinity;
+  for (const r of plan.rooms) {
+    const dx = Math.max(r.x - x, 0, x - (r.x + r.w));
+    const dz = Math.max(r.z - z, 0, z - (r.z + r.d));
+    const dist = Math.hypot(dx, dz);
+    if (dist < bestD) { bestD = dist; best = r; }
+  }
+  return best;
+}
+
+function randomPoint(r, margin = 0.45) {
+  const mx = Math.min(margin, r.w / 2 - 0.05);
+  const mz = Math.min(margin, r.d / 2 - 0.05);
+  return { x: rand(r.x + mx, r.x + r.w - mx), z: rand(r.z + mz, r.z + r.d - mz) };
+}
+
+// Wall pieces along every room edge: shared walls merged into one, door
+// openings cut out, balcony edges drawn as railing.
+function wallPieces(plan) {
+  const lines = new Map();
+  const line = (axis, c) => {
+    const k = `${axis}:${Math.round(c * 100)}`;
+    if (!lines.has(k)) lines.set(k, { axis, c, spans: [], gaps: [] });
+    return lines.get(k);
+  };
+  for (const r of plan.rooms) {
+    for (const side of ['north', 'south', 'west', 'east']) {
+      const e = sideEdge(r, side);
+      line(e.axis, e.c).spans.push({ s: e.s, e: e.e, outdoor: r.outdoor });
+    }
+  }
+  for (const d of plan.doors) line(d.axis, d.c).gaps.push(d);
+
+  const pieces = [];
+  for (const L of lines.values()) {
+    const cuts = [...L.spans.flatMap((s) => [s.s, s.e]), ...L.gaps.flatMap((g) => [g.s, g.e])];
+    const pts = [...new Set(cuts.map((v) => Math.round(v * 1000) / 1000))].sort((p, q) => p - q);
+    let cur = null;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i];
+      const p1 = pts[i + 1];
+      if (p1 - p0 < 1e-3) continue;
+      const m = (p0 + p1) / 2;
+      const covers = (iv) => m > iv.s && m < iv.e;
+      let kind = null;
+      if (!L.gaps.some(covers)) {
+        if (L.spans.some((s) => !s.outdoor && covers(s))) kind = 'wall';
+        else if (L.spans.some((s) => s.outdoor && covers(s))) kind = 'rail';
+      }
+      if (cur && cur.kind === kind && Math.abs(cur.e - p0) < 1e-3) {
+        cur.e = p1;
+      } else {
+        if (cur && cur.kind) pieces.push(cur);
+        cur = { kind, axis: L.axis, c: L.c, s: p0, e: p1 };
+      }
+    }
+    if (cur && cur.kind) pieces.push(cur);
+  }
+  return pieces;
+}
+
+function doorGraph(plan) {
+  const g = new Map(plan.rooms.map((r) => [r.id, []]));
+  for (const d of plan.doors) {
+    if (!d.b) continue;
+    g.get(d.a).push({ to: d.b, door: d });
+    g.get(d.b).push({ to: d.a, door: d });
+  }
+  return g;
+}
+
+// Door centres to walk through from one room to another (breadth-first).
+function route(graph, from, to) {
+  if (from === to) return [];
+  const prev = new Map([[from, null]]);
+  const queue = [from];
+  while (queue.length) {
+    const id = queue.shift();
+    if (id === to) break;
+    for (const edge of graph.get(id) || []) {
+      if (prev.has(edge.to)) continue;
+      prev.set(edge.to, { id, door: edge.door });
+      queue.push(edge.to);
+    }
+  }
+  if (!prev.has(to)) return [];
+  const pts = [];
+  for (let id = to; prev.get(id); id = prev.get(id).id) pts.unshift({ ...prev.get(id).door.point });
+  return pts;
+}
+
+/* ------------------------------------------------------------------ */
+/* Datenquellen                                                        */
+/* Beide liefern Frames: { people: [...], nodes, vitals, at, source }  */
+/* ------------------------------------------------------------------ */
+
+class DemoSource {
+  constructor(plan, demoCfg, settings) {
+    this.plan = plan;
+    this.roomCfg = demoCfg?.rooms || {};
+    this.count = clamp(Number(settings.demoPeople) || demoCfg?.people || 3, 1, 6);
+    this.speed = settings.demoSpeed === 'fast' ? 4 : 1;
+    this.graph = doorGraph(plan);
+    this.entrance = plan.doors.find((d) => !d.b) || null;
+    this.candidates = plan.rooms.filter((r) => (this.roomCfg[r.id]?.weight ?? 1) > 0);
+    if (!this.candidates.length) this.candidates = plan.rooms;
+  }
+
+  start(onFrame, onStatus) {
+    this.onFrame = onFrame;
+    this.people = Array.from({ length: this.count }, (_, i) => this.spawn(i));
+    onStatus({ kind: 'demo', text: 'Demo', detail: '' });
+  }
+
+  stop() {
+    this.onFrame = null;
+  }
+
+  weight(id) {
+    return this.roomCfg[id]?.weight ?? 1;
+  }
+
+  poseFor(id) {
+    return this.roomCfg[id]?.pose || 'standing';
+  }
+
+  pickRoom(exclude) {
+    const pool = this.candidates.filter((r) => r.id !== exclude);
+    const list = pool.length ? pool : this.candidates;
+    let t = Math.random() * list.reduce((sum, r) => sum + this.weight(r.id), 0);
+    for (const r of list) {
+      t -= this.weight(r.id);
+      if (t <= 0) return r;
+    }
+    return list[list.length - 1];
+  }
+
+  spawn(i) {
+    const room = this.pickRoom(null);
+    const pt = randomPoint(room);
+    return {
+      id: `D${i + 1}`, label: `P${i + 1}`, x: pt.x, z: pt.z, room: room.id, dest: room.id,
+      state: 'dwell', timer: rand(3, 14), path: [], pose: this.poseFor(room.id),
+      breath: rand(13, 17), conf: rand(0.7, 0.92), nx: 0, nz: 0, noiseTimer: 0,
+    };
+  }
+
+  step(dt) {
+    if (!this.onFrame) return;
+    const sdt = dt * this.speed;
+    for (const p of this.people) this.stepPerson(p, sdt, dt);
+    const people = this.people.filter((p) => p.state !== 'away').map((p) => this.output(p));
+    this.onFrame({ people, nodes: null, vitals: null, at: performance.now(), source: 'demo' });
+  }
+
+  stepPerson(p, dt, realDt) {
+    // Measurement noise: RuView positions wobble, so the demo does too.
+    p.noiseTimer -= realDt;
+    if (p.noiseTimer <= 0) {
+      p.nx = gauss() * 0.1;
+      p.nz = gauss() * 0.1;
+      p.conf = clamp(p.conf + gauss() * 0.03, 0.55, 0.96);
+      p.breath = clamp(p.breath + gauss() * 0.25, 12, 18);
+      p.noiseTimer = 0.7;
+    }
+    if (p.state === 'dwell') {
+      p.timer -= dt;
+      if (p.timer <= 0) this.planNext(p);
+    } else if (p.state === 'walk') {
+      this.walk(p, dt);
+    } else if (p.state === 'away') {
+      p.timer -= dt;
+      if (p.timer <= 0) this.reenter(p);
+    }
+  }
+
+  planNext(p) {
+    if (this.entrance && Math.random() < 0.07) {
+      const e = this.entrance;
+      const outside = { x: e.point.x - e.n.x * 0.9, z: e.point.z - e.n.z * 0.9 };
+      p.path = [...route(this.graph, p.room, e.a), { ...e.point }, outside];
+      p.dest = null;
+    } else {
+      const target = this.pickRoom(p.room);
+      p.path = [...route(this.graph, p.room, target.id), randomPoint(target)];
+      p.dest = target.id;
+    }
+    p.state = 'walk';
+  }
+
+  reenter(p) {
+    const e = this.entrance;
+    const target = this.pickRoom(e.a);
+    p.x = e.point.x - e.n.x * 0.9;
+    p.z = e.point.z - e.n.z * 0.9;
+    p.room = e.a;
+    p.path = [{ ...e.point }, ...route(this.graph, e.a, target.id), randomPoint(target)];
+    p.dest = target.id;
+    p.state = 'walk';
+  }
+
+  walk(p, dt) {
+    let budget = 1.15 * dt;
+    while (budget > 0 && p.path.length) {
+      const t = p.path[0];
+      const dx = t.x - p.x;
+      const dz = t.z - p.z;
+      const dist = Math.hypot(dx, dz);
+      if (dist <= budget) {
+        p.x = t.x;
+        p.z = t.z;
+        budget -= dist;
+        p.path.shift();
+      } else {
+        p.x += (dx / dist) * budget;
+        p.z += (dz / dist) * budget;
+        budget = 0;
+      }
+    }
+    const here = roomAt(this.plan, p.x, p.z);
+    if (here) p.room = here.id;
+    if (p.path.length) return;
+    if (p.dest === null) {
+      p.state = 'away';
+      p.timer = rand(15, 35);
+    } else {
+      p.state = 'dwell';
+      p.room = p.dest;
+      p.pose = this.poseFor(p.dest);
+      p.timer = p.pose === 'lying' ? rand(25, 50) : rand(8, 24);
+    }
+  }
+
+  output(p) {
+    const walking = p.state === 'walk';
+    const pose = walking ? 'walking' : p.pose;
+    const motion = walking ? 0.75 : { lying: 0.03, sitting: 0.1 }[pose] ?? 0.18;
+    const breathing = p.breath + (pose === 'lying' ? -3 : 0) + (walking ? 5 : 0);
+    return {
+      id: p.id, label: p.label, x: p.x + p.nx, z: p.z + p.nz, room: p.room, pose, motion,
+      breathing: Math.round(breathing), confidence: p.conf, uncertainty: walking ? 0.85 : 0.55, placed: 'position', raw: null,
+    };
+  }
+}
+
+function defaultLiveUrl() {
+  // Served by the RuView server itself (…:3000/ui/ruview-map/) → same host.
+  if (/^https?:$/.test(location.protocol) && location.pathname.includes('/ui/')) {
+    return `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/sensing`;
+  }
+  return 'ws://localhost:3000/ws/sensing';
+}
+
+function isLoopback(url) {
+  try {
+    return ['localhost', '127.0.0.1', '[::1]'].includes(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+}
+
+function httpOrigin(wsUrl) {
+  const u = new URL(wsUrl);
+  return `${u.protocol === 'wss:' ? 'https:' : 'http:'}//${u.host}`;
+}
+
+function mapPose(label, motion) {
+  const l = String(label || '').toLowerCase();
+  if (l.includes('lying') || l.includes('lie')) return 'lying';
+  if (l.includes('sit')) return 'sitting';
+  return motion > 0.45 ? 'walking' : 'standing';
+}
+
+class LiveSource {
+  constructor(plan, liveCfg, settings) {
+    this.plan = plan;
+    this.cfg = liveCfg || {};
+    this.url = (settings.liveUrl || '').trim() || this.cfg.url || defaultLiveUrl();
+    this.token = (settings.liveToken || '').trim();
+    this.retry = 0;
+    this.timer = null;
+    this.ws = null;
+    this.alive = false;
+    this.nodeSeen = new Map();
+    const t = this.cfg.transform || {};
+    this.tf = {
+      ox: finite(t.origin?.x) ?? plan.center.x,
+      oz: finite(t.origin?.z) ?? plan.center.z,
+      s: finite(t.scale) ?? 1,
+      rot: ((finite(t.rotationDeg) ?? 0) * Math.PI) / 180,
+      fx: t.flipX ? -1 : 1,
+      fz: t.flipZ ? -1 : 1,
+    };
+  }
+
+  start(onFrame, onStatus) {
+    this.onFrame = onFrame;
+    this.onStatus = onStatus;
+    this.alive = true;
+    this.connect();
+  }
+
+  stop() {
+    this.alive = false;
+    clearTimeout(this.timer);
+    if (this.ws) {
+      this.ws.onclose = null;
+      this.ws.close();
+      this.ws = null;
+    }
+  }
+
+  status(kind, text, detail = '') {
+    if (this.alive) this.onStatus?.({ kind, text, detail });
+  }
+
+  async connect() {
+    if (!this.alive) return;
+    let url = this.url;
+    if (!/^wss?:\/\//i.test(url)) {
+      this.status('error', 'Adresse ungültig', 'Die Server-Adresse muss mit ws:// oder wss:// beginnen, zum Beispiel ws://localhost:3000/ws/sensing.');
+      return;
+    }
+    if (url.startsWith('ws:') && location.protocol === 'https:' && !isLoopback(url)) {
+      this.status('error', 'Blockiert', 'Diese Seite läuft über HTTPS, dein RuView-Server über unverschlüsseltes ws://. Diese Mischung blockiert der Browser. Öffne die Karte in deinem Heimnetz, am besten direkt vom RuView-Server (siehe README).');
+      return;
+    }
+    this.status('connecting', 'Verbinde', `Verbinde mit ${this.url} …`);
+
+    if (this.token) {
+      try {
+        const res = await fetch(`${httpOrigin(url)}/api/v1/ws-ticket`, { method: 'POST', headers: { Authorization: `Bearer ${this.token}` } });
+        if (res.status === 401 || res.status === 403) {
+          this.status('error', 'Token abgelehnt', 'RuView hat den API-Token nicht akzeptiert. Vergleich ihn mit RUVIEW_API_TOKEN auf dem Server.');
+          return;
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { ticket } = await res.json();
+        url += `${url.includes('?') ? '&' : '?'}ticket=${encodeURIComponent(ticket)}`;
+      } catch {
+        this.scheduleRetry('Kein Ticket', 'Mit Token holt sich die Karte vor dem Verbinden ein Einmal-Ticket vom Server. Das klappt nur, wenn RuView die Karte selbst ausliefert (README, „Live mit Token“) und der Server erreichbar ist.');
+        return;
+      }
+    }
+    if (!this.alive) return;
+
+    let opened = false;
+    let ws;
+    try {
+      ws = new WebSocket(url);
+    } catch (err) {
+      this.status('error', 'Adresse ungültig', String(err.message || err));
+      return;
+    }
+    this.ws = ws;
+    ws.onopen = () => {
+      opened = true;
+      this.retry = 0;
+      this.status('live', 'Live', 'Verbunden. Warte auf Daten von RuView …');
+    };
+    ws.onmessage = (ev) => this.handle(ev.data);
+    ws.onclose = () => {
+      this.ws = null;
+      if (!this.alive) return;
+      if (opened) {
+        this.scheduleRetry('Getrennt', 'Die Verbindung zu RuView ist abgebrochen.');
+      } else {
+        const port = new URL(this.url).port || (this.url.startsWith('wss:') ? '443' : '80');
+        const tokenHint = this.token ? '' : ' Läuft RuView mit RUVIEW_API_TOKEN, trag den Token unter „Quelle“ ein.';
+        this.scheduleRetry('Nicht erreichbar', `Unter ${this.url} antwortet kein RuView-Server. Läuft er, und ist Port ${port} freigegeben?${tokenHint}`);
+      }
+    };
+  }
+
+  scheduleRetry(text, detail) {
+    const delay = [1, 2, 4, 8, 15][Math.min(this.retry, 4)];
+    this.retry += 1;
+    this.status('offline', text, `${detail} Nächster Versuch in ${delay} s.`);
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => this.connect(), delay * 1000);
+  }
+
+  toPlan(rx, rz) {
+    const { ox, oz, s, rot, fx, fz } = this.tf;
+    const sx = rx * s * fx;
+    const sz = rz * s * fz;
+    return { x: ox + sx * Math.cos(rot) - sz * Math.sin(rot), z: oz + sx * Math.sin(rot) + sz * Math.cos(rot) };
+  }
+
+  place(x, z, placed, extra) {
+    const b = this.plan.bounds;
+    const cx = clamp(x, b.minX + 0.2, b.maxX - 0.2);
+    const cz = clamp(z, b.minZ + 0.2, b.maxZ - 0.2);
+    const room = (roomAt(this.plan, cx, cz) || nearestRoom(this.plan, cx, cz)).id;
+    return { x: cx, z: cz, room, placed, uncertainty: placed === 'position' ? 1.1 : 1.6, ...extra };
+  }
+
+  fallbackRoom(zone) {
+    return this.plan.byId.get(this.cfg.zoneToRoom?.[zone]) || null;
+  }
+
+  toPerson(p, i) {
+    const pid = Number.isFinite(p.id) ? p.id : i;
+    const pos = Array.isArray(p.position) ? p.position.map(Number) : null;
+    const hasPos = pos && pos.length >= 3 && pos.every(Number.isFinite) && (Math.abs(pos[0]) > 1e-6 || Math.abs(pos[2]) > 1e-6);
+    const motion = clamp((Number(p.motion_score) || 0) / 100, 0, 1);
+    const base = {
+      id: `L${pid}`, label: `P${pid + 1}`, pose: mapPose(p.pose, motion), motion, breathing: null,
+      confidence: finite(p.confidence), zone: p.zone || null, raw: hasPos ? { x: pos[0], z: pos[2] } : null,
+    };
+    if (hasPos) {
+      const { x, z } = this.toPlan(pos[0], pos[2]);
+      return this.place(x, z, 'position', base);
+    }
+    const zoneRoom = this.fallbackRoom(p.zone);
+    const r = zoneRoom || this.plan.byId.get(this.cfg.fallbackRoom) || this.plan.rooms[0];
+    return this.place(r.cx + (i % 3) * 0.6 - 0.6, r.cz + Math.floor(i / 3) * 0.6, zoneRoom ? 'zone' : 'unknown', base);
+  }
+
+  handle(data) {
+    let m;
+    try {
+      m = JSON.parse(data);
+    } catch {
+      return;
+    }
+    if (!m || m.type !== 'sensing_update') return;
+    const now = performance.now();
+    for (const n of Array.isArray(m.nodes) ? m.nodes : []) {
+      if (n && n.node_id != null) this.nodeSeen.set(Number(n.node_id), now);
+    }
+    const persons = Array.isArray(m.persons) ? m.persons : [];
+    let people = persons.map((p, i) => this.toPerson(p || {}, i));
+    const estimated = Number(m.estimated_persons) || 0;
+    if (!people.length && estimated > 0) {
+      people = Array.from({ length: Math.min(estimated, 6) }, (_, i) => this.toPerson({ id: i }, i));
+    }
+    const v = m.vital_signs || null;
+    const vitals = v ? { breathing: finite(v.breathing_bpm), heart: finite(v.heart_bpm) } : null;
+    // RuView measures vitals for the whole sensing area, so they only belong
+    // to a person when exactly one is there.
+    if (people.length === 1 && vitals?.breathing) people[0].breathing = Math.round(vitals.breathing);
+    this.onFrame?.({ people, nodes: this.nodeSeen, vitals, at: now, source: 'live' });
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* 3D-Szene                                                            */
+/* ------------------------------------------------------------------ */
+
+function readPalette() {
+  const cs = getComputedStyle(document.documentElement);
+  const color = (name, fallback) => new THREE.Color(cs.getPropertyValue(name).trim() || fallback);
+  return {
+    bg: color('--bg', '#e4e8e4'),
+    floor: color('--map-floor', '#f4f5f1'),
+    floorOut: color('--map-floor-out', '#dce3da'),
+    grid: color('--map-grid', '#cbd3ce'),
+    wall: color('--map-wall', '#2a3a45'),
+    wallTop: color('--map-wall-top', '#18232b'),
+    door: color('--map-door', '#8a979f'),
+    person: color('--accent', '#e8501f'),
+    node: color('--node', '#2f6690'),
+    ok: color('--ok', '#2e8b57'),
+    off: color('--map-grid', '#cbd3ce'),
+  };
+}
+
+const GEO = {
+  torso: new THREE.CapsuleGeometry(0.17, 0.78, 4, 14),
+  head: new THREE.SphereGeometry(0.13, 18, 12),
+  disc: new THREE.CircleGeometry(1, 48).rotateX(-Math.PI / 2),
+  ring: new THREE.RingGeometry(0.3, 0.36, 48).rotateX(-Math.PI / 2),
+  ping: new THREE.RingGeometry(0.92, 1, 64).rotateX(-Math.PI / 2),
+  node: new THREE.BoxGeometry(0.18, 0.1, 0.07),
+  led: new THREE.SphereGeometry(0.028, 10, 8),
+};
+
+const TRAIL_LEN = 48;
+
+class PersonView {
+  constructor(root, palette) {
+    this.root = root;
+    this.g = new THREE.Group();
+    this.bodyMat = new THREE.MeshLambertMaterial({ color: palette.person, transparent: true });
+    this.discMat = new THREE.MeshBasicMaterial({ color: palette.person, transparent: true, opacity: 0.16, depthWrite: false });
+    this.ringMat = new THREE.MeshBasicMaterial({ color: palette.person, transparent: true, opacity: 0, depthWrite: false });
+    this.trailMat = new THREE.LineBasicMaterial({ color: palette.person, transparent: true, opacity: 0.45 });
+
+    this.body = new THREE.Group();
+    const torso = new THREE.Mesh(GEO.torso, this.bodyMat);
+    torso.position.y = -0.14;
+    const head = new THREE.Mesh(GEO.head, this.bodyMat);
+    head.position.y = 0.56;
+    this.body.add(torso, head);
+    this.body.position.y = 0.72;
+
+    this.disc = new THREE.Mesh(GEO.disc, this.discMat);
+    this.disc.position.y = 0.012;
+    this.disc.renderOrder = 1;
+    this.ring = new THREE.Mesh(GEO.ring, this.ringMat);
+    this.ring.position.y = 0.014;
+    this.ring.renderOrder = 2;
+
+    this.el = document.createElement('div');
+    this.el.className = 'person-label';
+    this.label = new CSS2DObject(this.el);
+    this.label.position.y = 1.65;
+
+    this.g.add(this.body, this.disc, this.ring, this.label);
+    root.add(this.g);
+
+    this.trailPos = new Float32Array(TRAIL_LEN * 3);
+    this.trailGeo = new THREE.BufferGeometry();
+    this.trailGeo.setAttribute('position', new THREE.BufferAttribute(this.trailPos, 3));
+    this.trailGeo.setDrawRange(0, 0);
+    this.trail = new THREE.Line(this.trailGeo, this.trailMat);
+    this.trail.frustumCulled = false;
+    root.add(this.trail);
+    this.trailCount = 0;
+    this.trailTimer = 0;
+
+    this.first = true;
+    this.alpha = 0;
+    this.gone = false;
+    this.phase = Math.random();
+    this.cur = { y: 0.72, rot: 0, sy: 1, unc: 0.6, labelY: 1.65 };
+    this.text = '';
+  }
+
+  setPalette(palette) {
+    for (const m of [this.bodyMat, this.discMat, this.ringMat, this.trailMat]) m.color.copy(palette.person);
+  }
+
+  update(p, dt, t, still) {
+    if (p) {
+      this.p = p;
+      this.gone = false;
+    }
+    const s = this.p;
+    if (this.first) {
+      this.x = s.x;
+      this.z = s.z;
+      this.first = false;
+    }
+    const k = 1 - Math.exp(-dt * 4.5);
+    this.x += (s.x - this.x) * k;
+    this.z += (s.z - this.z) * k;
+    this.g.position.set(this.x, 0, this.z);
+
+    const target = {
+      walking: { y: 0.72, rot: 0, sy: 1, labelY: 1.65 },
+      standing: { y: 0.72, rot: 0, sy: 1, labelY: 1.65 },
+      sitting: { y: 0.56, rot: 0, sy: 0.78, labelY: 1.35 },
+      lying: { y: 0.55, rot: Math.PI / 2, sy: 1, labelY: 1.0 },
+    }[s.pose] || { y: 0.72, rot: 0, sy: 1, labelY: 1.65 };
+    const kp = 1 - Math.exp(-dt * 5);
+    for (const key of ['y', 'rot', 'sy', 'labelY']) this.cur[key] += (target[key] - this.cur[key]) * kp;
+    this.cur.unc += ((s.uncertainty || 0.6) - this.cur.unc) * kp;
+    const bob = s.pose === 'walking' && !still ? Math.abs(Math.sin(t * 9)) * 0.035 : 0;
+    this.body.position.y = this.cur.y + bob;
+    this.body.rotation.z = this.cur.rot;
+    this.body.scale.y = this.cur.sy;
+    this.label.position.y = this.cur.labelY;
+    this.disc.scale.setScalar(this.cur.unc);
+
+    this.alpha += ((this.gone ? 0 : 1) - this.alpha) * (1 - Math.exp(-dt * 6));
+    this.bodyMat.opacity = this.alpha;
+    this.discMat.opacity = 0.16 * this.alpha;
+    this.trailMat.opacity = 0.45 * this.alpha;
+    this.el.style.opacity = this.alpha.toFixed(2);
+
+    // Breathing ring: one pulse per breath.
+    if (s.breathing && !still) {
+      this.phase = (this.phase + (dt * s.breathing) / 60) % 1;
+      this.ring.scale.setScalar(1 + this.phase * 0.9);
+      this.ringMat.opacity = 0.55 * (1 - this.phase) * this.alpha;
+    } else {
+      this.ring.scale.setScalar(1);
+      this.ringMat.opacity = s.breathing ? 0.35 * this.alpha : 0;
+    }
+
+    this.sampleTrail(dt);
+
+    const text = s.breathing ? `${s.label}<span>${s.breathing}/min</span>` : s.label;
+    if (text !== this.text) {
+      this.el.innerHTML = text;
+      this.text = text;
+    }
+  }
+
+  sampleTrail(dt) {
+    this.trailTimer -= dt;
+    if (this.trailTimer > 0) return;
+    this.trailTimer = 0.2;
+    const n = this.trailCount;
+    if (n) {
+      const lx = this.trailPos[(n - 1) * 3];
+      const lz = this.trailPos[(n - 1) * 3 + 2];
+      if (Math.hypot(lx - this.x, lz - this.z) < 0.06) return;
+    }
+    if (n === TRAIL_LEN) this.trailPos.copyWithin(0, 3);
+    const i = Math.min(n, TRAIL_LEN - 1);
+    this.trailPos[i * 3] = this.x;
+    this.trailPos[i * 3 + 1] = 0.016;
+    this.trailPos[i * 3 + 2] = this.z;
+    this.trailCount = Math.min(n + 1, TRAIL_LEN);
+    this.trailGeo.setDrawRange(0, this.trailCount);
+    this.trailGeo.attributes.position.needsUpdate = true;
+  }
+
+  dispose() {
+    this.root.remove(this.g, this.trail);
+    this.trailGeo.dispose();
+    for (const m of [this.bodyMat, this.discMat, this.ringMat, this.trailMat]) m.dispose();
+  }
+}
+
+class MapScene {
+  constructor(container, plan) {
+    this.plan = plan;
+    this.container = container;
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.domElement.setAttribute('role', 'img');
+    this.renderer.domElement.setAttribute('aria-label', `3D-Grundriss: ${plan.name}`);
+    container.append(this.renderer.domElement);
+
+    this.labels = new CSS2DRenderer();
+    this.labels.domElement.className = 'label-layer';
+    container.append(this.labels.domElement);
+
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(36, 1, 0.1, 300);
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.08;
+    this.controls.maxPolarAngle = 1.32;
+    this.controls.minDistance = 2;
+    this.controls.maxDistance = 90;
+    this.controls.addEventListener('start', () => {
+      this.userMoved = true;
+      this.tween = null;
+    });
+
+    this.scene.add(new THREE.AmbientLight(0xffffff, 1.7));
+    const sun = new THREE.DirectionalLight(0xffffff, 1.6);
+    sun.position.set(-4, 10, 7);
+    this.scene.add(sun);
+
+    // Plan coordinates inside root; root is shifted so the plan's centre sits at the origin.
+    this.root = new THREE.Group();
+    this.root.position.set(-plan.center.x, 0, -plan.center.z);
+    this.scene.add(this.root);
+
+    this.palette = readPalette();
+    this.mat = {
+      floor: new THREE.MeshBasicMaterial(),
+      grid: new THREE.LineBasicMaterial({ transparent: true, opacity: 0.85 }),
+      wall: new THREE.MeshLambertMaterial(),
+      wallTop: new THREE.MeshBasicMaterial(),
+      rail: new THREE.MeshLambertMaterial({ transparent: true, opacity: 0.6 }),
+      door: new THREE.LineBasicMaterial(),
+      node: new THREE.MeshLambertMaterial(),
+    };
+    this.floors = new Map();
+    this.roomLabels = new Map();
+    this.people = new Map();
+    this.nodeViews = [];
+    this.occupancy = new Map();
+    this.insets = { top: 0, right: 0, bottom: 0, left: 0 };
+    this.mode = '3d';
+    this.userMoved = false;
+
+    this.buildFloors();
+    this.buildGrid();
+    this.buildWalls();
+    this.buildDoors();
+    this.buildNodes();
+    this.applyPalette();
+  }
+
+  buildFloors() {
+    for (const r of this.plan.rooms) {
+      const mat = new THREE.MeshBasicMaterial();
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(r.w, r.d).rotateX(-Math.PI / 2), mat);
+      mesh.position.set(r.cx, r.outdoor ? -0.015 : 0, r.cz);
+      this.root.add(mesh);
+      this.floors.set(r.id, { mesh, mat, room: r });
+
+      const el = document.createElement('div');
+      el.className = 'room-label';
+      el.innerHTML = `<span class="rl-name">${esc(r.name)}</span><span class="rl-area">${num1.format(r.area)} m²</span><span class="rl-count" hidden></span>`;
+      const label = new CSS2DObject(el);
+      label.position.set(r.cx, 0.02, r.cz);
+      this.root.add(label);
+      this.roomLabels.set(r.id, { el, count: el.querySelector('.rl-count') });
+    }
+  }
+
+  buildGrid() {
+    const b = this.plan.bounds;
+    const pts = [];
+    for (let x = Math.ceil(b.minX); x <= Math.floor(b.maxX); x++) pts.push(x, 0.004, b.minZ, x, 0.004, b.maxZ);
+    for (let z = Math.ceil(b.minZ); z <= Math.floor(b.maxZ); z++) pts.push(b.minX, 0.004, z, b.maxX, 0.004, z);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    this.root.add(new THREE.LineSegments(geo, this.mat.grid));
+  }
+
+  buildWalls() {
+    const H = this.plan.wallHeight;
+    // BoxGeometry faces: +x, -x, +y (top cut), -y, +z, -z.
+    const wallMats = [this.mat.wall, this.mat.wall, this.mat.wallTop, this.mat.wall, this.mat.wall, this.mat.wall];
+    for (const p of wallPieces(this.plan)) {
+      const len = p.e - p.s;
+      const mid = (p.s + p.e) / 2;
+      const isWall = p.kind === 'wall';
+      const t = isWall ? WALL_T : 0.05;
+      const h = isWall ? H : 0.9;
+      const geo = p.axis === 'x' ? new THREE.BoxGeometry(len + t, h, t) : new THREE.BoxGeometry(t, h, len + t);
+      const mesh = new THREE.Mesh(geo, isWall ? wallMats : this.mat.rail);
+      mesh.position.set(p.axis === 'x' ? mid : p.c, h / 2, p.axis === 'x' ? p.c : mid);
+      this.root.add(mesh);
+    }
+  }
+
+  // The architect's door symbol: the open leaf and its swing arc, drawn on the floor.
+  buildDoors() {
+    const pts = [];
+    for (const d of this.plan.doors) {
+      const u = d.axis === 'x' ? { x: 1, z: 0 } : { x: 0, z: 1 };
+      const hinge = d.axis === 'x' ? { x: d.s, z: d.c } : { x: d.c, z: d.s };
+      const w = d.width;
+      const y = 0.008;
+      pts.push(hinge.x, y, hinge.z, hinge.x + d.n.x * w, y, hinge.z + d.n.z * w);
+      const steps = 14;
+      for (let i = 0; i < steps; i++) {
+        const a0 = (i / steps) * (Math.PI / 2);
+        const a1 = ((i + 1) / steps) * (Math.PI / 2);
+        const p0 = { x: hinge.x + w * (u.x * Math.cos(a0) + d.n.x * Math.sin(a0)), z: hinge.z + w * (u.z * Math.cos(a0) + d.n.z * Math.sin(a0)) };
+        const p1 = { x: hinge.x + w * (u.x * Math.cos(a1) + d.n.x * Math.sin(a1)), z: hinge.z + w * (u.z * Math.cos(a1) + d.n.z * Math.sin(a1)) };
+        pts.push(p0.x, y, p0.z, p1.x, y, p1.z);
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    this.root.add(new THREE.LineSegments(geo, this.mat.door));
+  }
+
+  buildNodes() {
+    const y = Math.max(0.3, this.plan.wallHeight - 0.15);
+    this.plan.nodes.forEach((n, i) => {
+      const g = new THREE.Group();
+      g.position.set(n.x, 0, n.z);
+      const box = new THREE.Mesh(GEO.node, this.mat.node);
+      box.position.y = y;
+      const ledMat = new THREE.MeshBasicMaterial();
+      const led = new THREE.Mesh(GEO.led, ledMat);
+      led.position.y = y + 0.08;
+      const pingMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false });
+      const ping = new THREE.Mesh(GEO.ping, pingMat);
+      ping.position.y = 0.006;
+      g.add(box, led, ping);
+      this.root.add(g);
+      this.nodeViews.push({ cfg: n, ledMat, pingMat, ping, phase: i * 0.37, online: true });
+    });
+  }
+
+  applyPalette() {
+    const pal = (this.palette = readPalette());
+    // A dark floor turns muddy fast when mixed with the accent, so tint it less.
+    this.tint = pal.floor.getHSL({}).l < 0.3 ? 0.012 : 0.06;
+    this.renderer.setClearColor(pal.bg, 1);
+    this.mat.grid.color.copy(pal.grid);
+    this.mat.wall.color.copy(pal.wall);
+    this.mat.wallTop.color.copy(pal.wallTop);
+    this.mat.rail.color.copy(pal.wall);
+    this.mat.door.color.copy(pal.door);
+    this.mat.node.color.copy(pal.node);
+    for (const v of this.nodeViews) v.pingMat.color.copy(pal.node);
+    for (const view of this.people.values()) view.setPalette(pal);
+    this.paintFloors();
+  }
+
+  paintFloors() {
+    for (const [id, f] of this.floors) {
+      const base = f.room.outdoor ? this.palette.floorOut : this.palette.floor;
+      const n = this.occupancy.get(id) || 0;
+      f.mat.color.copy(base).lerp(this.palette.person, Math.min(n, 3) * this.tint);
+    }
+  }
+
+  setOccupancy(counts) {
+    let changed = false;
+    for (const r of this.plan.rooms) {
+      const n = counts.get(r.id) || 0;
+      if ((this.occupancy.get(r.id) || 0) !== n) changed = true;
+      const lab = this.roomLabels.get(r.id);
+      lab.el.classList.toggle('is-occupied', n > 0);
+      lab.count.hidden = n === 0;
+      lab.count.textContent = n === 1 ? '1 Person' : `${n} Personen`;
+    }
+    this.occupancy = counts;
+    if (changed) this.paintFloors();
+  }
+
+  setInsets(insets) {
+    this.insets = insets;
+    this.resize();
+  }
+
+  resize() {
+    const w = Math.max(1, this.container.clientWidth);
+    const h = Math.max(1, this.container.clientHeight);
+    this.renderer.setSize(w, h, false);
+    this.labels.setSize(w, h);
+    this.camera.aspect = w / h;
+    const { top, right, bottom, left } = this.insets;
+    this.camera.setViewOffset(w, h, -(left - right) / 2, -(top - bottom) / 2, w, h);
+    this.camera.updateProjectionMatrix();
+    this.free = { w: Math.max(120, w - left - right), h: Math.max(120, h - top - bottom), W: w, H: h };
+    if (!this.userMoved) this.setView(this.mode, false);
+  }
+
+  // Camera distance at which the plan's bounding box fills the free area
+  // (the screen minus title block and panel) from the given direction.
+  fitDistance(phi, theta, margin) {
+    const cam = this.camera.clone();
+    cam.clearViewOffset();
+    cam.updateProjectionMatrix();
+    const { w, d } = this.plan.size;
+    const h = this.plan.wallHeight;
+    const corners = [];
+    for (const x of [-w / 2, w / 2]) for (const y of [0, h]) for (const z of [-d / 2, d / 2]) corners.push(new THREE.Vector3(x, y, z));
+    const dir = new THREE.Vector3().setFromSphericalCoords(1, phi, theta);
+    const fx = this.free.w / this.free.W;
+    const fy = this.free.h / this.free.H;
+    const v = new THREE.Vector3();
+    let dist = 2 * Math.hypot(w, d);
+    for (let i = 0; i < 5; i++) {
+      cam.position.copy(dir).multiplyScalar(dist);
+      cam.lookAt(0, 0, 0);
+      cam.updateMatrixWorld();
+      let r = 0;
+      for (const c of corners) {
+        v.copy(c).project(cam);
+        r = Math.max(r, Math.abs(v.x) / fx, Math.abs(v.y) / fy);
+      }
+      dist *= r * margin;
+    }
+    return dist;
+  }
+
+  viewGoal(mode) {
+    if (mode === 'plan') return { radius: this.fitDistance(0.0001, 0, 1.06), phi: 0.0001, theta: 0 };
+    // On a portrait screen width is scarce, so turn the plan less.
+    const portrait = this.free.h > this.free.w * 1.2;
+    const phi = portrait ? 0.72 : 0.8;
+    const theta = portrait ? -0.12 : -0.42;
+    return { radius: this.fitDistance(phi, theta, 1.04), phi, theta };
+  }
+
+  setView(mode, animate = true) {
+    this.mode = mode;
+    if (!this.free) return;
+    const goal = this.viewGoal(mode);
+    const from = new THREE.Spherical().setFromVector3(this.camera.position.clone().sub(this.controls.target));
+    if (!animate || reduceMotion.matches || from.radius === 0) {
+      this.tween = null;
+      this.controls.target.set(0, 0, 0);
+      this.camera.position.setFromSphericalCoords(goal.radius, goal.phi, goal.theta);
+      this.controls.update();
+      return;
+    }
+    let dTheta = goal.theta - from.theta;
+    dTheta = Math.atan2(Math.sin(dTheta), Math.cos(dTheta));
+    this.tween = { t: 0, from, to: { ...goal, theta: from.theta + dTheta }, target: this.controls.target.clone() };
+  }
+
+  resetView() {
+    this.userMoved = false;
+    this.setView(this.mode, true);
+  }
+
+  stepTween(dt) {
+    const tw = this.tween;
+    if (!tw) return;
+    tw.t = Math.min(1, tw.t + dt / 0.7);
+    const e = tw.t < 0.5 ? 4 * tw.t ** 3 : 1 - (-2 * tw.t + 2) ** 3 / 2;
+    const lerp = (a, b) => a + (b - a) * e;
+    this.controls.target.copy(tw.target).multiplyScalar(1 - e);
+    const off = new THREE.Vector3().setFromSphericalCoords(lerp(tw.from.radius, tw.to.radius), lerp(tw.from.phi, tw.to.phi), lerp(tw.from.theta, tw.to.theta));
+    this.camera.position.copy(this.controls.target).add(off);
+    if (tw.t >= 1) this.tween = null;
+  }
+
+  update(frame, dt, t) {
+    const still = reduceMotion.matches;
+    const seen = new Set();
+    for (const p of frame.people) {
+      seen.add(p.id);
+      let view = this.people.get(p.id);
+      if (!view) {
+        view = new PersonView(this.root, this.palette);
+        this.people.set(p.id, view);
+      }
+      view.update(p, dt, t, still);
+    }
+    for (const [id, view] of this.people) {
+      if (seen.has(id)) continue;
+      view.gone = true;
+      view.update(null, dt, t, still);
+      if (view.alpha < 0.02) {
+        view.dispose();
+        this.people.delete(id);
+      }
+    }
+
+    const now = performance.now();
+    for (const v of this.nodeViews) {
+      const last = frame.nodes ? frame.nodes.get(Number(v.cfg.id)) : now;
+      v.online = last != null && now - last < NODE_TIMEOUT_MS;
+      v.ledMat.color.copy(v.online ? this.palette.ok : this.palette.off);
+      if (v.online && !still) {
+        v.phase = (v.phase + dt / 2.4) % 1;
+        v.ping.scale.setScalar(0.2 + v.phase * 1.8);
+        v.pingMat.opacity = 0.32 * (1 - v.phase);
+      } else {
+        v.pingMat.opacity = 0;
+      }
+    }
+
+    this.stepTween(dt);
+    this.controls.enabled = !this.tween;
+    this.controls.update();
+    this.renderer.render(this.scene, this.camera);
+    this.labels.render(this.scene, this.camera);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Oberfläche                                                          */
+/* ------------------------------------------------------------------ */
+
+function loadSettings() {
+  const defaults = { source: 'demo', demoPeople: CFG.demo?.people || 3, demoSpeed: 'normal', liveUrl: '', liveToken: '', view: '3d' };
+  try {
+    return { ...defaults, ...JSON.parse(localStorage.getItem(STORE_KEY) || '{}') };
+  } catch {
+    return defaults;
+  }
+}
+
+function saveSettings(s) {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(s));
+  } catch {
+    /* storage blocked: settings last for this visit only */
+  }
+}
+
+const plan = buildPlan(CFG);
+const settings = loadSettings();
+const ui = {
+  app: $('#app'),
+  stage: $('#stage'),
+  chip: $('#status-chip'),
+  chipText: $('#status-text'),
+  tbPlan: $('#tb-plan'),
+  tbArea: $('#tb-area'),
+  tbRooms: $('#tb-rooms'),
+  tbSource: $('#tb-source'),
+  titleblock: $('#titleblock'),
+  toolbar: $('#toolbar'),
+  panel: $('#panel'),
+  panelToggle: $('#panel-toggle'),
+  summary: $('#panel-summary'),
+  notice: $('#notice'),
+  rooms: $('#rooms'),
+  people: $('#people'),
+  vitals: $('#vitals'),
+  nodes: $('#nodes'),
+  note: $('#note'),
+  warnings: $('#warnings'),
+  viewBtns: document.querySelectorAll('[data-view]'),
+  recenter: $('#recenter'),
+  openSource: $('#open-source'),
+  dialog: $('#source-dialog'),
+  form: $('#source-form'),
+  liveUrl: $('#live-url'),
+  liveToken: $('#live-token'),
+  demoPeople: $('#demo-people'),
+  demoSpeed: $('#demo-speed'),
+  httpsHint: $('#https-hint'),
+};
+
+let scene = null;
+try {
+  scene = new MapScene(ui.stage, plan);
+} catch (err) {
+  console.error(err);
+  ui.stage.innerHTML = '<p class="stage-error">Dein Browser kann hier kein WebGL anzeigen, deshalb fehlt die 3D-Ansicht. Die Liste rechts zeigt trotzdem, wer wo ist.</p>';
+}
+
+let source = null;
+let frame = { people: [], nodes: null, vitals: null, at: 0, source: settings.source };
+let status = { kind: 'demo', text: 'Demo', detail: '' };
+
+function startSource() {
+  source?.stop();
+  frame = { people: [], nodes: settings.source === 'live' ? new Map() : null, vitals: null, at: 0, source: settings.source };
+  source = settings.source === 'live' ? new LiveSource(plan, CFG.live, settings) : new DemoSource(plan, CFG.demo, settings);
+  source.start((f) => { frame = f; }, (s) => { status = s; renderStatus(); renderPanel(); });
+  renderStatus();
+}
+
+// The source's own status, refined by what actually arrives: a connection
+// that has gone quiet is not "live".
+function effectiveStatus() {
+  if (status.kind === 'live' && frame.at && performance.now() - frame.at > STALE_MS) {
+    return { kind: 'offline', text: 'Keine Daten', detail: 'Verbunden, aber RuView schickt seit ein paar Sekunden nichts. Senden deine ESP32-Boards?' };
+  }
+  return status;
+}
+
+function renderStatus() {
+  const s = effectiveStatus();
+  ui.chip.dataset.kind = s.kind;
+  ui.chipText.textContent = s.text;
+  ui.tbSource.textContent = settings.source === 'live' ? 'RuView live' : 'Demo, simuliert';
+}
+
+function roomName(id) {
+  return plan.byId.get(id)?.name || 'Unbekannt';
+}
+
+function renderPanel() {
+  const people = frame.people;
+  const counts = new Map();
+  for (const p of people) counts.set(p.room, (counts.get(p.room) || 0) + 1);
+  scene?.setOccupancy(counts);
+
+  const total = people.length;
+  const busiest = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2).map(([id, n]) => `${roomName(id)} ${n}`);
+  ui.summary.textContent = total === 0
+    ? 'Niemand erkannt'
+    : `${total === 1 ? '1 Person' : `${total} Personen`} · ${busiest.join(' · ')}`;
+
+  ui.rooms.innerHTML = plan.rooms.map((r) => {
+    const n = counts.get(r.id) || 0;
+    return `<li class="room-row${n ? ' is-occupied' : ''}"><span class="rr-name">${esc(r.name)}</span><span class="rr-pips" aria-hidden="true">${'<i></i>'.repeat(Math.min(n, 5))}</span><span class="rr-count">${n}</span></li>`;
+  }).join('');
+
+  ui.people.innerHTML = total
+    ? people.slice().sort((a, b) => a.label.localeCompare(b.label, 'de', { numeric: true })).map((p) => {
+      const where = p.placed === 'position' ? roomName(p.room) : `${roomName(p.room)} <em>${p.placed === 'zone' ? '(Zone)' : '(Position unbekannt)'}</em>`;
+      const raw = p.raw ? `<span class="pr-raw">RuView x ${num1.format(p.raw.x)} · z ${num1.format(p.raw.z)}</span>` : '';
+      const breath = p.breathing ? `${p.breathing}<small>/min</small>` : '<span class="muted">–</span>';
+      const motion = Math.round(clamp(p.motion || 0, 0, 1) * 100);
+      return `<li class="person-row"><span class="pr-badge">${esc(p.label)}</span><span class="pr-main"><span class="pr-room">${where}</span><span class="pr-meta">${POSE_WORD[p.pose] || 'steht'}${raw}</span></span><span class="pr-breath" title="Atemzüge pro Minute">${breath}</span><span class="pr-motion" role="meter" aria-label="Bewegung" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${motion}"><i style="width:${motion}%"></i></span></li>`;
+    }).join('')
+    : `<li class="empty">${settings.source === 'live' && status.kind !== 'live' ? 'Noch keine Verbindung zu RuView.' : 'Gerade ist niemand zu Hause.'}</li>`;
+
+  const v = frame.vitals;
+  const showVitals = settings.source === 'live' && v && (v.breathing || v.heart) && total !== 1;
+  ui.vitals.hidden = !showVitals;
+  if (showVitals) {
+    const parts = [];
+    if (v.breathing) parts.push(`Atmung ${Math.round(v.breathing)}/min`);
+    if (v.heart) parts.push(`Puls ${Math.round(v.heart)}/min`);
+    ui.vitals.textContent = `Im ganzen Sensorbereich: ${parts.join(' · ')}. Nicht medizinisch geprüft.`;
+  }
+
+  const now = performance.now();
+  ui.nodes.innerHTML = plan.nodes.length
+    ? plan.nodes.map((n) => {
+      let state = 'sim';
+      let word = 'simuliert';
+      if (settings.source === 'live') {
+        const last = frame.nodes?.get(Number(n.id));
+        const online = last != null && now - last < NODE_TIMEOUT_MS;
+        state = online ? 'on' : 'off';
+        word = online ? 'sendet' : 'keine Daten';
+      }
+      return `<li class="node-row" data-state="${state}"><span class="nr-dot" aria-hidden="true"></span><span class="nr-name">${esc(n.name || `Node ${n.id}`)}</span><span class="nr-state">${word}</span></li>`;
+    }).join('')
+    : '<li class="empty">Keine Sensoren in config.js eingetragen.</li>';
+
+  const s = effectiveStatus();
+  const waiting = s.kind === 'live' && !frame.at;
+  const showNotice = (['connecting', 'offline', 'error'].includes(s.kind) || waiting) && s.detail;
+  ui.notice.hidden = !showNotice;
+  if (showNotice) {
+    ui.notice.dataset.kind = s.kind;
+    ui.notice.textContent = s.detail;
+  }
+
+  ui.note.textContent = settings.source === 'live'
+    ? 'Eine Position ist der Punkt, an dem RuView das stärkste Signal misst. Rechne mit 1 bis 2 Metern Abweichung: der Raum stimmt meist, die Stelle im Raum nur grob.'
+    : 'Simulierte Bewohner auf dem Beispielgrundriss. Unter „Quelle“ schaltest du auf Live um, sobald dein RuView-Server läuft.';
+}
+
+function renderWarnings() {
+  ui.warnings.hidden = plan.warnings.length === 0;
+  ui.warnings.innerHTML = plan.warnings.length
+    ? `<strong>Fehler in config.js</strong><ul>${plan.warnings.map((w) => `<li>${esc(w)}</li>`).join('')}</ul>`
+    : '';
+}
+
+function setView(mode) {
+  settings.view = mode;
+  saveSettings(settings);
+  for (const b of ui.viewBtns) b.setAttribute('aria-pressed', String(b.dataset.view === mode));
+  if (scene) {
+    scene.userMoved = false;
+    scene.setView(mode, true);
+  }
+}
+
+function isWide() {
+  return window.matchMedia('(min-width: 900px)').matches;
+}
+
+function updateInsets() {
+  // On wide screens the legend is always open, so its header is not a control.
+  ui.panelToggle.tabIndex = isWide() ? -1 : 0;
+  if (!scene) return;
+  const stage = ui.stage.getBoundingClientRect();
+  const tb = ui.titleblock.getBoundingClientRect();
+  const panel = ui.panel.getBoundingClientRect();
+  if (isWide()) {
+    scene.setInsets({ top: tb.bottom - stage.top + 12, right: Math.max(0, stage.right - panel.left) + 12, bottom: 24, left: 24 });
+  } else {
+    const top = Math.max(tb.bottom, ui.toolbar.getBoundingClientRect().bottom) - stage.top + 8;
+    const bottom = stage.bottom - panel.top + 8;
+    scene.setInsets({ top, right: 8, bottom, left: 8 });
+  }
+}
+
+function setPanelOpen(open) {
+  ui.panel.dataset.open = String(open);
+  ui.panelToggle.setAttribute('aria-expanded', String(open));
+  requestAnimationFrame(updateInsets);
+}
+
+function fillForm() {
+  ui.form.elements.source.value = settings.source;
+  ui.liveUrl.value = settings.liveUrl || '';
+  ui.liveUrl.placeholder = CFG.live?.url || defaultLiveUrl();
+  ui.liveToken.value = settings.liveToken || '';
+  ui.demoPeople.value = String(clamp(Number(settings.demoPeople) || 3, 1, 4));
+  ui.demoSpeed.value = settings.demoSpeed === 'fast' ? 'fast' : 'normal';
+  ui.httpsHint.hidden = location.protocol !== 'https:';
+  syncFormSections();
+}
+
+function syncFormSections() {
+  const src = ui.form.elements.source.value;
+  for (const el of ui.form.querySelectorAll('[data-for]')) el.hidden = el.dataset.for !== src;
+}
+
+ui.openSource.addEventListener('click', () => {
+  fillForm();
+  ui.dialog.showModal();
+});
+ui.form.addEventListener('change', syncFormSections);
+ui.form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  settings.source = ui.form.elements.source.value === 'live' ? 'live' : 'demo';
+  settings.liveUrl = ui.liveUrl.value.trim();
+  settings.liveToken = ui.liveToken.value.trim();
+  settings.demoPeople = Number(ui.demoPeople.value) || 3;
+  settings.demoSpeed = ui.demoSpeed.value;
+  saveSettings(settings);
+  ui.dialog.close();
+  startSource();
+  renderPanel();
+});
+$('#source-cancel').addEventListener('click', () => ui.dialog.close());
+
+for (const b of ui.viewBtns) b.addEventListener('click', () => setView(b.dataset.view));
+ui.recenter.addEventListener('click', () => scene?.resetView());
+ui.panelToggle.addEventListener('click', () => setPanelOpen(ui.panel.dataset.open !== 'true'));
+
+// Re-read the colour tokens when the theme changes, so the 3D scene follows the page.
+const repaint = () => scene?.applyPalette();
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', repaint);
+new MutationObserver(repaint).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+new ResizeObserver(() => updateInsets()).observe(ui.stage);
+window.matchMedia('(min-width: 900px)').addEventListener('change', () => requestAnimationFrame(updateInsets));
+
+ui.tbPlan.textContent = plan.name;
+ui.tbArea.textContent = `${num1.format(plan.indoorArea)} m²`;
+ui.tbRooms.textContent = String(plan.rooms.filter((r) => !r.outdoor).length);
+renderWarnings();
+for (const b of ui.viewBtns) b.setAttribute('aria-pressed', String(b.dataset.view === settings.view));
+if (scene) scene.mode = settings.view === 'plan' ? 'plan' : '3d';
+setPanelOpen(false);
+startSource();
+updateInsets();
+renderPanel();
+
+let last = performance.now();
+let panelTimer = 0;
+function loop(now) {
+  const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
+  last = now;
+  source?.step?.(dt);
+  scene?.update(frame, dt, now / 1000);
+  panelTimer -= dt;
+  if (panelTimer <= 0) {
+    renderStatus();
+    renderPanel();
+    panelTimer = 0.25;
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);

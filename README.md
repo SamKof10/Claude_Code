@@ -16,6 +16,7 @@ jedem Push, der `fpv-portfolio-react/` ändert
 | [`mudroom/`](mudroom) | MUDROOM — Premium-Store für eine automatische Bike-Waschbox | Next.js 16, React 19, Tailwind 4, Motion |
 | [`gym-tracker/`](gym-tracker) | Gym Tracker — PWA für einen 5-Tage-Split, mit echtem Background-Push | Vanilla JS PWA + Node/Express |
 | [`studyhub/`](studyhub) | StudyHub — KI-gestützte Lernplattform: Anmeldung, Dokumente, Notizen, Karteikarten, Quizze, Prüfungspläne, Fokustimer und ein AI-Tutor | Next.js 16, React 19, Tailwind 4, Zustand, Tiptap, Recharts |
+| [`ruview-map/`](ruview-map) | RuView Map — 3D-Grundriss, der live zeigt, wo [RuView](https://github.com/ruvnet/RuView) per WLAN-Sensing Personen erkennt; mit Demo-Modus ohne Hardware | Vanilla JS, Three.js, kein Build |
 
 ## Fertige Seiten ohne Build
 
@@ -29,11 +30,15 @@ Browser öffnen — kein Server, kein Build:
   Satz-Logging und Streaks laufen vollständig lokal (`localStorage`).
   **Nur die 20-Uhr-Push-Erinnerung fehlt** — die braucht `gym-tracker/server`,
   weil ein geschlossener Browser-Tab sich nicht selbst wecken kann.
+- [`sites/ruview-map.html`](sites/ruview-map.html) — Demo läuft sofort; für
+  Live mit Token muss die Karte vom RuView-Server kommen
+  ([Details](ruview-map/README.md#live-mit-ruview)).
 
 Das sind Snapshots. Neu erzeugen: bei AUREL und MUDROOM mit
 `npm run standalone` (Ergebnis: `standalone/dist/local.html`), beim Gym
 Tracker durch Inlinen von `public/styles.css` und `public/app.js` in
-`public/index.html`.
+`public/index.html`, bei der RuView Map mit
+`node ruview-map/build-standalone.mjs`.
 
 ## Den Gym Tracker mit Push starten
 

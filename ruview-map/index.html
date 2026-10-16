@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RuView Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="stage" id="stage"></div>
+
+  <div class="topbar">
+    <header class="titleblock" id="titleblock">
+      <div class="tb-head">
+        <h1>RuView Map</h1>
+        <span class="chip" id="status-chip" data-kind="demo"><span class="chip-dot" aria-hidden="true"></span><span id="status-text">Demo</span></span>
+      </div>
+      <dl class="tb-grid">
+        <div><dt>Plan</dt><dd id="tb-plan">–</dd></div>
+        <div><dt>Wohnfläche</dt><dd id="tb-area" class="num">–</dd></div>
+        <div><dt>Räume</dt><dd id="tb-rooms" class="num">–</dd></div>
+        <div><dt>Raster</dt><dd class="num">1 m</dd></div>
+        <div class="tb-wide"><dt>Quelle</dt><dd id="tb-source">–</dd></div>
+      </dl>
+    </header>
+
+    <nav class="toolbar" id="toolbar" aria-label="Ansicht">
+      <div class="segmented" role="group" aria-label="Kamera">
+        <button type="button" data-view="3d" aria-pressed="true">3D</button>
+        <button type="button" data-view="plan" aria-pressed="false">Plan</button>
+      </div>
+      <button type="button" class="btn" id="recenter" title="Ansicht zurücksetzen">Zentrieren</button>
+      <button type="button" class="btn btn-strong" id="open-source">Quelle</button>
+    </nav>
+  </div>
+
+  <aside class="panel" id="panel" data-open="false" aria-label="Belegung">
+    <button type="button" class="panel-toggle" id="panel-toggle" aria-expanded="false" aria-controls="panel-body">
+      <span class="pt-label">Belegung</span>
+      <span class="pt-summary" id="panel-summary">–</span>
+      <span class="pt-chevron" aria-hidden="true"></span>
+    </button>
+    <div class="panel-body" id="panel-body">
+      <div class="warnings" id="warnings" hidden></div>
+      <p class="notice" id="notice" hidden></p>
+
+      <section class="panel-section">
+        <h2>Räume</h2>
+        <ul class="rooms" id="rooms"></ul>
+      </section>
+
+      <section class="panel-section">
+        <h2>Personen</h2>
+        <ul class="people" id="people"></ul>
+        <p class="vitals" id="vitals" hidden></p>
+      </section>
+
+      <section class="panel-section">
+        <h2>Sensoren</h2>
+        <ul class="nodes" id="nodes"></ul>
+      </section>
+
+      <p class="note" id="note"></p>
+    </div>
+  </aside>
+
+  <dialog class="dialog" id="source-dialog" aria-labelledby="source-title">
+    <form id="source-form" class="dialog-form">
+      <h2 id="source-title">Datenquelle</h2>
+
+      <fieldset class="choice">
+        <legend>Woher kommen die Personen?</legend>
+        <label class="choice-item">
+          <input type="radio" name="source" id="source-demo" value="demo">
+          <span><strong>Demo</strong><small>Simulierte Bewohner, kein Sensor nötig.</small></span>
+        </label>
+        <label class="choice-item">
+          <input type="radio" name="source" id="source-live" value="live">
+          <span><strong>Live von RuView</strong><small>Echte Daten von deinem RuView-Server im Heimnetz.</small></span>
+        </label>
+      </fieldset>
+
+      <div class="field-group" data-for="demo">
+        <label class="field">
+          <span>Personen</span>
+          <select id="demo-people">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Tempo</span>
+          <select id="demo-speed">
+            <option value="normal">Echtzeit</option>
+            <option value="fast">Zeitraffer (4×)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="field-group field-stack" data-for="live" hidden>
+        <label class="field">
+          <span>Server</span>
+          <input type="text" id="live-url" inputmode="url" autocomplete="off" spellcheck="false">
+          <small>Leer lassen für die Adresse aus config.js.</small>
+        </label>
+        <label class="field">
+          <span>API-Token <em>(optional)</em></span>
+          <input type="password" id="live-token" autocomplete="off" spellcheck="false">
+          <small>Nur nötig, wenn RuView mit RUVIEW_API_TOKEN läuft. Bleibt in diesem Browser.</small>
+        </label>
+        <p class="hint" id="https-hint" hidden>Diese Seite läuft über HTTPS. Live klappt nur, wenn die Karte in deinem Heimnetz läuft, zum Beispiel unter http://localhost oder direkt vom RuView-Server.</p>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn" id="source-cancel">Abbrechen</button>
+        <button type="submit" class="btn btn-strong">Übernehmen</button>
+      </div>
+    </form>
+  </dialog>
+</div>
+
+<script src="config.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
