@@ -31,7 +31,7 @@
       <dl class="tb-grid">
         <div><dt>Plan</dt><dd id="tb-plan">–</dd></div>
         <div><dt>Wohnfläche</dt><dd id="tb-area" class="num">–</dd></div>
-        <div><dt>Räume</dt><dd id="tb-rooms" class="num">–</dd></div>
+        <div><dt>Geschosse</dt><dd id="tb-floors" class="num">–</dd></div>
         <div><dt>Raster</dt><dd class="num">1 m</dd></div>
         <div class="tb-wide"><dt>Quelle</dt><dd id="tb-source">–</dd></div>
       </dl>
@@ -42,6 +42,7 @@
         <button type="button" data-view="3d" aria-pressed="true">3D</button>
         <button type="button" data-view="plan" aria-pressed="false">Plan</button>
       </div>
+      <div class="segmented" id="floor-btns" role="group" aria-label="Geschoss" hidden></div>
       <button type="button" class="btn" id="recenter" title="Ansicht zurücksetzen">Zentrieren</button>
       <button type="button" class="btn btn-strong" id="open-source">Quelle</button>
     </nav>
@@ -73,7 +74,10 @@
         <ul class="nodes" id="nodes"></ul>
       </section>
 
-      <p class="note" id="note"></p>
+      <div class="notes">
+        <p class="note" id="note"></p>
+        <p class="note" id="plan-note" hidden></p>
+      </div>
     </div>
   </aside>
 

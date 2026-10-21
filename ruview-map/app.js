@@ -5,10 +5,11 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
-const CFG = window.RUVIEW_MAP || { rooms: [], doors: [], nodes: [] };
+const CFG = window.RUVIEW_MAP || {};
 const STORE_KEY = 'ruview-map:settings';
-const EPS = 0.01;
+const COLLINEAR = 0.03; // edges within 3 cm of a common line are one wall
 const WALL_T = 0.12;
+const FLOOR_GAP = 3; // metres between floors shown side by side
 const NODE_TIMEOUT_MS = 5000;
 const STALE_MS = 4000;
 const POSE_WORD = { walking: 'geht', standing: 'steht', sitting: 'sitzt', lying: 'liegt' };
@@ -18,9 +19,8 @@ const num1 = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 1, maximumF
 
 const $ = (sel) => document.querySelector(sel);
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-const near = (a, b) => Math.abs(a - b) < EPS;
 const rand = (lo, hi) => lo + Math.random() * (hi - lo);
-const finite = (v) => (Number.isFinite(Number(v)) && v !== null && v !== '' ? Number(v) : null);
+const finite = (v) => (v !== null && v !== '' && Number.isFinite(Number(v)) ? Number(v) : null);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 function gauss() {
@@ -32,182 +32,389 @@ function gauss() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Grundriss                                                           */
+/* 2D-Geometrie auf dem Plan (x nach rechts, z nach unten)             */
 /* ------------------------------------------------------------------ */
 
-function sideEdge(r, side) {
-  switch (side) {
-    case 'north': return { axis: 'x', c: r.z, s: r.x, e: r.x + r.w };
-    case 'south': return { axis: 'x', c: r.z + r.d, s: r.x, e: r.x + r.w };
-    case 'west': return { axis: 'z', c: r.x, s: r.z, e: r.z + r.d };
-    case 'east': return { axis: 'z', c: r.x + r.w, s: r.z, e: r.z + r.d };
-    default: return null;
-  }
+const pt = (x, z) => ({ x, z });
+const sub = (a, b) => pt(a.x - b.x, a.z - b.z);
+const add = (a, b) => pt(a.x + b.x, a.z + b.z);
+const mul = (a, s) => pt(a.x * s, a.z * s);
+const dot = (a, b) => a.x * b.x + a.z * b.z;
+const cross = (a, b) => a.x * b.z - a.z * b.x;
+const length = (a) => Math.hypot(a.x, a.z);
+const unit = (a) => mul(a, 1 / (length(a) || 1));
+const perp = (a) => pt(-a.z, a.x);
+const edgesOf = (pts) => pts.map((p, i) => [p, pts[(i + 1) % pts.length]]);
+
+function signedArea(pts) {
+  let s = 0;
+  for (const [a, b] of edgesOf(pts)) s += a.x * b.z - b.x * a.z;
+  return s / 2;
 }
 
-// The wall two rectangles share, as a line segment. axis 'x' = the line runs
-// along x at z = c; axis 'z' = it runs along z at x = c.
-function sharedEdge(a, b) {
-  const lines = [];
-  if (near(a.x + a.w, b.x)) lines.push({ axis: 'z', c: b.x });
-  if (near(b.x + b.w, a.x)) lines.push({ axis: 'z', c: a.x });
-  if (near(a.z + a.d, b.z)) lines.push({ axis: 'x', c: b.z });
-  if (near(b.z + b.d, a.z)) lines.push({ axis: 'x', c: a.z });
-  for (const l of lines) {
-    const [a0, a1] = l.axis === 'z' ? [a.z, a.z + a.d] : [a.x, a.x + a.w];
-    const [b0, b1] = l.axis === 'z' ? [b.z, b.z + b.d] : [b.x, b.x + b.w];
-    const s = Math.max(a0, b0);
-    const e = Math.min(a1, b1);
-    if (e - s > EPS) return { ...l, s, e };
+function centroid(pts) {
+  const A = signedArea(pts);
+  if (Math.abs(A) < 1e-9) return pt(pts.reduce((s, p) => s + p.x, 0) / pts.length, pts.reduce((s, p) => s + p.z, 0) / pts.length);
+  let cx = 0;
+  let cz = 0;
+  for (const [a, b] of edgesOf(pts)) {
+    const f = a.x * b.z - b.x * a.z;
+    cx += (a.x + b.x) * f;
+    cz += (a.z + b.z) * f;
   }
-  return null;
+  return pt(cx / (6 * A), cz / (6 * A));
 }
 
-function resolveDoor(d, byId) {
-  const width = d.width || 0.9;
-  let a;
-  let b = null;
-  let edge;
-  if (Array.isArray(d.between)) {
-    [a, b] = d.between.map((id) => byId.get(id));
-    if (!a || !b) return `Tür ${d.between.join('–')}: unbekannte Raum-ID.`;
-    edge = sharedEdge(a, b);
-    if (!edge) return `Tür ${a.name}–${b.name}: Die beiden Räume teilen sich keine Wand.`;
-  } else {
-    a = byId.get(d.room);
-    if (!a) return `Tür an „${d.room}“: unbekannte Raum-ID.`;
-    edge = sideEdge(a, d.side);
-    if (!edge) return `Tür an ${a.name}: side muss north, south, east oder west sein.`;
+function inside(pts, p) {
+  let hit = false;
+  for (const [a, b] of edgesOf(pts)) {
+    if ((a.z > p.z) !== (b.z > p.z) && p.x < ((b.x - a.x) * (p.z - a.z)) / (b.z - a.z) + a.x) hit = !hit;
   }
-  const len = edge.e - edge.s;
-  if (width > len + EPS) return `Tür an ${a.name}: ${num1.format(width)} m breit, die Wand ist nur ${num1.format(len)} m lang.`;
-  const mid = clamp(edge.s + (finite(d.at) ?? len / 2), edge.s + width / 2, edge.e - width / 2);
-  const point = edge.axis === 'x' ? { x: mid, z: edge.c } : { x: edge.c, z: mid };
-  // Normal pointing into room a.
-  const n = edge.axis === 'x'
-    ? { x: 0, z: near(a.z + a.d, edge.c) ? -1 : 1 }
-    : { x: near(a.x + a.w, edge.c) ? -1 : 1, z: 0 };
-  return { axis: edge.axis, c: edge.c, s: mid - width / 2, e: mid + width / 2, width, point, n, a: a.id, b: b ? b.id : null, label: d.label || null };
+  return hit;
 }
+
+function distToSegment(p, a, b) {
+  const ab = sub(b, a);
+  const t = clamp(dot(sub(p, a), ab) / (dot(ab, ab) || 1), 0, 1);
+  return length(sub(p, add(a, mul(ab, t))));
+}
+
+function bboxOf(pts) {
+  const b = { minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity };
+  for (const p of pts) {
+    b.minX = Math.min(b.minX, p.x);
+    b.maxX = Math.max(b.maxX, p.x);
+    b.minZ = Math.min(b.minZ, p.z);
+    b.maxZ = Math.max(b.maxZ, p.z);
+  }
+  return b;
+}
+
+// Drop repeated points and points in the middle of a straight run, so each
+// wall is one edge.
+function cleanPoly(pts) {
+  let out = pts.filter((p, i) => length(sub(p, pts[(i + pts.length - 1) % pts.length])) > 1e-4);
+  let changed = true;
+  while (changed && out.length > 3) {
+    changed = false;
+    for (let i = 0; i < out.length; i++) {
+      const a = out[(i + out.length - 1) % out.length];
+      const b = out[i];
+      const c = out[(i + 1) % out.length];
+      if (Math.abs(cross(sub(b, a), sub(c, b))) < 1e-6 && dot(sub(b, a), sub(c, b)) > 0) {
+        out.splice(i, 1);
+        changed = true;
+        break;
+      }
+    }
+  }
+  return out;
+}
+
+// Sutherland–Hodgman against the four sides of a rectangle (the clip region
+// is convex, so the outline may have any shape).
+function clipToRect(poly, x0, z0, x1, z1) {
+  const half = (p, keep, cut) => {
+    const out = [];
+    p.forEach((cur, i) => {
+      const prev = p[(i + p.length - 1) % p.length];
+      if (keep(cur)) {
+        if (!keep(prev)) out.push(cut(prev, cur));
+        out.push(cur);
+      } else if (keep(prev)) {
+        out.push(cut(prev, cur));
+      }
+    });
+    return out;
+  };
+  const atX = (X) => (a, b) => pt(X, a.z + ((X - a.x) / (b.x - a.x)) * (b.z - a.z));
+  const atZ = (Z) => (a, b) => pt(a.x + ((Z - a.z) / (b.z - a.z)) * (b.x - a.x), Z);
+  let p = poly;
+  p = half(p, (q) => q.x >= x0 - 1e-9, atX(x0));
+  p = half(p, (q) => q.x <= x1 + 1e-9, atX(x1));
+  p = half(p, (q) => q.z >= z0 - 1e-9, atZ(z0));
+  p = half(p, (q) => q.z <= z1 + 1e-9, atZ(z1));
+  return p;
+}
+
+// A wall segment with a fixed reading direction: from the end with the smaller
+// x (or smaller z on a vertical wall). Door offsets are measured from there.
+function canonicalSeg(a, b) {
+  const swap = b.x < a.x - 1e-9 || (Math.abs(b.x - a.x) <= 1e-9 && b.z < a.z);
+  const P = swap ? b : a;
+  const Q = swap ? a : b;
+  return { P, Q, u: unit(sub(Q, P)), L: length(sub(Q, P)) };
+}
+
+// Pieces of wall two rooms have in common, longest first.
+function sharedSegments(A, B) {
+  const segs = [];
+  for (const [a0, a1] of edgesOf(A)) {
+    const u = unit(sub(a1, a0));
+    const n = perp(u);
+    const la = length(sub(a1, a0));
+    for (const [b0, b1] of edgesOf(B)) {
+      if (Math.abs(dot(sub(b0, a0), n)) > COLLINEAR || Math.abs(dot(sub(b1, a0), n)) > COLLINEAR) continue;
+      const t0 = dot(sub(b0, a0), u);
+      const t1 = dot(sub(b1, a0), u);
+      const lo = Math.max(0, Math.min(t0, t1));
+      const hi = Math.min(la, Math.max(t0, t1));
+      if (hi - lo > 0.1) segs.push(canonicalSeg(add(a0, mul(u, lo)), add(a0, mul(u, hi))));
+    }
+  }
+  return segs.sort((s, t) => t.L - s.L);
+}
+
+/* ------------------------------------------------------------------ */
+/* Grundriss aus config.js                                             */
+/* ------------------------------------------------------------------ */
 
 function buildPlan(cfg) {
+  const S = finite(cfg.scale) ?? 1;
+  const P = (p) => (Array.isArray(p) ? pt(p[0] * S, p[1] * S) : pt(p.x * S, p.z * S));
   const warnings = [];
-  const rooms = (cfg.rooms || []).map((r) => ({
-    ...r, outdoor: !!r.outdoor, cx: r.x + r.w / 2, cz: r.z + r.d / 2, area: r.w * r.d,
-  }));
-  if (!rooms.length) {
-    warnings.push('In config.js stehen keine Räume.');
-    rooms.push({ id: 'raum', name: 'Raum', x: 0, z: 0, w: 4, d: 4, outdoor: false, cx: 2, cz: 2, area: 16 });
-  }
-  const byId = new Map(rooms.map((r) => [r.id, r]));
+  const floorCfgs = Array.isArray(cfg.floors) && cfg.floors.length
+    ? cfg.floors
+    : [{ id: 'g', name: cfg.name || 'Wohnung', short: 'EG', outline: cfg.outline, rooms: cfg.rooms, doors: cfg.doors, nodes: cfg.nodes }];
+
+  const floors = [];
+  const rooms = [];
+  const byId = new Map();
+  floorCfgs.forEach((fc, fi) => {
+    const outline = Array.isArray(fc.outline) && fc.outline.length >= 3 ? cleanPoly(fc.outline.map(P)) : null;
+    const floor = { id: fc.id ?? `f${fi}`, index: fi, name: fc.name || `Geschoss ${fi + 1}`, short: fc.short || `${fi}`, outline, rooms: [], doors: [], nodes: [] };
+    for (const rc of fc.rooms || []) {
+      if (byId.has(rc.id)) {
+        warnings.push(`Die Raum-ID „${rc.id}“ gibt es zweimal.`);
+        continue;
+      }
+      let pts;
+      let rect = null;
+      if (Array.isArray(rc.points)) {
+        pts = cleanPoly(rc.points.map(P));
+      } else {
+        rect = { x0: rc.x * S, z0: rc.z * S, x1: (rc.x + rc.w) * S, z1: (rc.z + rc.d) * S };
+        pts = outline
+          ? cleanPoly(clipToRect(outline, rect.x0, rect.z0, rect.x1, rect.z1))
+          : [pt(rect.x0, rect.z0), pt(rect.x1, rect.z0), pt(rect.x1, rect.z1), pt(rect.x0, rect.z1)];
+      }
+      if (pts.length < 3 || Math.abs(signedArea(pts)) < 0.05) {
+        warnings.push(`${rc.name || rc.id}: Der Raum liegt außerhalb des Umrisses.`);
+        continue;
+      }
+      const room = { id: rc.id, name: rc.name || rc.id, floor: fi, outdoor: !!rc.outdoor, pts, rect, area: Math.abs(signedArea(pts)), c: centroid(pts), bbox: bboxOf(pts) };
+      floor.rooms.push(room);
+      rooms.push(room);
+      byId.set(room.id, room);
+    }
+    floor.bounds = bboxOf(outline || floor.rooms.flatMap((r) => r.pts));
+    if (!Number.isFinite(floor.bounds.minX)) floor.bounds = { minX: 0, maxX: 4, minZ: 0, maxZ: 4 };
+    floor.center = pt((floor.bounds.minX + floor.bounds.maxX) / 2, (floor.bounds.minZ + floor.bounds.maxZ) / 2);
+    floors.push(floor);
+  });
+  if (!rooms.length) warnings.push('In config.js stehen keine Räume.');
+
   const doors = [];
-  for (const d of cfg.doors || []) {
-    const door = resolveDoor(d, byId);
-    if (typeof door === 'string') warnings.push(door);
-    else doors.push(door);
+  floorCfgs.forEach((fc, fi) => {
+    for (const dc of fc.doors || []) {
+      const d = resolveDoor(dc, byId, fi, P, S);
+      if (typeof d === 'string') {
+        warnings.push(d);
+      } else {
+        floors[fi].doors.push(d);
+        doors.push(d);
+      }
+    }
+    for (const nc of fc.nodes || []) floors[fi].nodes.push({ id: nc.id, name: nc.name || `Node ${nc.id}`, floor: fi, ...P(nc) });
+  });
+
+  const stairs = [];
+  for (const sc of cfg.stairs || []) {
+    const [a, b] = (sc.between || []).map((id) => byId.get(id));
+    if (!a || !b) {
+      warnings.push(`Treppe ${(sc.between || []).join('–')}: unbekannte Raum-ID.`);
+      continue;
+    }
+    const at = Array.isArray(sc.at) ? P(sc.at) : a.c;
+    if (!inside(a.pts, at) || !inside(b.pts, at)) {
+      warnings.push(`Treppe ${a.name}–${b.name}: at muss in beiden Räumen liegen.`);
+      continue;
+    }
+    const [w, l] = Array.isArray(sc.size) ? sc.size.map((v) => v * S) : [1.1, 3];
+    stairs.push({ a: a.id, b: b.id, point: at, w, l, dir: sc.dir === 'x' ? 'x' : 'z' });
   }
-  const b = { minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity };
-  for (const r of rooms) {
-    b.minX = Math.min(b.minX, r.x);
-    b.maxX = Math.max(b.maxX, r.x + r.w);
-    b.minZ = Math.min(b.minZ, r.z);
-    b.maxZ = Math.max(b.maxZ, r.z + r.d);
-  }
+
   return {
     name: cfg.name || 'Wohnung',
-    wallHeight: cfg.wallHeight || 1.1,
+    note: cfg.note || '',
+    wallHeight: cfg.wallHeight || 0.9,
+    floors,
     rooms,
     byId,
     doors,
-    nodes: cfg.nodes || [],
-    bounds: b,
-    center: { x: (b.minX + b.maxX) / 2, z: (b.minZ + b.maxZ) / 2 },
-    size: { w: b.maxX - b.minX, d: b.maxZ - b.minZ },
-    indoorArea: rooms.filter((r) => !r.outdoor).reduce((sum, r) => sum + r.area, 0),
+    stairs,
+    nodes: floors.flatMap((f) => f.nodes),
+    indoorArea: rooms.filter((r) => !r.outdoor).reduce((s, r) => s + r.area, 0),
     warnings,
   };
 }
 
-const inRoom = (r, x, z) => x >= r.x - EPS && x <= r.x + r.w + EPS && z >= r.z - EPS && z <= r.z + r.d + EPS;
-
-function roomAt(plan, x, z) {
-  return plan.rooms.find((r) => !r.outdoor && inRoom(r, x, z)) || plan.rooms.find((r) => r.outdoor && inRoom(r, x, z)) || null;
+function resolveDoor(d, byId, fi, P, S) {
+  const width = finite(d.width) ?? 0.9;
+  let a;
+  let b = null;
+  let seg;
+  let target = Array.isArray(d.at) ? P(d.at) : null;
+  if (Array.isArray(d.between)) {
+    [a, b] = d.between.map((id) => byId.get(id));
+    if (!a || !b) return `Tür ${d.between.join('–')}: unbekannte Raum-ID.`;
+    if (a.floor !== fi || b.floor !== fi) return `Tür ${a.name}–${b.name}: Beide Räume müssen in diesem Geschoss liegen. Für Treppen gibt es stairs.`;
+    const segs = sharedSegments(a.pts, b.pts);
+    if (!segs.length) return `Tür ${a.name}–${b.name}: Die beiden Räume teilen sich keine Wand.`;
+    seg = target ? segs.reduce((best, s) => (distToSegment(target, s.P, s.Q) < distToSegment(target, best.P, best.Q) ? s : best)) : segs[0];
+  } else {
+    a = byId.get(d.room);
+    if (!a) return `Tür an „${d.room}“: unbekannte Raum-ID.`;
+    if (!target && d.side) {
+      // Older configs: a side of a rectangular room, `at` measured along it.
+      const bb = a.rect ? { minX: a.rect.x0, maxX: a.rect.x1, minZ: a.rect.z0, maxZ: a.rect.z1 } : a.bbox;
+      const off = finite(d.at);
+      const along = (lo, hi) => (off !== null ? lo + off * S : (lo + hi) / 2);
+      target = {
+        north: pt(along(bb.minX, bb.maxX), bb.minZ),
+        south: pt(along(bb.minX, bb.maxX), bb.maxZ),
+        west: pt(bb.minX, along(bb.minZ, bb.maxZ)),
+        east: pt(bb.maxX, along(bb.minZ, bb.maxZ)),
+      }[d.side];
+    }
+    if (!target) return `Tür an ${a.name}: Gib mit at: [x, z] an, wo die Tür sitzt.`;
+    const [e0, e1] = edgesOf(a.pts).reduce((best, e) => (distToSegment(target, e[0], e[1]) < distToSegment(target, best[0], best[1]) ? e : best));
+    seg = canonicalSeg(e0, e1);
+  }
+  if (width > seg.L + 1e-6) return `Tür an ${a.name}: ${num1.format(width)} m breit, die Wand ist nur ${num1.format(seg.L)} m lang.`;
+  const off = finite(d.at);
+  const t = clamp(target ? dot(sub(target, seg.P), seg.u) : off !== null ? off * S : seg.L / 2, width / 2, seg.L - width / 2);
+  const point = add(seg.P, mul(seg.u, t));
+  const side = perp(seg.u);
+  const n = inside(a.pts, add(point, mul(side, 0.15))) ? side : mul(side, -1);
+  return { floor: fi, a: a.id, b: b ? b.id : null, P: seg.P, u: seg.u, t, width, point, n, label: d.label || null };
 }
 
-function nearestRoom(plan, x, z) {
-  let best = plan.rooms[0];
+function roomAt(plan, floor, x, z) {
+  const p = pt(x, z);
+  const list = plan.floors[floor]?.rooms || [];
+  return list.find((r) => !r.outdoor && inside(r.pts, p)) || list.find((r) => r.outdoor && inside(r.pts, p)) || null;
+}
+
+function nearestRoom(plan, floor, x, z) {
+  const p = pt(x, z);
+  let best = plan.floors[floor].rooms[0] || plan.rooms[0];
   let bestD = Infinity;
-  for (const r of plan.rooms) {
-    const dx = Math.max(r.x - x, 0, x - (r.x + r.w));
-    const dz = Math.max(r.z - z, 0, z - (r.z + r.d));
-    const dist = Math.hypot(dx, dz);
-    if (dist < bestD) { bestD = dist; best = r; }
+  for (const r of plan.floors[floor].rooms) {
+    const dist = inside(r.pts, p) ? 0 : Math.min(...edgesOf(r.pts).map(([a, b]) => distToSegment(p, a, b)));
+    if (dist < bestD) {
+      bestD = dist;
+      best = r;
+    }
   }
   return best;
 }
 
-function randomPoint(r, margin = 0.45) {
-  const mx = Math.min(margin, r.w / 2 - 0.05);
-  const mz = Math.min(margin, r.d / 2 - 0.05);
-  return { x: rand(r.x + mx, r.x + r.w - mx), z: rand(r.z + mz, r.z + r.d - mz) };
-}
-
-// Wall pieces along every room edge: shared walls merged into one, door
-// openings cut out, balcony edges drawn as railing.
-function wallPieces(plan) {
-  const lines = new Map();
-  const line = (axis, c) => {
-    const k = `${axis}:${Math.round(c * 100)}`;
-    if (!lines.has(k)) lines.set(k, { axis, c, spans: [], gaps: [] });
-    return lines.get(k);
-  };
-  for (const r of plan.rooms) {
-    for (const side of ['north', 'south', 'west', 'east']) {
-      const e = sideEdge(r, side);
-      line(e.axis, e.c).spans.push({ s: e.s, e: e.e, outdoor: r.outdoor });
+function randomPoint(room, margin = 0.45) {
+  const b = room.bbox;
+  for (let m = margin; m >= 0; m -= 0.15) {
+    for (let i = 0; i < 40; i++) {
+      const p = pt(rand(b.minX, b.maxX), rand(b.minZ, b.maxZ));
+      if (inside(room.pts, p) && edgesOf(room.pts).every(([a, c]) => distToSegment(p, a, c) >= m)) return p;
     }
   }
-  for (const d of plan.doors) line(d.axis, d.c).gaps.push(d);
+  return { ...room.c };
+}
+
+// Wall pieces of one floor: every room edge and the outline, shared walls
+// merged into one, door openings cut out, edges of outdoor rooms as railing.
+function wallPieces(floor) {
+  const lines = [];
+  const lineFor = (p0, p1) => {
+    let u = unit(sub(p1, p0));
+    if (u.x < -1e-9 || (Math.abs(u.x) <= 1e-9 && u.z < 0)) u = mul(u, -1);
+    for (const L of lines) {
+      if (Math.abs(cross(L.u, u)) < 2e-3 && Math.abs(dot(sub(p0, L.o), perp(L.u))) < COLLINEAR) return L;
+    }
+    const L = { o: p0, u, spans: [], gaps: [] };
+    lines.push(L);
+    return L;
+  };
+  const interval = (L, p0, p1) => {
+    const t0 = dot(sub(p0, L.o), L.u);
+    const t1 = dot(sub(p1, L.o), L.u);
+    return { s: Math.min(t0, t1), e: Math.max(t0, t1) };
+  };
+  const span = (p0, p1, rank) => {
+    const L = lineFor(p0, p1);
+    L.spans.push({ ...interval(L, p0, p1), rank });
+  };
+  // rank: 3 = indoor room edge (wall), 2 = outdoor room edge (railing), 1 = bare outline (wall)
+  if (floor.outline) for (const [p, q] of edgesOf(floor.outline)) span(p, q, 1);
+  for (const r of floor.rooms) for (const [p, q] of edgesOf(r.pts)) span(p, q, r.outdoor ? 2 : 3);
+  for (const d of floor.doors) {
+    const p0 = add(d.P, mul(d.u, d.t - d.width / 2));
+    const p1 = add(d.P, mul(d.u, d.t + d.width / 2));
+    const L = lineFor(p0, p1);
+    L.gaps.push(interval(L, p0, p1));
+  }
 
   const pieces = [];
-  for (const L of lines.values()) {
+  for (const L of lines) {
     const cuts = [...L.spans.flatMap((s) => [s.s, s.e]), ...L.gaps.flatMap((g) => [g.s, g.e])];
-    const pts = [...new Set(cuts.map((v) => Math.round(v * 1000) / 1000))].sort((p, q) => p - q);
+    const ts = [...new Set(cuts.map((v) => Math.round(v * 1000) / 1000))].sort((p, q) => p - q);
     let cur = null;
-    for (let i = 0; i < pts.length - 1; i++) {
-      const p0 = pts[i];
-      const p1 = pts[i + 1];
-      if (p1 - p0 < 1e-3) continue;
-      const m = (p0 + p1) / 2;
+    const flush = () => {
+      if (cur && cur.kind) pieces.push({ kind: cur.kind, a: add(L.o, mul(L.u, cur.s)), b: add(L.o, mul(L.u, cur.e)), u: L.u });
+    };
+    for (let i = 0; i < ts.length - 1; i++) {
+      const s = ts[i];
+      const e = ts[i + 1];
+      if (e - s < 1e-3) continue;
+      const m = (s + e) / 2;
       const covers = (iv) => m > iv.s && m < iv.e;
       let kind = null;
       if (!L.gaps.some(covers)) {
-        if (L.spans.some((s) => !s.outdoor && covers(s))) kind = 'wall';
-        else if (L.spans.some((s) => s.outdoor && covers(s))) kind = 'rail';
+        const rank = Math.max(0, ...L.spans.filter(covers).map((sp) => sp.rank));
+        kind = rank === 2 ? 'rail' : rank ? 'wall' : null;
       }
-      if (cur && cur.kind === kind && Math.abs(cur.e - p0) < 1e-3) {
-        cur.e = p1;
+      if (cur && cur.kind === kind && Math.abs(cur.e - s) < 1e-3) {
+        cur.e = e;
       } else {
-        if (cur && cur.kind) pieces.push(cur);
-        cur = { kind, axis: L.axis, c: L.c, s: p0, e: p1 };
+        flush();
+        cur = { kind, s, e };
       }
     }
-    if (cur && cur.kind) pieces.push(cur);
+    flush();
   }
   return pieces;
 }
 
-function doorGraph(plan) {
+// Rooms connected by doors, and floors connected by stairs. Each edge carries
+// the waypoints a person walks through to cross it.
+function buildGraph(plan) {
   const g = new Map(plan.rooms.map((r) => [r.id, []]));
+  const link = (from, to, via) => g.get(from)?.push({ to, via });
   for (const d of plan.doors) {
     if (!d.b) continue;
-    g.get(d.a).push({ to: d.b, door: d });
-    g.get(d.b).push({ to: d.a, door: d });
+    const via = [{ ...d.point, floor: d.floor }];
+    link(d.a, d.b, via);
+    link(d.b, d.a, via);
+  }
+  for (const s of plan.stairs) {
+    const fa = plan.byId.get(s.a).floor;
+    const fb = plan.byId.get(s.b).floor;
+    link(s.a, s.b, [{ ...s.point, floor: fa }, { ...s.point, floor: fb, climb: true }]);
+    link(s.b, s.a, [{ ...s.point, floor: fb }, { ...s.point, floor: fa, climb: true }]);
   }
   return g;
 }
 
-// Door centres to walk through from one room to another (breadth-first).
 function route(graph, from, to) {
   if (from === to) return [];
   const prev = new Map([[from, null]]);
@@ -217,13 +424,13 @@ function route(graph, from, to) {
     if (id === to) break;
     for (const edge of graph.get(id) || []) {
       if (prev.has(edge.to)) continue;
-      prev.set(edge.to, { id, door: edge.door });
+      prev.set(edge.to, { id, via: edge.via });
       queue.push(edge.to);
     }
   }
   if (!prev.has(to)) return [];
   const pts = [];
-  for (let id = to; prev.get(id); id = prev.get(id).id) pts.unshift({ ...prev.get(id).door.point });
+  for (let id = to; prev.get(id); id = prev.get(id).id) pts.unshift(...prev.get(id).via.map((w) => ({ ...w })));
   return pts;
 }
 
@@ -238,15 +445,15 @@ class DemoSource {
     this.roomCfg = demoCfg?.rooms || {};
     this.count = clamp(Number(settings.demoPeople) || demoCfg?.people || 3, 1, 6);
     this.speed = settings.demoSpeed === 'fast' ? 4 : 1;
-    this.graph = doorGraph(plan);
+    this.graph = buildGraph(plan);
     this.entrance = plan.doors.find((d) => !d.b) || null;
-    this.candidates = plan.rooms.filter((r) => (this.roomCfg[r.id]?.weight ?? 1) > 0);
+    this.candidates = plan.rooms.filter((r) => this.weight(r.id) > 0);
     if (!this.candidates.length) this.candidates = plan.rooms;
   }
 
   start(onFrame, onStatus) {
     this.onFrame = onFrame;
-    this.people = Array.from({ length: this.count }, (_, i) => this.spawn(i));
+    this.people = this.plan.rooms.length ? Array.from({ length: this.count }, (_, i) => this.spawn(i)) : [];
     onStatus({ kind: 'demo', text: 'Demo', detail: '' });
   }
 
@@ -255,7 +462,9 @@ class DemoSource {
   }
 
   weight(id) {
-    return this.roomCfg[id]?.weight ?? 1;
+    const w = this.roomCfg[id]?.weight;
+    if (w !== undefined) return w;
+    return this.plan.byId.get(id)?.outdoor ? 0.5 : 1;
   }
 
   poseFor(id) {
@@ -275,10 +484,10 @@ class DemoSource {
 
   spawn(i) {
     const room = this.pickRoom(null);
-    const pt = randomPoint(room);
+    const p = randomPoint(room);
     return {
-      id: `D${i + 1}`, label: `P${i + 1}`, x: pt.x, z: pt.z, room: room.id, dest: room.id,
-      state: 'dwell', timer: rand(3, 14), path: [], pose: this.poseFor(room.id),
+      id: `D${i + 1}`, label: `P${i + 1}`, x: p.x, z: p.z, floor: room.floor, room: room.id, dest: room.id,
+      state: 'dwell', timer: rand(3, 14), path: [], pose: this.poseFor(room.id), climb: 0,
       breath: rand(13, 17), conf: rand(0.7, 0.92), nx: 0, nz: 0, noiseTimer: 0,
     };
   }
@@ -312,15 +521,18 @@ class DemoSource {
     }
   }
 
+  outsideOf(e) {
+    return { x: e.point.x - e.n.x * 0.9, z: e.point.z - e.n.z * 0.9, floor: e.floor };
+  }
+
   planNext(p) {
-    if (this.entrance && Math.random() < 0.07) {
+    if (this.entrance && Math.random() < 0.06) {
       const e = this.entrance;
-      const outside = { x: e.point.x - e.n.x * 0.9, z: e.point.z - e.n.z * 0.9 };
-      p.path = [...route(this.graph, p.room, e.a), { ...e.point }, outside];
+      p.path = [...route(this.graph, p.room, e.a), { ...e.point, floor: e.floor }, this.outsideOf(e)];
       p.dest = null;
     } else {
       const target = this.pickRoom(p.room);
-      p.path = [...route(this.graph, p.room, target.id), randomPoint(target)];
+      p.path = [...route(this.graph, p.room, target.id), { ...randomPoint(target), floor: target.floor }];
       p.dest = target.id;
     }
     p.state = 'walk';
@@ -329,18 +541,28 @@ class DemoSource {
   reenter(p) {
     const e = this.entrance;
     const target = this.pickRoom(e.a);
-    p.x = e.point.x - e.n.x * 0.9;
-    p.z = e.point.z - e.n.z * 0.9;
+    Object.assign(p, this.outsideOf(e));
     p.room = e.a;
-    p.path = [{ ...e.point }, ...route(this.graph, e.a, target.id), randomPoint(target)];
+    p.path = [{ ...e.point, floor: e.floor }, ...route(this.graph, e.a, target.id), { ...randomPoint(target), floor: target.floor }];
     p.dest = target.id;
     p.state = 'walk';
   }
 
   walk(p, dt) {
+    if (p.climb > 0) {
+      p.climb -= dt;
+      return;
+    }
     let budget = 1.15 * dt;
     while (budget > 0 && p.path.length) {
       const t = p.path[0];
+      if (t.floor !== p.floor) {
+        // Taking the stairs: same spot, other floor, a few seconds on the steps.
+        p.floor = t.floor;
+        p.path.shift();
+        p.climb = t.climb ? 3 : 0;
+        break;
+      }
       const dx = t.x - p.x;
       const dz = t.z - p.z;
       const dist = Math.hypot(dx, dz);
@@ -355,9 +577,9 @@ class DemoSource {
         budget = 0;
       }
     }
-    const here = roomAt(this.plan, p.x, p.z);
+    const here = roomAt(this.plan, p.floor, p.x, p.z);
     if (here) p.room = here.id;
-    if (p.path.length) return;
+    if (p.path.length || p.climb > 0) return;
     if (p.dest === null) {
       p.state = 'away';
       p.timer = rand(15, 35);
@@ -375,7 +597,7 @@ class DemoSource {
     const motion = walking ? 0.75 : { lying: 0.03, sitting: 0.1 }[pose] ?? 0.18;
     const breathing = p.breath + (pose === 'lying' ? -3 : 0) + (walking ? 5 : 0);
     return {
-      id: p.id, label: p.label, x: p.x + p.nx, z: p.z + p.nz, room: p.room, pose, motion,
+      id: p.id, label: p.label, x: p.x + p.nx, z: p.z + p.nz, floor: p.floor, room: p.room, pose, motion,
       breathing: Math.round(breathing), confidence: p.conf, uncertainty: walking ? 0.85 : 0.55, placed: 'position', raw: null,
     };
   }
@@ -420,10 +642,13 @@ class LiveSource {
     this.ws = null;
     this.alive = false;
     this.nodeSeen = new Map();
+    this.floor = Math.max(0, plan.floors.findIndex((f) => f.id === this.cfg.floor));
+    const center = plan.floors[this.floor]?.center || pt(0, 0);
     const t = this.cfg.transform || {};
+    const S = finite(CFG.scale) ?? 1;
     this.tf = {
-      ox: finite(t.origin?.x) ?? plan.center.x,
-      oz: finite(t.origin?.z) ?? plan.center.z,
+      ox: finite(t.origin?.x ?? t.origin?.[0]) !== null ? finite(t.origin?.x ?? t.origin?.[0]) * S : center.x,
+      oz: finite(t.origin?.z ?? t.origin?.[1]) !== null ? finite(t.origin?.z ?? t.origin?.[1]) * S : center.z,
       s: finite(t.scale) ?? 1,
       rot: ((finite(t.rotationDeg) ?? 0) * Math.PI) / 180,
       fx: t.flipX ? -1 : 1,
@@ -525,16 +750,12 @@ class LiveSource {
     return { x: ox + sx * Math.cos(rot) - sz * Math.sin(rot), z: oz + sx * Math.sin(rot) + sz * Math.cos(rot) };
   }
 
-  place(x, z, placed, extra) {
-    const b = this.plan.bounds;
+  place(floor, x, z, placed, extra) {
+    const b = this.plan.floors[floor].bounds;
     const cx = clamp(x, b.minX + 0.2, b.maxX - 0.2);
     const cz = clamp(z, b.minZ + 0.2, b.maxZ - 0.2);
-    const room = (roomAt(this.plan, cx, cz) || nearestRoom(this.plan, cx, cz)).id;
-    return { x: cx, z: cz, room, placed, uncertainty: placed === 'position' ? 1.1 : 1.6, ...extra };
-  }
-
-  fallbackRoom(zone) {
-    return this.plan.byId.get(this.cfg.zoneToRoom?.[zone]) || null;
+    const room = (roomAt(this.plan, floor, cx, cz) || nearestRoom(this.plan, floor, cx, cz)).id;
+    return { x: cx, z: cz, floor, room, placed, uncertainty: placed === 'position' ? 1.1 : 1.6, ...extra };
   }
 
   toPerson(p, i) {
@@ -548,11 +769,11 @@ class LiveSource {
     };
     if (hasPos) {
       const { x, z } = this.toPlan(pos[0], pos[2]);
-      return this.place(x, z, 'position', base);
+      return this.place(this.floor, x, z, 'position', base);
     }
-    const zoneRoom = this.fallbackRoom(p.zone);
+    const zoneRoom = this.plan.byId.get(this.cfg.zoneToRoom?.[p.zone]) || null;
     const r = zoneRoom || this.plan.byId.get(this.cfg.fallbackRoom) || this.plan.rooms[0];
-    return this.place(r.cx + (i % 3) * 0.6 - 0.6, r.cz + Math.floor(i / 3) * 0.6, zoneRoom ? 'zone' : 'unknown', base);
+    return this.place(r.floor, r.c.x + (i % 3) * 0.6 - 0.6, r.c.z + Math.floor(i / 3) * 0.6, zoneRoom ? 'zone' : 'unknown', base);
   }
 
   handle(data) {
@@ -562,7 +783,7 @@ class LiveSource {
     } catch {
       return;
     }
-    if (!m || m.type !== 'sensing_update') return;
+    if (!m || m.type !== 'sensing_update' || !this.plan.rooms.length) return;
     const now = performance.now();
     for (const n of Array.isArray(m.nodes) ? m.nodes : []) {
       if (n && n.node_id != null) this.nodeSeen.set(Number(n.node_id), now);
@@ -591,16 +812,16 @@ function readPalette() {
   const color = (name, fallback) => new THREE.Color(cs.getPropertyValue(name).trim() || fallback);
   return {
     bg: color('--bg', '#e4e8e4'),
-    floor: color('--map-floor', '#f4f5f1'),
-    floorOut: color('--map-floor-out', '#dce3da'),
-    grid: color('--map-grid', '#cbd3ce'),
-    wall: color('--map-wall', '#2a3a45'),
-    wallTop: color('--map-wall-top', '#18232b'),
-    door: color('--map-door', '#8a979f'),
+    floor: color('--map-floor', '#f6f7f3'),
+    floorOut: color('--map-floor-out', '#d8e0d7'),
+    grid: color('--map-grid', '#cad2cd'),
+    wall: color('--map-wall', '#34444f'),
+    wallTop: color('--map-wall-top', '#17222a'),
+    door: color('--map-door', '#8b989f'),
     person: color('--accent', '#e8501f'),
     node: color('--node', '#2f6690'),
-    ok: color('--ok', '#2e8b57'),
-    off: color('--map-grid', '#cbd3ce'),
+    ok: color('--ok', '#2b8a55'),
+    off: color('--map-grid', '#cad2cd'),
   };
 }
 
@@ -615,6 +836,18 @@ const GEO = {
 };
 
 const TRAIL_LEN = 48;
+
+function polygonGeometry(pts) {
+  const shape = new THREE.Shape(pts.map((p) => new THREE.Vector2(p.x, -p.z)));
+  // Shape is drawn in the x/y plane; turning it flat maps (x, -z) back to (x, 0, z).
+  return new THREE.ShapeGeometry(shape).rotateX(-Math.PI / 2);
+}
+
+function segmentsGeometry(pts) {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+  return geo;
+}
 
 class PersonView {
   constructor(root, palette) {
@@ -661,6 +894,8 @@ class PersonView {
     this.first = true;
     this.alpha = 0;
     this.gone = false;
+    this.floor = null;
+    this.layout = -1;
     this.phase = Math.random();
     this.cur = { y: 0.72, rot: 0, sy: 1, unc: 0.6, labelY: 1.65 };
     this.text = '';
@@ -670,20 +905,34 @@ class PersonView {
     for (const m of [this.bodyMat, this.discMat, this.ringMat, this.trailMat]) m.color.copy(palette.person);
   }
 
-  update(p, dt, t, still) {
+  clearTrail() {
+    this.trailCount = 0;
+    this.trailGeo.setDrawRange(0, 0);
+  }
+
+  // `offset` is where this person's floor currently sits in the scene;
+  // `shown` says whether that floor is on screen.
+  update(p, dt, t, still, offset, shown, layout) {
     if (p) {
       this.p = p;
       this.gone = false;
     }
     const s = this.p;
+    const tx = offset.x + s.x;
+    const tz = offset.z + s.z;
     if (this.first) {
-      this.x = s.x;
-      this.z = s.z;
+      this.x = tx;
+      this.z = tz;
       this.first = false;
     }
+    if (s.floor !== this.floor || layout !== this.layout) {
+      this.floor = s.floor;
+      this.layout = layout;
+      this.clearTrail();
+    }
     const k = 1 - Math.exp(-dt * 4.5);
-    this.x += (s.x - this.x) * k;
-    this.z += (s.z - this.z) * k;
+    this.x += (tx - this.x) * k;
+    this.z += (tz - this.z) * k;
     this.g.position.set(this.x, 0, this.z);
 
     const target = {
@@ -702,7 +951,10 @@ class PersonView {
     this.label.position.y = this.cur.labelY;
     this.disc.scale.setScalar(this.cur.unc);
 
-    this.alpha += ((this.gone ? 0 : 1) - this.alpha) * (1 - Math.exp(-dt * 6));
+    const want = this.gone || !shown ? 0 : 1;
+    this.alpha += (want - this.alpha) * (1 - Math.exp(-dt * 6));
+    this.g.visible = this.alpha > 0.02;
+    this.trail.visible = this.g.visible;
     this.bodyMat.opacity = this.alpha;
     this.discMat.opacity = 0.16 * this.alpha;
     this.trailMat.opacity = 0.45 * this.alpha;
@@ -718,7 +970,8 @@ class PersonView {
       this.ringMat.opacity = s.breathing ? 0.35 * this.alpha : 0;
     }
 
-    this.sampleTrail(dt);
+    // While gliding over to another floor the path is not a walk, so no trail.
+    if (Math.hypot(tx - this.x, tz - this.z) < 1.5) this.sampleTrail(dt);
 
     const text = s.breathing ? `${s.label}<span>${s.breathing}/min</span>` : s.label;
     if (text !== this.text) {
@@ -769,13 +1022,13 @@ class MapScene {
     container.append(this.labels.domElement);
 
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(36, 1, 0.1, 300);
+    this.camera = new THREE.PerspectiveCamera(36, 1, 0.1, 400);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.08;
     this.controls.maxPolarAngle = 1.32;
     this.controls.minDistance = 2;
-    this.controls.maxDistance = 90;
+    this.controls.maxDistance = 140;
     this.controls.addEventListener('start', () => {
       this.userMoved = true;
       this.tween = null;
@@ -786,123 +1039,149 @@ class MapScene {
     sun.position.set(-4, 10, 7);
     this.scene.add(sun);
 
-    // Plan coordinates inside root; root is shifted so the plan's centre sits at the origin.
+    // Everything sits in root; root is shifted so the visible floors are centred.
     this.root = new THREE.Group();
-    this.root.position.set(-plan.center.x, 0, -plan.center.z);
     this.scene.add(this.root);
+    this.rootTarget = new THREE.Vector3();
 
     this.palette = readPalette();
     this.mat = {
-      floor: new THREE.MeshBasicMaterial(),
+      slab: new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }),
       grid: new THREE.LineBasicMaterial({ transparent: true, opacity: 0.85 }),
       wall: new THREE.MeshLambertMaterial(),
       wallTop: new THREE.MeshBasicMaterial(),
       rail: new THREE.MeshLambertMaterial({ transparent: true, opacity: 0.6 }),
       door: new THREE.LineBasicMaterial(),
+      stair: new THREE.LineBasicMaterial(),
       node: new THREE.MeshLambertMaterial(),
     };
-    this.floors = new Map();
+    this.roomFloors = new Map();
     this.roomLabels = new Map();
     this.people = new Map();
     this.nodeViews = [];
     this.occupancy = new Map();
     this.insets = { top: 0, right: 0, bottom: 0, left: 0 };
     this.mode = '3d';
+    this.floorSel = 'all';
+    this.layoutVersion = 0;
     this.userMoved = false;
 
-    this.buildFloors();
-    this.buildGrid();
-    this.buildWalls();
-    this.buildDoors();
-    this.buildNodes();
+    this.floorViews = plan.floors.map((f) => this.buildFloor(f));
     this.applyPalette();
+    this.setLayout('all', false);
   }
 
-  buildFloors() {
-    for (const r of this.plan.rooms) {
-      const mat = new THREE.MeshBasicMaterial();
-      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(r.w, r.d).rotateX(-Math.PI / 2), mat);
-      mesh.position.set(r.cx, r.outdoor ? -0.015 : 0, r.cz);
-      this.root.add(mesh);
-      this.floors.set(r.id, { mesh, mat, room: r });
+  buildFloor(f) {
+    const group = new THREE.Group();
+    this.root.add(group);
+
+    if (f.outline) {
+      const slab = new THREE.Mesh(polygonGeometry(f.outline), this.mat.slab);
+      slab.position.y = -0.02;
+      group.add(slab);
+    }
+
+    for (const r of f.rooms) {
+      const mat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+      const mesh = new THREE.Mesh(polygonGeometry(r.pts), mat);
+      mesh.position.y = r.outdoor ? -0.012 : 0;
+      group.add(mesh);
+      this.roomFloors.set(r.id, { mesh, mat, room: r });
 
       const el = document.createElement('div');
       el.className = 'room-label';
       el.innerHTML = `<span class="rl-name">${esc(r.name)}</span><span class="rl-area">${num1.format(r.area)} m²</span><span class="rl-count" hidden></span>`;
       const label = new CSS2DObject(el);
-      label.position.set(r.cx, 0.02, r.cz);
-      this.root.add(label);
+      label.position.set(r.c.x, 0.02, r.c.z);
+      group.add(label);
       this.roomLabels.set(r.id, { el, count: el.querySelector('.rl-count') });
     }
-  }
 
-  buildGrid() {
-    const b = this.plan.bounds;
-    const pts = [];
-    for (let x = Math.ceil(b.minX); x <= Math.floor(b.maxX); x++) pts.push(x, 0.004, b.minZ, x, 0.004, b.maxZ);
-    for (let z = Math.ceil(b.minZ); z <= Math.floor(b.maxZ); z++) pts.push(b.minX, 0.004, z, b.maxX, 0.004, z);
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-    this.root.add(new THREE.LineSegments(geo, this.mat.grid));
-  }
+    const b = f.bounds;
+    const grid = [];
+    for (let x = Math.ceil(b.minX); x <= Math.floor(b.maxX); x++) grid.push(x, 0.004, b.minZ, x, 0.004, b.maxZ);
+    for (let z = Math.ceil(b.minZ); z <= Math.floor(b.maxZ); z++) grid.push(b.minX, 0.004, z, b.maxX, 0.004, z);
+    group.add(new THREE.LineSegments(segmentsGeometry(grid), this.mat.grid));
 
-  buildWalls() {
     const H = this.plan.wallHeight;
-    // BoxGeometry faces: +x, -x, +y (top cut), -y, +z, -z.
+    // BoxGeometry faces: +x, -x, +y (the cut top), -y, +z, -z.
     const wallMats = [this.mat.wall, this.mat.wall, this.mat.wallTop, this.mat.wall, this.mat.wall, this.mat.wall];
-    for (const p of wallPieces(this.plan)) {
-      const len = p.e - p.s;
-      const mid = (p.s + p.e) / 2;
+    for (const p of wallPieces(f)) {
       const isWall = p.kind === 'wall';
       const t = isWall ? WALL_T : 0.05;
       const h = isWall ? H : 0.9;
-      const geo = p.axis === 'x' ? new THREE.BoxGeometry(len + t, h, t) : new THREE.BoxGeometry(t, h, len + t);
-      const mesh = new THREE.Mesh(geo, isWall ? wallMats : this.mat.rail);
-      mesh.position.set(p.axis === 'x' ? mid : p.c, h / 2, p.axis === 'x' ? p.c : mid);
-      this.root.add(mesh);
+      const len = length(sub(p.b, p.a));
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(len + t, h, t), isWall ? wallMats : this.mat.rail);
+      mesh.position.set((p.a.x + p.b.x) / 2, h / 2, (p.a.z + p.b.z) / 2);
+      mesh.rotation.y = Math.atan2(-p.u.z, p.u.x);
+      group.add(mesh);
     }
-  }
 
-  // The architect's door symbol: the open leaf and its swing arc, drawn on the floor.
-  buildDoors() {
-    const pts = [];
-    for (const d of this.plan.doors) {
-      const u = d.axis === 'x' ? { x: 1, z: 0 } : { x: 0, z: 1 };
-      const hinge = d.axis === 'x' ? { x: d.s, z: d.c } : { x: d.c, z: d.s };
+    // The architect's door symbol: open leaf plus swing arc, drawn on the floor.
+    const doorPts = [];
+    const y = 0.008;
+    for (const d of f.doors) {
+      const hinge = add(d.P, mul(d.u, d.t - d.width / 2));
       const w = d.width;
-      const y = 0.008;
-      pts.push(hinge.x, y, hinge.z, hinge.x + d.n.x * w, y, hinge.z + d.n.z * w);
+      doorPts.push(hinge.x, y, hinge.z, hinge.x + d.n.x * w, y, hinge.z + d.n.z * w);
       const steps = 14;
       for (let i = 0; i < steps; i++) {
-        const a0 = (i / steps) * (Math.PI / 2);
-        const a1 = ((i + 1) / steps) * (Math.PI / 2);
-        const p0 = { x: hinge.x + w * (u.x * Math.cos(a0) + d.n.x * Math.sin(a0)), z: hinge.z + w * (u.z * Math.cos(a0) + d.n.z * Math.sin(a0)) };
-        const p1 = { x: hinge.x + w * (u.x * Math.cos(a1) + d.n.x * Math.sin(a1)), z: hinge.z + w * (u.z * Math.cos(a1) + d.n.z * Math.sin(a1)) };
-        pts.push(p0.x, y, p0.z, p1.x, y, p1.z);
+        const at = (k) => {
+          const a = (k / steps) * (Math.PI / 2);
+          return add(hinge, add(mul(d.u, w * Math.cos(a)), mul(d.n, w * Math.sin(a))));
+        };
+        const p0 = at(i);
+        const p1 = at(i + 1);
+        doorPts.push(p0.x, y, p0.z, p1.x, y, p1.z);
       }
     }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-    this.root.add(new THREE.LineSegments(geo, this.mat.door));
-  }
+    group.add(new THREE.LineSegments(segmentsGeometry(doorPts), this.mat.door));
 
-  buildNodes() {
-    const y = Math.max(0.3, this.plan.wallHeight - 0.15);
-    this.plan.nodes.forEach((n, i) => {
+    // Stairs: the run outlined, with a line per step.
+    const stairPts = [];
+    for (const s of this.plan.stairs) {
+      if (this.plan.byId.get(s.a).floor !== f.index && this.plan.byId.get(s.b).floor !== f.index) continue;
+      const along = s.dir === 'x' ? pt(1, 0) : pt(0, 1);
+      const across = perp(along);
+      const corner = (i, j) => add(s.point, add(mul(along, (i * s.l) / 2), mul(across, (j * s.w) / 2)));
+      const quad = [corner(-1, -1), corner(1, -1), corner(1, 1), corner(-1, 1)];
+      for (const [p, q] of edgesOf(quad)) stairPts.push(p.x, 0.01, p.z, q.x, 0.01, q.z);
+      const steps = Math.max(2, Math.round(s.l / 0.28));
+      for (let i = 1; i < steps; i++) {
+        const k = -1 + (2 * i) / steps;
+        const p = corner(k, -1);
+        const q = corner(k, 1);
+        stairPts.push(p.x, 0.01, p.z, q.x, 0.01, q.z);
+      }
+    }
+    if (stairPts.length) group.add(new THREE.LineSegments(segmentsGeometry(stairPts), this.mat.stair));
+
+    const nodeY = Math.max(0.3, H - 0.15);
+    f.nodes.forEach((n, i) => {
       const g = new THREE.Group();
       g.position.set(n.x, 0, n.z);
       const box = new THREE.Mesh(GEO.node, this.mat.node);
-      box.position.y = y;
+      box.position.y = nodeY;
       const ledMat = new THREE.MeshBasicMaterial();
       const led = new THREE.Mesh(GEO.led, ledMat);
-      led.position.y = y + 0.08;
+      led.position.y = nodeY + 0.08;
       const pingMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false });
       const ping = new THREE.Mesh(GEO.ping, pingMat);
       ping.position.y = 0.006;
       g.add(box, led, ping);
-      this.root.add(g);
-      this.nodeViews.push({ cfg: n, ledMat, pingMat, ping, phase: i * 0.37, online: true });
+      group.add(g);
+      this.nodeViews.push({ cfg: n, ledMat, pingMat, ping, phase: i * 0.37 });
     });
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'floor-title';
+    titleEl.textContent = f.name;
+    const title = new CSS2DObject(titleEl);
+    title.center.set(0, 1);
+    title.position.set(b.minX, 0, b.minZ - 1.1);
+    group.add(title);
+
+    return { floor: f, group, target: new THREE.Vector3(), shown: true, title };
   }
 
   applyPalette() {
@@ -910,11 +1189,13 @@ class MapScene {
     // A dark floor turns muddy fast when mixed with the accent, so tint it less.
     this.tint = pal.floor.getHSL({}).l < 0.3 ? 0.012 : 0.06;
     this.renderer.setClearColor(pal.bg, 1);
+    this.mat.slab.color.copy(pal.floor);
     this.mat.grid.color.copy(pal.grid);
     this.mat.wall.color.copy(pal.wall);
     this.mat.wallTop.color.copy(pal.wallTop);
     this.mat.rail.color.copy(pal.wall);
     this.mat.door.color.copy(pal.door);
+    this.mat.stair.color.copy(pal.door);
     this.mat.node.color.copy(pal.node);
     for (const v of this.nodeViews) v.pingMat.color.copy(pal.node);
     for (const view of this.people.values()) view.setPalette(pal);
@@ -922,7 +1203,7 @@ class MapScene {
   }
 
   paintFloors() {
-    for (const [id, f] of this.floors) {
+    for (const [id, f] of this.roomFloors) {
       const base = f.room.outdoor ? this.palette.floorOut : this.palette.floor;
       const n = this.occupancy.get(id) || 0;
       f.mat.color.copy(base).lerp(this.palette.person, Math.min(n, 3) * this.tint);
@@ -943,6 +1224,53 @@ class MapScene {
     if (changed) this.paintFloors();
   }
 
+  // Which floors are on screen and where: one floor alone, or all of them
+  // side by side (left to right on wide screens, top to bottom on tall ones).
+  setLayout(floorSel, animate = true) {
+    this.floorSel = floorSel;
+    const views = this.floorViews;
+    const all = floorSel === 'all' || views.length === 1;
+    const portrait = this.free ? this.free.h > this.free.w * 1.15 : false;
+    let cursor = 0;
+    const box = { minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity };
+    views.forEach((v, i) => {
+      v.shown = all || i === floorSel;
+      v.group.visible = v.shown;
+      v.title.visible = all && views.length > 1;
+      if (!v.shown) return;
+      const b = v.floor.bounds;
+      if (all && portrait) {
+        v.target.set(-b.minX, 0, cursor - b.minZ);
+        cursor += b.maxZ - b.minZ + FLOOR_GAP;
+      } else if (all) {
+        v.target.set(cursor - b.minX, 0, -b.minZ);
+        cursor += b.maxX - b.minX + FLOOR_GAP;
+      } else {
+        v.target.set(-b.minX, 0, -b.minZ);
+      }
+      const titleRoom = v.title.visible ? 1.6 : 0;
+      box.minX = Math.min(box.minX, b.minX + v.target.x);
+      box.maxX = Math.max(box.maxX, b.maxX + v.target.x);
+      box.minZ = Math.min(box.minZ, b.minZ + v.target.z - titleRoom);
+      box.maxZ = Math.max(box.maxZ, b.maxZ + v.target.z);
+    });
+    this.content = { w: box.maxX - box.minX, d: box.maxZ - box.minZ };
+    this.rootTarget.set(-(box.minX + box.maxX) / 2, 0, -(box.minZ + box.maxZ) / 2);
+    this.layoutVersion += 1;
+    if (!animate || reduceMotion.matches) {
+      for (const v of views) v.group.position.copy(v.target);
+      this.root.position.copy(this.rootTarget);
+    }
+    this.portrait = portrait;
+    this.userMoved = false;
+    this.setView(this.mode, animate);
+  }
+
+  floorOffset(i) {
+    const v = this.floorViews[i] || this.floorViews[0];
+    return { x: v.group.position.x, z: v.group.position.z, shown: v.shown };
+  }
+
   setInsets(insets) {
     this.insets = insets;
     this.resize();
@@ -958,16 +1286,18 @@ class MapScene {
     this.camera.setViewOffset(w, h, -(left - right) / 2, -(top - bottom) / 2, w, h);
     this.camera.updateProjectionMatrix();
     this.free = { w: Math.max(120, w - left - right), h: Math.max(120, h - top - bottom), W: w, H: h };
-    if (!this.userMoved) this.setView(this.mode, false);
+    const portrait = this.free.h > this.free.w * 1.15;
+    if (portrait !== this.portrait && this.floorSel === 'all') this.setLayout('all', false);
+    else if (!this.userMoved) this.setView(this.mode, false);
   }
 
-  // Camera distance at which the plan's bounding box fills the free area
-  // (the screen minus title block and panel) from the given direction.
+  // Camera distance at which the visible floors fill the free area (the screen
+  // minus title block and panel) when seen from the given direction.
   fitDistance(phi, theta, margin) {
     const cam = this.camera.clone();
     cam.clearViewOffset();
     cam.updateProjectionMatrix();
-    const { w, d } = this.plan.size;
+    const { w, d } = this.content;
     const h = this.plan.wallHeight;
     const corners = [];
     for (const x of [-w / 2, w / 2]) for (const y of [0, h]) for (const z of [-d / 2, d / 2]) corners.push(new THREE.Vector3(x, y, z));
@@ -992,16 +1322,16 @@ class MapScene {
 
   viewGoal(mode) {
     if (mode === 'plan') return { radius: this.fitDistance(0.0001, 0, 1.06), phi: 0.0001, theta: 0 };
-    // On a portrait screen width is scarce, so turn the plan less.
-    const portrait = this.free.h > this.free.w * 1.2;
-    const phi = portrait ? 0.72 : 0.8;
-    const theta = portrait ? -0.12 : -0.42;
+    // On a tall screen width is scarce, so turn the plan less.
+    const tall = this.free.h > this.free.w * 1.2;
+    const phi = tall ? 0.72 : 0.8;
+    const theta = tall ? -0.12 : -0.42;
     return { radius: this.fitDistance(phi, theta, 1.04), phi, theta };
   }
 
   setView(mode, animate = true) {
     this.mode = mode;
-    if (!this.free) return;
+    if (!this.free || !this.content) return;
     const goal = this.viewGoal(mode);
     const from = new THREE.Spherical().setFromVector3(this.camera.position.clone().sub(this.controls.target));
     if (!animate || reduceMotion.matches || from.radius === 0) {
@@ -1035,6 +1365,10 @@ class MapScene {
 
   update(frame, dt, t) {
     const still = reduceMotion.matches;
+    const k = 1 - Math.exp(-dt * 6);
+    this.root.position.lerp(this.rootTarget, k);
+    for (const v of this.floorViews) v.group.position.lerp(v.target, k);
+
     const seen = new Set();
     for (const p of frame.people) {
       seen.add(p.id);
@@ -1043,12 +1377,14 @@ class MapScene {
         view = new PersonView(this.root, this.palette);
         this.people.set(p.id, view);
       }
-      view.update(p, dt, t, still);
+      const off = this.floorOffset(p.floor);
+      view.update(p, dt, t, still, off, off.shown, this.layoutVersion);
     }
     for (const [id, view] of this.people) {
       if (seen.has(id)) continue;
       view.gone = true;
-      view.update(null, dt, t, still);
+      const off = this.floorOffset(view.p.floor);
+      view.update(null, dt, t, still, off, off.shown, this.layoutVersion);
       if (view.alpha < 0.02) {
         view.dispose();
         this.people.delete(id);
@@ -1058,9 +1394,9 @@ class MapScene {
     const now = performance.now();
     for (const v of this.nodeViews) {
       const last = frame.nodes ? frame.nodes.get(Number(v.cfg.id)) : now;
-      v.online = last != null && now - last < NODE_TIMEOUT_MS;
-      v.ledMat.color.copy(v.online ? this.palette.ok : this.palette.off);
-      if (v.online && !still) {
+      const online = last != null && now - last < NODE_TIMEOUT_MS;
+      v.ledMat.color.copy(online ? this.palette.ok : this.palette.off);
+      if (online && !still) {
         v.phase = (v.phase + dt / 2.4) % 1;
         v.ping.scale.setScalar(0.2 + v.phase * 1.8);
         v.pingMat.opacity = 0.32 * (1 - v.phase);
@@ -1082,7 +1418,7 @@ class MapScene {
 /* ------------------------------------------------------------------ */
 
 function loadSettings() {
-  const defaults = { source: 'demo', demoPeople: CFG.demo?.people || 3, demoSpeed: 'normal', liveUrl: '', liveToken: '', view: '3d' };
+  const defaults = { source: 'demo', demoPeople: CFG.demo?.people || 3, demoSpeed: 'normal', liveUrl: '', liveToken: '', view: '3d', floor: 'all' };
   try {
     return { ...defaults, ...JSON.parse(localStorage.getItem(STORE_KEY) || '{}') };
   } catch {
@@ -1101,13 +1437,12 @@ function saveSettings(s) {
 const plan = buildPlan(CFG);
 const settings = loadSettings();
 const ui = {
-  app: $('#app'),
   stage: $('#stage'),
   chip: $('#status-chip'),
   chipText: $('#status-text'),
   tbPlan: $('#tb-plan'),
   tbArea: $('#tb-area'),
-  tbRooms: $('#tb-rooms'),
+  tbFloors: $('#tb-floors'),
   tbSource: $('#tb-source'),
   titleblock: $('#titleblock'),
   toolbar: $('#toolbar'),
@@ -1120,8 +1455,10 @@ const ui = {
   vitals: $('#vitals'),
   nodes: $('#nodes'),
   note: $('#note'),
+  planNote: $('#plan-note'),
   warnings: $('#warnings'),
   viewBtns: document.querySelectorAll('[data-view]'),
+  floorBtns: $('#floor-btns'),
   recenter: $('#recenter'),
   openSource: $('#open-source'),
   dialog: $('#source-dialog'),
@@ -1138,7 +1475,7 @@ try {
   scene = new MapScene(ui.stage, plan);
 } catch (err) {
   console.error(err);
-  ui.stage.innerHTML = '<p class="stage-error">Dein Browser kann hier kein WebGL anzeigen, deshalb fehlt die 3D-Ansicht. Die Liste rechts zeigt trotzdem, wer wo ist.</p>';
+  ui.stage.innerHTML = '<p class="stage-error">Dein Browser kann hier kein WebGL anzeigen, deshalb fehlt die 3D-Ansicht. Die Legende zeigt trotzdem, wer wo ist.</p>';
 }
 
 let source = null;
@@ -1169,9 +1506,9 @@ function renderStatus() {
   ui.tbSource.textContent = settings.source === 'live' ? 'RuView live' : 'Demo, simuliert';
 }
 
-function roomName(id) {
-  return plan.byId.get(id)?.name || 'Unbekannt';
-}
+const roomName = (id) => plan.byId.get(id)?.name || 'Unbekannt';
+const floorShort = (i) => plan.floors[i]?.short || '';
+const multiFloor = plan.floors.length > 1;
 
 function renderPanel() {
   const people = frame.people;
@@ -1180,23 +1517,29 @@ function renderPanel() {
   scene?.setOccupancy(counts);
 
   const total = people.length;
-  const busiest = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2).map(([id, n]) => `${roomName(id)} ${n}`);
+  const where = (id) => (multiFloor ? `${roomName(id)} ${floorShort(plan.byId.get(id)?.floor)}` : roomName(id));
+  const busiest = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2).map(([id, n]) => `${where(id)} ${n}`);
   ui.summary.textContent = total === 0
     ? 'Niemand erkannt'
     : `${total === 1 ? '1 Person' : `${total} Personen`} · ${busiest.join(' · ')}`;
 
-  ui.rooms.innerHTML = plan.rooms.map((r) => {
-    const n = counts.get(r.id) || 0;
-    return `<li class="room-row${n ? ' is-occupied' : ''}"><span class="rr-name">${esc(r.name)}</span><span class="rr-pips" aria-hidden="true">${'<i></i>'.repeat(Math.min(n, 5))}</span><span class="rr-count">${n}</span></li>`;
+  ui.rooms.innerHTML = plan.floors.map((f) => {
+    const inFloor = f.rooms.reduce((s, r) => s + (counts.get(r.id) || 0), 0);
+    const head = multiFloor ? `<li class="floor-head"><span>${esc(f.name)}</span><span class="rr-count">${inFloor}</span></li>` : '';
+    return head + f.rooms.map((r) => {
+      const n = counts.get(r.id) || 0;
+      return `<li class="room-row${n ? ' is-occupied' : ''}"><span class="rr-name">${esc(r.name)}</span><span class="rr-pips" aria-hidden="true">${'<i></i>'.repeat(Math.min(n, 5))}</span><span class="rr-count">${n}</span></li>`;
+    }).join('');
   }).join('');
 
   ui.people.innerHTML = total
     ? people.slice().sort((a, b) => a.label.localeCompare(b.label, 'de', { numeric: true })).map((p) => {
-      const where = p.placed === 'position' ? roomName(p.room) : `${roomName(p.room)} <em>${p.placed === 'zone' ? '(Zone)' : '(Position unbekannt)'}</em>`;
+      const placeNote = p.placed === 'position' ? '' : ` <em>${p.placed === 'zone' ? '(Zone)' : '(Position unbekannt)'}</em>`;
+      const floorTag = multiFloor ? `<span class="pr-floor">${esc(floorShort(p.floor))}</span>` : '';
       const raw = p.raw ? `<span class="pr-raw">RuView x ${num1.format(p.raw.x)} · z ${num1.format(p.raw.z)}</span>` : '';
       const breath = p.breathing ? `${p.breathing}<small>/min</small>` : '<span class="muted">–</span>';
       const motion = Math.round(clamp(p.motion || 0, 0, 1) * 100);
-      return `<li class="person-row"><span class="pr-badge">${esc(p.label)}</span><span class="pr-main"><span class="pr-room">${where}</span><span class="pr-meta">${POSE_WORD[p.pose] || 'steht'}${raw}</span></span><span class="pr-breath" title="Atemzüge pro Minute">${breath}</span><span class="pr-motion" role="meter" aria-label="Bewegung" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${motion}"><i style="width:${motion}%"></i></span></li>`;
+      return `<li class="person-row"><span class="pr-badge">${esc(p.label)}</span><span class="pr-main"><span class="pr-room">${esc(roomName(p.room))}${placeNote}</span><span class="pr-meta">${floorTag}${POSE_WORD[p.pose] || 'steht'}${raw}</span></span><span class="pr-breath" title="Atemzüge pro Minute">${breath}</span><span class="pr-motion" role="meter" aria-label="Bewegung" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${motion}"><i style="width:${motion}%"></i></span></li>`;
     }).join('')
     : `<li class="empty">${settings.source === 'live' && status.kind !== 'live' ? 'Noch keine Verbindung zu RuView.' : 'Gerade ist niemand zu Hause.'}</li>`;
 
@@ -1221,7 +1564,7 @@ function renderPanel() {
         state = online ? 'on' : 'off';
         word = online ? 'sendet' : 'keine Daten';
       }
-      return `<li class="node-row" data-state="${state}"><span class="nr-dot" aria-hidden="true"></span><span class="nr-name">${esc(n.name || `Node ${n.id}`)}</span><span class="nr-state">${word}</span></li>`;
+      return `<li class="node-row" data-state="${state}"><span class="nr-dot" aria-hidden="true"></span><span class="nr-name">${esc(n.name)}</span><span class="nr-state">${word}</span></li>`;
     }).join('')
     : '<li class="empty">Keine Sensoren in config.js eingetragen.</li>';
 
@@ -1236,7 +1579,7 @@ function renderPanel() {
 
   ui.note.textContent = settings.source === 'live'
     ? 'Eine Position ist der Punkt, an dem RuView das stärkste Signal misst. Rechne mit 1 bis 2 Metern Abweichung: der Raum stimmt meist, die Stelle im Raum nur grob.'
-    : 'Simulierte Bewohner auf dem Beispielgrundriss. Unter „Quelle“ schaltest du auf Live um, sobald dein RuView-Server läuft.';
+    : 'Simulierte Bewohner. Unter „Quelle“ schaltest du auf Live um, sobald dein RuView-Server läuft.';
 }
 
 function renderWarnings() {
@@ -1254,6 +1597,26 @@ function setView(mode) {
     scene.userMoved = false;
     scene.setView(mode, true);
   }
+}
+
+function floorSelection() {
+  const i = plan.floors.findIndex((f) => f.id === settings.floor);
+  return i >= 0 ? i : 'all';
+}
+
+function renderFloorButtons() {
+  ui.floorBtns.hidden = !multiFloor;
+  if (!multiFloor) return;
+  const sel = floorSelection();
+  const btn = (value, text, title) => `<button type="button" data-floor="${esc(value)}" aria-pressed="${String(value === (sel === 'all' ? 'all' : plan.floors[sel].id))}" title="${esc(title)}">${esc(text)}</button>`;
+  ui.floorBtns.innerHTML = plan.floors.map((f) => btn(f.id, f.short, f.name)).join('') + btn('all', 'Alle', 'Alle Geschosse');
+}
+
+function setFloor(value) {
+  settings.floor = value;
+  saveSettings(settings);
+  renderFloorButtons();
+  scene?.setLayout(floorSelection(), true);
 }
 
 function isWide() {
@@ -1318,6 +1681,10 @@ ui.form.addEventListener('submit', (e) => {
 $('#source-cancel').addEventListener('click', () => ui.dialog.close());
 
 for (const b of ui.viewBtns) b.addEventListener('click', () => setView(b.dataset.view));
+ui.floorBtns.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-floor]');
+  if (b) setFloor(b.dataset.floor);
+});
 ui.recenter.addEventListener('click', () => scene?.resetView());
 ui.panelToggle.addEventListener('click', () => setPanelOpen(ui.panel.dataset.open !== 'true'));
 
@@ -1331,10 +1698,16 @@ window.matchMedia('(min-width: 900px)').addEventListener('change', () => request
 
 ui.tbPlan.textContent = plan.name;
 ui.tbArea.textContent = `${num1.format(plan.indoorArea)} m²`;
-ui.tbRooms.textContent = String(plan.rooms.filter((r) => !r.outdoor).length);
+ui.tbFloors.textContent = String(plan.floors.length);
+ui.planNote.hidden = !plan.note;
+ui.planNote.textContent = plan.note;
 renderWarnings();
+renderFloorButtons();
 for (const b of ui.viewBtns) b.setAttribute('aria-pressed', String(b.dataset.view === settings.view));
-if (scene) scene.mode = settings.view === 'plan' ? 'plan' : '3d';
+if (scene) {
+  scene.mode = settings.view === 'plan' ? 'plan' : '3d';
+  scene.setLayout(floorSelection(), false);
+}
 setPanelOpen(false);
 startSource();
 updateInsets();

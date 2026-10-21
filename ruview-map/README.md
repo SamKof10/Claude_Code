@@ -34,28 +34,43 @@ Three.js und die Schriften kommen vom CDN, der Browser braucht also Internet.
 ## Deine Wohnung eintragen
 
 Alles steht in [`config.js`](config.js). Maße in Metern, Ursprung ist die
-obere linke Ecke des Plans, x nach rechts, z nach unten.
+obere linke Ecke des Plans, x nach rechts, z nach unten. Pro Geschoss ein
+Eintrag in `floors`:
 
 ```js
-rooms: [
-  { id: 'wohnen', name: 'Wohnzimmer', x: 0,   z: 0, w: 5.8, d: 4.2 },
-  { id: 'kueche', name: 'Küche',      x: 5.8, z: 0, w: 2.8, d: 4.2 },
-],
-doors: [
-  { between: ['wohnen', 'kueche'], width: 1.0, at: 1.2 },   // at = Türmitte ab Wandanfang
-  { room: 'wohnen', side: 'west', width: 1.0, label: 'Eingang' },
-],
-nodes: [
-  { id: 1, name: 'ESP32 Wohnzimmer', x: 0.25, z: 0.25 },    // id = node_id in RuView
-],
+floors: [{
+  id: 'eg', name: 'Erdgeschoss', short: 'EG',
+  outline: [[0, 1.8], [4.7, 0], [13.7, 18.2], [9.8, 21], [0, 15]],  // Außenumriss, darf schräg sein
+  rooms: [
+    { id: 'eg-wohnen', name: 'Wohnzimmer', x: 0,   z: 0, w: 6.4, d: 8.2 },
+    { id: 'eg-kueche', name: 'Küche',      x: 6.4, z: 0, w: 8,   d: 8.2 },
+  ],
+  doors: [
+    { between: ['eg-wohnen', 'eg-kueche'], at: [6.4, 5.5], width: 1.6 },  // at = ungefähr die Türmitte
+    { room: 'eg-wohnen', at: [0, 6], width: 1.0, label: 'Eingang' },
+  ],
+  nodes: [{ id: 1, name: 'ESP32 Wohnzimmer', x: 0.3, z: 4 }],             // id = node_id in RuView
+}],
+stairs: [{ between: ['eg-treppe', 'og-treppe'], at: [8.8, 12.6] }],
 ```
 
-- Räume sind Rechtecke. Einen L-förmigen Raum trägst du als zwei Räume ein
-  (etwa „Wohnen“ und „Essen“) und verbindest sie mit einer breiten Tür.
+- Räume sind Rechtecke. Was über den `outline` hinausragt, wird
+  abgeschnitten – so folgen Räume schrägen oder runden Außenwänden von selbst.
+  Für Sonderformen geht auch `points: [[x, z], …]`.
 - Wände zwischen zwei Räumen entstehen automatisch, Türen schneiden sie auf.
-- `outdoor: true` macht aus einem Raum einen Balkon mit Geländer.
+- `outdoor: true` macht aus einem Raum einen Balkon oder eine Loggia mit Geländer.
+- `stairs` verbinden Geschosse; der Punkt `at` muss in beiden Räumen liegen.
+  In der Demo laufen die Leute darüber hoch und runter.
+- `scale` multipliziert alle Maße. Ist eine Wand in echt länger als im Plan,
+  korrigierst du hier mit einer Zahl.
 - Tippfehler (unbekannte Raum-ID, Tür in einer Wand, die es nicht gibt)
   zeigt die Karte oben in der Legende an.
+
+Der mitgelieferte Grundriss ist aus einem Luftbild abgemessen (Maßstab
+geschätzt, etwa ±20 %); die Räume darin sind erfunden.
+
+**EG / OG / Alle** oben rechts wechselt das Geschoss; „Alle“ legt sie
+nebeneinander, auf dem Handy untereinander.
 
 ## Live mit RuView
 
@@ -88,8 +103,9 @@ Browser gespeichert.
 
 ### Positionen ausrichten
 
-RuView rechnet in seinem eigenen Koordinatensystem (Meter, Mitte des
-Sensorfelds = 0/0). Im Live-Modus steht bei jeder Person in der Legende, was
+RuView kennt keine Geschosse: alle Positionen landen im Geschoss aus
+`live.floor`. RuView rechnet in seinem eigenen Koordinatensystem (Meter,
+Mitte des Sensorfelds = 0/0). Im Live-Modus steht bei jeder Person in der Legende, was
 RuView meldet („RuView x 1,3 · z −0,6“). Stell dich an zwei bekannte Stellen
 deiner Wohnung, notier die Werte und pass in `config.js` unter
 `live.transform` an:
