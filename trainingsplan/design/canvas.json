@@ -1,0 +1,14 @@
+{
+  "artboards": [
+    { "file": "Login.dc.html",    "x": 0,    "y": 0, "w": 390, "h": 844 },
+    { "file": "Main.dc.html",     "x": 500,  "y": 0, "w": 390, "h": 844 },
+    { "file": "Logging.dc.html",  "x": 1000, "y": 0, "w": 390, "h": 844 },
+    { "file": "Week.dc.html",     "x": 1500, "y": 0, "w": 390, "h": 844 },
+    { "file": "Progress.dc.html", "x": 2000, "y": 0, "w": 390, "h": 844 }
+  ],
+  "annotations": [
+    { "id": "flow", "x": 0, "y": -150, "w": 700, "text": "Mesocycle — 8-Wochen Push/Pull-Tracker.\nLeserichtung: Login → Heute → Satz-Logging → Woche → Verlauf.\nStatische Mockups als Bauvorlage für die Next.js-App." },
+    { "id": "tokens", "x": 1500, "y": -150, "w": 890, "text": "Tokens: bg oklch(0.16 0.008 265) · surface 0.21 · erhöht 0.25 · Text 0.97 / 0.70 / 0.55\nAkzent Progression oklch(0.72 0.17 145) · Deload/Warnung oklch(0.72 0.17 65) — gleiche L+C, nur Hue\nTypo HIG-Ramp 34/28/22/17/15/13/12 · Radien 12–16 · Touch-Targets ≥ 44px" }
+  ],
+  "launch": { "view": "canvas" }
+}
