@@ -16,6 +16,7 @@ jedem Push, der `fpv-portfolio-react/` ändert
 | [`mudroom/`](mudroom) | MUDROOM — Premium-Store für eine automatische Bike-Waschbox | Next.js 16, React 19, Tailwind 4, Motion |
 | [`gym-tracker/`](gym-tracker) | Gym Tracker — PWA für einen 5-Tage-Split, mit echtem Background-Push | Vanilla JS PWA + Node/Express |
 | [`studyhub/`](studyhub) | StudyHub — KI-gestützte Lernplattform: Anmeldung, Dokumente, Notizen, Karteikarten, Quizze, Prüfungspläne, Fokustimer und ein AI-Tutor | Next.js 16, React 19, Tailwind 4, Zustand, Tiptap, Recharts |
+| [`claude-dashboard/`](claude-dashboard) | Internes Dashboard: Usage & Kosten (Anthropic Admin API), Projektübersicht, eigenes Sessions/Tasks-Board | statisches HTML/CSS/JS, kein Build |
 
 ## Fertige Seiten ohne Build
 
@@ -34,6 +35,21 @@ Das sind Snapshots. Neu erzeugen: bei AUREL und MUDROOM mit
 `npm run standalone` (Ergebnis: `standalone/dist/local.html`), beim Gym
 Tracker durch Inlinen von `public/styles.css` und `public/app.js` in
 `public/index.html`.
+
+## Claude Dashboard öffnen
+
+```bash
+cd claude-dashboard
+python3 -m http.server 8000   # oder: npx serve
+```
+
+Kein Build, kein Server nötig — `index.html` geht auch direkt im Browser auf.
+Für den Tab **Usage & Kosten** brauchst du einen Admin API Key aus der
+[Anthropic Console](https://console.anthropic.com/settings/admin-keys); er
+bleibt ausschließlich in `localStorage` deines Browsers und wird direkt an
+`api.anthropic.com` geschickt, nie an einen eigenen Server. **Projekte** ist
+eine statische Übersicht dieser README, **Sessions & Tasks** ein simples
+lokales Board (`localStorage`) für eigene Notizen zu laufender Arbeit.
 
 ## Den Gym Tracker mit Push starten
 
