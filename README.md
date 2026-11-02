@@ -16,6 +16,27 @@ jedem Push, der `fpv-portfolio-react/` ändert
 | [`mudroom/`](mudroom) | MUDROOM — Premium-Store für eine automatische Bike-Waschbox | Next.js 16, React 19, Tailwind 4, Motion |
 | [`gym-tracker/`](gym-tracker) | Gym Tracker — PWA für einen 5-Tage-Split, mit echtem Background-Push | Vanilla JS PWA + Node/Express |
 | [`studyhub/`](studyhub) | StudyHub — KI-gestützte Lernplattform: Anmeldung, Dokumente, Notizen, Karteikarten, Quizze, Prüfungspläne, Fokustimer und ein AI-Tutor | Next.js 16, React 19, Tailwind 4, Zustand, Tiptap, Recharts |
+| [`roast-room/`](roast-room) | Roast Room — ein Rat aus 12 KI-Advisorn debattiert eine Business-Entscheidung, mit Live-Raum und PDF-Urteil (aus [nateherkai/roast-room](https://github.com/nateherkai/roast-room), MIT) | Claude-Code-Skills + Agents, Node-Server ohne Dependencies |
+
+## Founder-Skills
+
+`.claude/skills/founder-*` sind die elf Skills aus
+[Jakeschincariol/founder-skill](https://github.com/Jakeschincariol/founder-skill)
+(MIT): `/founder-board`, `/founder-competitors`, `/founder-consumer`,
+`/founder-pricing`, `/founder-offer`, `/founder-cfo`, `/founder-marketing`,
+`/founder-brand`, `/founder-ops`, `/founder-launch`, `/founder-plan`. Sie
+schreiben in einen `founder/`-Ordner im aktuellen Projekt.
+
+## Roast Room starten
+
+Der Roast Room bringt eigene Skills (`/roast-room`, `/newroaster`) und Agents
+mit und läuft nur aus seinem eigenen Ordner:
+
+```bash
+cd roast-room
+npm start       # Raum auf http://localhost:4730
+claude          # im selben Ordner, dann: /roast-room <Entscheidung>
+```
 
 ## Fertige Seiten ohne Build
 
